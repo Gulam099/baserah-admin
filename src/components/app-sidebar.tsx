@@ -3,11 +3,16 @@
 import * as React from "react";
 import {
   BookOpen,
+  Bookmark,
   Bot,
+  Briefcase,
   Command,
+  Folder,
   Frame,
+  Gauge,
   LifeBuoy,
   Map,
+  Monitor,
   PieChart,
   Send,
   Settings2,
@@ -30,6 +35,7 @@ import {
 import Link from "next/link";
 import Logo from "./custom/logo";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { EmptyWallet, Profile2User, Setting2 } from "iconsax-react";
 
 const data = {
   user: {
@@ -39,118 +45,44 @@ const data = {
   },
   navMain: [
     {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
+      title: "Approval",
+      url: "/dashboard/approval",
+      icon: Gauge,
     },
     {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
+      title: "Reports",
+      url: "/dashboard/report",
+      icon: Folder,
     },
     {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
+      title: "Appointments",
+      url: "/dashboard/appointment",
+      icon: Briefcase,
     },
     {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Support",
-      url: "#",
-      icon: LifeBuoy,
+      title: "Contracts and Specialists",
+      url: "/dashboard/specialist",
+      icon: Bookmark,
     },
     {
-      title: "Feedback",
-      url: "#",
-      icon: Send,
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
+      title: "Customers",
+      url: "/dashboard/customer",
+      icon: Profile2User,
     },
     {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
+      title: "Information Bank",
+      url: "/dashboard/question",
+      icon: Setting2,
     },
     {
-      name: "Travel",
-      url: "#",
-      icon: Map,
+      title: "Financial",
+      url: "/dashboard/finance",
+      icon: EmptyWallet,
+    },
+    {
+      title: "Permissions",
+      url: "/dashboard/permission",
+      icon: Monitor,
     },
   ],
 };
@@ -181,8 +113,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       {/* <SidebarFooter>
         <NavUser user={data.user} />

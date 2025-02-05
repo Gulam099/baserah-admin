@@ -1,9 +1,16 @@
-import React from 'react'
+"use client";
+import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
 
 export default function LanguageButton() {
+  const [lang, setLang] = useState("English");
   return (
-    <div>
-      
-    </div>
-  )
+    <Button
+      onClick={() =>
+        lang === "English" ? setLang("Arabic") : setLang("English")
+      }
+    >
+      {lang}
+    </Button>
+  );
 }
