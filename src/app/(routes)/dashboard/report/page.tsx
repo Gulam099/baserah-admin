@@ -81,6 +81,7 @@ export default function page() {
           chartData={chartData}
           title={"Appointments Type"}
           className="col-span-1"
+          dataTypeTile="Total"
         />
         <DataPieChartCard
           chartType="bar"
@@ -89,6 +90,8 @@ export default function page() {
           title={"General Appointments Status"}
           className="col-span-2"
         />
+
+        
       </div>
       <div>
       

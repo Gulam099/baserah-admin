@@ -109,9 +109,9 @@ export default function ContentApprovalPage() {
                   {content.approvalStatus}
                 </Badge>
               </TableCell>
-              <TableCell >
-                <Link href={'/'}>
-                <Eye className="size-7 text-white bg-primary-600 p-1 rounded-lg" />
+              <TableCell>
+                <Link href={"/"}>
+                  <Eye className="size-7 text-white bg-primary-600 p-1 rounded-lg" />
                 </Link>
               </TableCell>
             </TableRow>

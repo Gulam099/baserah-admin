@@ -35,7 +35,7 @@ import {
 import Link from "next/link";
 import Logo from "./custom/logo";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { EmptyWallet, Profile2User, Setting2 } from "iconsax-react";
+import { EmptyWallet, People, Profile2User, Setting2 } from "iconsax-react";
 
 const data = {
   user: {
@@ -58,6 +58,11 @@ const data = {
       title: "Appointments",
       url: "/dashboard/appointment",
       icon: Briefcase,
+    },
+    {
+      title: "Tickets",
+      url: "/dashboard/ticket",
+      icon: People,
     },
     {
       title: "Contracts and Specialists",
