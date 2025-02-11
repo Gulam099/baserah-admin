@@ -23,7 +23,7 @@ export function NavMain({
     <SidebarGroup>
       <SidebarMenu className="gap-2">
         {items.map((item, index) => {
-          const isActive: boolean = pathname === item.url;
+          const isActive: boolean = pathname.includes(item.url);
           return (
             <Link
               key={item.url + index}

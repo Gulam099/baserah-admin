@@ -33,8 +33,9 @@ export default function DataPieChartCard(props: {
   chartConfig?: ChartConfig;
   chartData?: any[];
   title: string;
+  desc?:string;
   dataTypeTile?: string;
-  NumberData?: number;
+  NumberData?: number | string;
   className?: string;
 }) {
   const {
@@ -44,7 +45,7 @@ export default function DataPieChartCard(props: {
     dataTypeTile,
     chartType,
     NumberData,
-    className,
+    className, desc
   } = props;
 
   const totalVisitors = React.useMemo(() => {
@@ -56,6 +57,7 @@ export default function DataPieChartCard(props: {
         <div className="flex flex-row justify-between items-center w-full">
           <CardTitle className="text-sm font-semibold text-neutral-600">
             {title}
+            <p className="text-xs font-medium mt-2">{desc}</p>
           </CardTitle>
           <Button className="aspect-square" variant={"ghost"}>
             <ExportCurve size="32" color="#0a0a0a" />
