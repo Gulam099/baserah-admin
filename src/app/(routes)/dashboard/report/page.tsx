@@ -170,6 +170,79 @@ export default function page() {
     },
   ];
 
+  const chartData3 = [
+    {
+      month: "January",
+      psychiatrist: 186,
+      psychologist: 80,
+      childPsychologist: 162,
+      family: 265,
+      external: 100,
+    },
+    {
+      month: "February",
+      psychiatrist: 305,
+      psychologist: 200,
+      childPsychologist: 78,
+      family: 180,
+      external: 90,
+    },
+    {
+      month: "March",
+      psychiatrist: 237,
+      psychologist: 120,
+      childPsychologist: 34,
+      family: 210,
+      external: 120,
+    },
+    {
+      month: "April",
+      psychiatrist: 73,
+      psychologist: 190,
+      childPsychologist: 65,
+      family: 240,
+      external: 150,
+    },
+    {
+      month: "May",
+      psychiatrist: 209,
+      psychologist: 130,
+      childPsychologist: 178,
+      family: 88,
+      external: 300,
+    },
+    {
+      month: "June",
+      psychiatrist: 214,
+      psychologist: 140,
+      childPsychologist: 238,
+      family: 156,
+      external: 220,
+    },
+  ];
+  const chartConfig3 = {
+    psychiatrist: {
+      label: "Psychiatrist",
+      color: "hsl(var(--chart-1))",
+    },
+    psychologist: {
+      label: "Psychologist",
+      color: "hsl(var(--chart-2))",
+    },
+    childPsychologist: {
+      label: "Child Psychologist",
+      color: "hsl(var(--chart-3))",
+    },
+    family: {
+      label: "Family and Marriage Specialist ",
+      color: "hsl(var(--chart-4))",
+    },
+    external: {
+      label: "External Customer",
+      color: "hsl(var(--chart-5))",
+    },
+  } satisfies ChartConfig;
+
   return (
     <div className="flex flex-col gap-4 ">
       <h2 className="text-lg font-semibold text-neutral-800">Appointments</h2>
@@ -253,12 +326,20 @@ export default function page() {
           className="basis-2/3"
         />
       </div>
+      <div>
+        <DataPieChartCard
+          chartType="line"
+          chartConfig={chartConfig3}
+          chartData={chartData3}
+          title={"User Type"}
+        />
+      </div>
       <div className="flex flex-wrap gap-4 justify-between">
         <DataPieChartCard
-          chartType="bar"
+          chartType="barV"
           chartConfig={chartConfig2}
           chartData={chartData2}
-          title={"General Appointments Status"}
+          title={"New and Open Tickets "}
         />
         <DataPieChartCard
           chartType="pie"
