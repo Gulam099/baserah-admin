@@ -64,6 +64,7 @@
     "react-phone-number-input": "^3.4.10",
     "react-redux": "^9.2.0",
     "react-resizable-panels": "^2.1.7",
+    "react-to-print": "^3.0.5",
     "recharts": "^2.15.1",
     "redux-persist": "^6.0.0",
     "sonner": "^1.7.4",
