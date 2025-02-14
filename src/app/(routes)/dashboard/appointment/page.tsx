@@ -28,13 +28,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ExportButton from "@/features/home/components/ExportButton";
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { AppointmentType } from "@/features/appointment/types/appointment.type";
-import { ApiResponseType } from "@/features/home/types/type";
 import { fetchAppointmentsRecords } from "@/features/appointment/data/appointment.data";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
 
-export default function page() {
+export default function page({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string };
+}) {
   const contentRef = useRef<HTMLDivElement>(null);
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -51,10 +53,9 @@ export default function page() {
     }
   };
 
-  const searchParams = useSearchParams();
   // Read page/pageSize from the URL, or fallback to 1 / 9
-  const pageParam = searchParams.get("page");
-  const pageSizeParam = searchParams.get("pageSize");
+  const pageParam = searchParams.page;
+  const pageSizeParam = searchParams.pageSize;
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
   const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 10;
 

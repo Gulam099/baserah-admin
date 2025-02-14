@@ -38,7 +38,6 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
-import { useSearchParams } from "next/navigation";
 import ExportButton from "@/features/home/components/ExportButton";
 
 const formSchema = z.object({
@@ -69,13 +68,15 @@ const mockQuestions: Question[] = Array.from({ length: 50 }, (_, i) => ({
     "ext of the answer to the question Text of the answer to the question Text of the answer to the",
 }));
 
-export default function page() {
+export default function page({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string };
+}) {
   const contentRef = useRef<HTMLDivElement>(null);
-
-  const searchParams = useSearchParams();
   // Read page/pageSize from the URL, or fallback to 1 / 9
-  const pageParam = searchParams.get("page");
-  const pageSizeParam = searchParams.get("pageSize");
+  const pageParam = searchParams.page;
+  const pageSizeParam = searchParams.pageSize;
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
   const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 9;
 
