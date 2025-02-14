@@ -113,7 +113,7 @@ export default function CustomersPage() {
   );
 }
 
-export function NewCustomerDialog() {
+ function NewCustomerDialog() {
   const [open, setOpen] = useState(false);
 
   const onSubmit = async (e: React.FormEvent) => {
