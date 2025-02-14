@@ -18,6 +18,7 @@ import {
 import { PhoneInput } from "@/components/ui/phone-input";
 import { appName } from "../../../../const";
 import Logo from "@/components/custom/logo";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   phone: z.string(),
@@ -27,6 +28,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
@@ -39,6 +41,7 @@ export function LoginForm({
           <code className="text-white">{JSON.stringify(values, null, 2)}</code>
         </pre>
       );
+      router.push("/dashboard/approval");
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
@@ -78,8 +81,6 @@ export function LoginForm({
                           placeholder=""
                           {...field}
                           defaultCountry="SA"
-                          
-
                         />
                       </FormControl>
                       <FormMessage />
