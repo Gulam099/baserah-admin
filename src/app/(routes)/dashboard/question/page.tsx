@@ -39,34 +39,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
 import ExportButton from "@/features/home/components/ExportButton";
+import { Question } from "@/features/question/types/question.type";
+import { fetchQuestions } from "@/features/question/utils/question.util";
 
 const formSchema = z.object({
   question: z.string().min(10),
   type: z.string(),
   answer: z.string().min(1),
 });
-
-export interface Question {
-  id: string;
-  tag: "Anxiety program" | "General";
-  title: string;
-  content: string;
-}
-
-export interface PaginatedResponse {
-  data: Question[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
-
-const mockQuestions: Question[] = Array.from({ length: 50 }, (_, i) => ({
-  id: `q${i + 1}`,
-  tag: i % 3 === 0 ? "General" : "Anxiety program",
-  title: "The wording of the first question?",
-  content:
-    "ext of the answer to the question Text of the answer to the question Text of the answer to the",
-}));
 
 export default function page({
   searchParams,
@@ -84,32 +64,13 @@ export default function page({
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0); // track total items
 
-  // Mock "fetch" function
-  async function fetchQuestions(
-    page: number,
-    pageSize: number
-  ): Promise<PaginatedResponse> {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-
-    return {
-      data: mockQuestions.slice(start, end),
-      total: mockQuestions.length,
-      page,
-      pageSize,
-    };
-  }
-
   // Whenever page/pageSize changes in the URL, fetch new data
   useEffect(() => {
     setLoading(true);
     fetchQuestions(currentPage, pageSize)
       .then((res) => {
-        setQuestions(res.data);
-        setTotal(res.total); // for UnifiedPagination's `total` prop
+        setQuestions(res.data!);
+        setTotal(res.page?.total!); // for UnifiedPagination's `total` prop
       })
       .catch((err) => {
         console.error("Failed to fetch questions:", err);
@@ -121,54 +82,56 @@ export default function page({
 
   return (
     <>
-      <div className="flex justify-end items-center gap-2">
-        <ExportButton contentRef={contentRef} />
-        <InformationFormDialog />
-      </div>
-      <div className="container mx-auto py-8">
-        <div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          ref={contentRef}
-        >
-          {loading
-            ? Array.from({ length: pageSize }).map((_, i) => (
-                <Card key={`skeleton-${i}`} className="animate-pulse">
-                  <CardHeader className="h-16 bg-gray-200 rounded-t-lg" />
-                  <CardContent className="h-24 bg-gray-100" />
-                  <CardFooter className="h-16 bg-gray-200 rounded-b-lg" />
-                </Card>
-              ))
-            : questions.map((question) => (
-                <Card key={question.id}>
-                  <CardHeader>
-                    <Badge
-                      variant={
-                        question.tag === "General" ? "success" : "default"
-                      }
-                      className="w-fit"
-                    >
-                      {question.tag}
-                    </Badge>
-                    <h3 className="font-semibold mt-2">{question.title}</h3>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      {question.content}
-                    </p>
-                  </CardContent>
-                  <CardFooter className="flex gap-2 print:hidden">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      Hide
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
-                      Edit
-                    </Button>
-                    <Button variant="default" size="sm" className="flex-1">
-                      publish
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
+      <div className="container mx-auto ">
+        <div className="flex justify-end items-center gap-2 pb-6">
+          <ExportButton contentRef={contentRef} />
+          <InformationFormDialog />
+        </div>
+        <div className="min-h-[70vh]">
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 grow-0 shrink  "
+            ref={contentRef}
+          >
+            {loading
+              ? Array.from({ length: pageSize }).map((_, i) => (
+                  <Card key={`skeleton-${i}`} className="animate-pulse">
+                    <CardHeader className="h-16 bg-gray-200 rounded-t-lg" />
+                    <CardContent className="h-24 bg-gray-100" />
+                    <CardFooter className="h-16 bg-gray-200 rounded-b-lg" />
+                  </Card>
+                ))
+              : questions.map((question) => (
+                  <Card key={question.id}>
+                    <CardHeader>
+                      <Badge
+                        variant={
+                          question.tag === "General" ? "success" : "default"
+                        }
+                        className="w-fit"
+                      >
+                        {question.tag}
+                      </Badge>
+                      <h3 className="font-semibold mt-2">{question.title}</h3>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">
+                        {question.content}
+                      </p>
+                    </CardContent>
+                    <CardFooter className="flex gap-2 print:hidden">
+                      <Button variant="outline" size="sm" className="flex-1">
+                        Hide
+                      </Button>
+                      <Button variant="outline" size="sm" className="flex-1">
+                        Edit
+                      </Button>
+                      <Button variant="default" size="sm" className="flex-1">
+                        publish
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+          </div>
         </div>
 
         <UnifiedPagination total={total} />

@@ -29,8 +29,8 @@ import { Badge } from "@/components/ui/badge";
 import ExportButton from "@/features/home/components/ExportButton";
 import { useEffect, useRef, useState } from "react";
 import { AppointmentType } from "@/features/appointment/types/appointment.type";
-import { fetchAppointmentsRecords } from "@/features/appointment/data/appointment.data";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
+import { fetchAppointmentsRecords } from "@/features/appointment/util/appointment.util";
 
 export default function page({
   searchParams,
@@ -68,8 +68,8 @@ export default function page({
     setLoading(true);
     fetchAppointmentsRecords(currentPage, pageSize)
       .then((res) => {
-        setAppointments(res.data);
-        setTotal(res.total); // for UnifiedPagination's `total` prop
+        setAppointments(res.data!);
+        setTotal(res.page?.total!); // for UnifiedPagination's `total` prop
       })
       .catch((err) => {
         console.error("Failed to fetch questions:", err);
@@ -92,7 +92,7 @@ export default function page({
         </AlertDescription>
       </Alert>
 
-      <div ref={contentRef} className="rounded-md border">
+      <div ref={contentRef} className="rounded-md border min-h-[80vh]">
         <Table>
           <TableHeader>
             <TableRow>
