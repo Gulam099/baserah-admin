@@ -16,7 +16,7 @@ export interface ApiResponseType {
   status: number; // response status [ 200 , 201 , 400 , 404 , 500 ]
   success: boolean; // true if data send correctly
   message: string; // response message (  )
-  data?: any[];
+  data?: any;
   page?: PaginationPropType;
   filter?: FilterPropsType;
 }

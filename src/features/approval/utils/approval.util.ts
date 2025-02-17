@@ -23,3 +23,15 @@ export async function fetchApprovalsRecords(
     },
   };
 }
+
+export async function fetchApprovalContent(
+  id: string
+): Promise<ApiResponseType> {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  return {
+    success: true,
+    status: 200,
+    message: "Approval Fetch Successfully",
+    data: approvals.find((approval) => approval.id === id),
+  };
+}

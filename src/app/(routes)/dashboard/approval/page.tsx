@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { fetchApprovalsRecords } from "@/features/approval/utils/approval.util";
 import { ApprovalContentItemType } from "@/features/approval/approval.type";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
+import { toTitleCase } from "@/features/home/utils/string.utils";
 
 export default function ApprovalContentTablePage({
   searchParams,
@@ -87,33 +88,38 @@ export default function ApprovalContentTablePage({
                     </TableCell>
                   </TableRow>
                 ))
-              : approvals.map((content: any, index: number) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">
-                      {content.contentType}
-                    </TableCell>
-                    <TableCell>{content.specialist}</TableCell>
-                    <TableCell>
-                      {format(parseISO(content.datetime), "HH:mm a")}
-                    </TableCell>
-                    <TableCell>
-                      {format(parseISO(content.datetime), "dd MMM yyyy")}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={badgeVariant[content.approvalStatus]}
-                        className={"capitalize"}
-                      >
-                        {content.approvalStatus}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Link href={"/"}>
-                        <Eye className="size-7 text-white bg-primary-600 p-1 rounded-lg" />
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
+              : approvals.map((content, index: number) => {
+                  const url = `/dashboard/approval/${encodeURIComponent(
+                    content.contentType.toLowerCase()
+                  )}/${content.id}`;
+                  return (
+                    <TableRow key={index}>
+                      <TableCell className="font-medium capitalize">
+                        {toTitleCase(content.contentType)}
+                      </TableCell>
+                      <TableCell>{content.specialist}</TableCell>
+                      <TableCell>
+                        {format(parseISO(content.datetime), "HH:mm a")}
+                      </TableCell>
+                      <TableCell>
+                        {format(parseISO(content.datetime), "dd MMM yyyy")}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={badgeVariant[content.approvalStatus]}
+                          className={"capitalize"}
+                        >
+                          {content.approvalStatus}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Link href={url}>
+                          <Eye className="size-7 text-white bg-primary-600 p-1 rounded-lg" />
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
           </TableBody>
         </Table>
       </div>

@@ -27,15 +27,8 @@ export default function RootLayout({
       </head>
       <body className={` ${notoKufiArabic.variable} antialiased`}>
         <ReduxProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-            <Toaster />
-          </ThemeProvider>
+          {children}
+          <Toaster />
         </ReduxProvider>
       </body>
     </html>

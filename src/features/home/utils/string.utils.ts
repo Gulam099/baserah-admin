@@ -1,8 +1,7 @@
 // Utility function to capitalize the first letter of a string
-export const toCapitalizeFirstLetter = (str: string): string => {
-  if (!str) return "";
-  str = str.trim();
-  return str.charAt(0).toUpperCase() + str.slice(1);
+export const toCapitalizeFirstLetter = (word: string): string => {
+  if (!word) return word
+  return word[0].toUpperCase() + word.slice(1)
 };
 
 // Utility function for sentence casing (capitalize first letter of each sentence)
@@ -51,10 +50,10 @@ export const toKebabCase = (str: string): string => {
 // Utility function for title casing (e.g., "hello world" => "Hello World")
 export const toTitleCase = (str: string): string => {
   if (!str) return "";
-  str = str.trim();
   return str
+    .trim()
     .toLowerCase()
-    .split(" ")
-    .map((word) => toCapitalizeFirstLetter(word))
+    .split(/[\s_\-~]+/)
+    .map(toCapitalizeFirstLetter)
     .join(" ");
 };
