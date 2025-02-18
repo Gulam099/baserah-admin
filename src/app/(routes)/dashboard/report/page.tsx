@@ -295,6 +295,7 @@ export default function page() {
           title={"Performance Indicators for Specialists"}
           desc={"More than 50 sessions per month, minimum"}
           data={mockSpecialistsData}
+          viewMoreLink="/dashboard/report/specialist"
         />
       </div>
       <h2 className="text-lg font-semibold text-neutral-800">
@@ -357,10 +358,11 @@ export default function page() {
       </div>
       <div className="flex flex-row gap-4 flex-wrap">
         <SliderPerson
-          title={"Performance Indicators for Specialists"}
-          desc={"More than 50 sessions per month, minimum"}
+          title={"Performance Indicators for Customer Service Employees"}
+          desc={"More than 50 Tickets per Day, Minimum per Day"}
           data={mockSpecialistsData}
           className="basis-2/3"
+          viewMoreLink="/dashboard/report/service"
         />
         <DataPieChartCard
           chartType="number"

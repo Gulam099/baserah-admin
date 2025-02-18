@@ -1,0 +1,68 @@
+import { ReportSpecialistType } from "../types/report.type";
+
+export const ReportSpecialists: ReportSpecialistType[] = [
+  {
+    id: "1",
+    name: "Mada",
+    joining_at: "5-3-2023",
+    session: 3058,
+    rating: 5,
+    profile_image: "",
+  },
+  {
+    id: "2",
+    name: "Mada",
+    joining_at: "5-3-2023",
+    session: 405,
+    rating: 4,
+    profile_image: "",
+  },
+  {
+    id: "3",
+    name: "Mada",
+    joining_at: "5-3-2023",
+    session: 295,
+    rating: 5,
+    profile_image: "",
+  },
+  {
+    id: "4",
+    name: "Mada",
+    joining_at: "5-3-2023",
+    session: 948,
+    rating: 4,
+    profile_image: "",
+  },
+  {
+    id: "6",
+    name: "Mada",
+    joining_at: "5-3-2023",
+    session: 3058,
+    rating: 5,
+    profile_image: "",
+  },
+  {
+    id: "7",
+    name: "Mada",
+    joining_at: "5-3-2023",
+    session: 405,
+    rating: 4,
+    profile_image: "",
+  },
+  {
+    id: "8",
+    name: "Mada",
+    joining_at: "5-3-2023",
+    session: 295,
+    rating: 5,
+    profile_image: "",
+  },
+  {
+    id: "9",
+    name: "Mada",
+    joining_at: "5-3-2023",
+    session: 948,
+    rating: 4,
+    profile_image: "",
+  },
+];

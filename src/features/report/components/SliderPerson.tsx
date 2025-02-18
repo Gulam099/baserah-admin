@@ -16,17 +16,19 @@ import {
 } from "@/components/ui/carousel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ExportCurve } from "iconsax-react";
+import { ArrowRight2, ExportCurve } from "iconsax-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 export function SliderPerson(props: {
   className?: string;
   title: string;
   data: { name: string; session: number; performance: number; image: string }[];
   desc: string;
+  viewMoreLink?: string;
 }) {
-  const { className, title, data, desc } = props;
+  const { className, title, data, desc, viewMoreLink } = props;
   return (
     <Card className={cn(className, "flex flex-col ")}>
       <CardHeader className="items-center pb-0">
@@ -35,9 +37,14 @@ export function SliderPerson(props: {
             {title}
             <p className="text-xs font-medium mt-2">{desc}</p>
           </CardTitle>
-          <Button className="aspect-square" variant={"ghost"}>
-            <ExportCurve size="32" color="#0a0a0a" />
-          </Button>
+          {viewMoreLink && (
+            <Link
+              href={viewMoreLink}
+              className="flex flex-row gap-1 text-sm items-center"
+            >
+              View More <ArrowRight2 size={18} />
+            </Link>
+          )}
         </div>
       </CardHeader>
       <CardContent className="py-12">

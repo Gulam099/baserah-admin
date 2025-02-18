@@ -33,7 +33,11 @@ export default function ApprovalContentPage({
   }, [content_id, content_type]);
 
   if (loading) {
-    return <div className="flex flex-row  w-full h-full min-h-[80svh] justify-center items-center"><Loader2 className="animate-spin mx-2" /> Loading...</div>;
+    return (
+      <div className="flex flex-row  w-full h-full min-h-[80svh] justify-center items-center">
+        <Loader2 className="animate-spin mx-2" /> Loading...
+      </div>
+    );
   }
 
   if (!content) {
