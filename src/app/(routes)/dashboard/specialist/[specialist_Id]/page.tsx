@@ -1,5 +1,4 @@
-"use client";
-import React, { useState } from "react";
+import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -26,11 +25,14 @@ import Contracts from "@/features/specialist/components/contracts";
 import CV from "@/features/specialist/components/cv";
 import Content from "@/features/specialist/components/content";
 import Rating from "@/features/specialist/components/rating";
+import EditSpecialistDialog from "@/features/specialist/components/edit-specialist-dialog";
 
 export default function SpecialistViewPage({
   params,
+  searchParams,
 }: {
   params: { specialist_Id: string };
+  searchParams: { [key: string]: string };
 }) {
   const { specialist_Id } = params;
 
@@ -46,13 +48,46 @@ export default function SpecialistViewPage({
     { label: "Session Price or Pricing", value: "300 SAR" },
   ];
 
+  const timeline = [
+    {
+      status: "Submit Specialist",
+      date: "12-12-2023",
+      active: true,
+    },
+    {
+      status: "Initial approval",
+      date: "G note",
+      active: true,
+    },
+    {
+      status: "Interview",
+      date: "",
+      active: false,
+    },
+    {
+      status: "Final approval",
+      date: "",
+      active: false,
+    },
+    {
+      status: "Send Contract",
+      date: "",
+      active: false,
+    },
+    {
+      status: "Authenticate Contract",
+      date: "",
+      active: false,
+    },
+  ];
+
   return (
     <div className="container mx-auto py-6 space-y-6">
-      <div className="grid md:grid-cols-[5fr,2fr] gap-4 items-start justify-between">
+      <div className="grid md:grid-cols-[5fr,2fr] gap-4 items-start justify-between h-full min-h-[80vh]">
         <div className="flex flex-col gap-8">
           <div className="flex gap-4">
             <Avatar className="w-16 h-16">
-              <AvatarImage src="/placeholder.svg" />
+              <AvatarImage src="https://github.com/shadcn.png" />
               <AvatarFallback>RA</AvatarFallback>
             </Avatar>
             <div>
@@ -125,7 +160,7 @@ export default function SpecialistViewPage({
               <CV />
             </TabsContent>
             <TabsContent value="content">
-              <Content />
+              <Content searchParams={searchParams} />
             </TabsContent>
             <TabsContent value="rating">
               <Rating />
@@ -133,8 +168,8 @@ export default function SpecialistViewPage({
           </Tabs>
         </div>
 
-        <div className="flex flex-col gap-4">
-          <div className=" bg-red-100 p-6 rounded-2xl">
+        <div className="flex flex-col gap-4 h-full ">
+          <div className=" bg-red-100 p-6 rounded-2xl ">
             <div className="flex  items-start gap-2 text-destructive mb-2">
               <AlertTriangle className="w-4 h-4" />
               <div>
@@ -148,9 +183,31 @@ export default function SpecialistViewPage({
               Expiry Date: 2023/07/15
             </div>
           </div>
-          <div>
-            <StatusDialog />
-            <AddNoteDialog />
+          <div className="h-full flex flex-col gap-2 border rounded-2xl p-6">
+            <div className="relative flex-1">
+              <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-muted" />
+              <div className="space-y-8">
+                {timeline.map((item, index) => (
+                  <div key={index} className="relative pl-8">
+                    <div
+                      className={`absolute left-4 w-2.5 h-2.5 rounded-full -translate-x-1/2 ${
+                        item.active ? "bg-primary" : "bg-muted-foreground"
+                      }`}
+                    />
+                    <div className="font-medium">{item.status}</div>
+                    {item.date && (
+                      <div className="text-sm text-muted-foreground">
+                        {item.date}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end ">
+              <StatusDialog timeline={timeline} />
+              <AddNoteDialog />
+            </div>
           </div>
         </div>
       </div>
@@ -199,40 +256,14 @@ function AddNoteDialog() {
   );
 }
 
-function StatusDialog() {
-  const timeline = [
-    {
-      status: "Submit Specialist",
-      date: "12-12-2023",
-      active: true,
-    },
-    {
-      status: "Initial approval",
-      date: "G note",
-      active: true,
-    },
-    {
-      status: "Interview",
-      date: "",
-      active: false,
-    },
-    {
-      status: "Final approval",
-      date: "",
-      active: false,
-    },
-    {
-      status: "Send Contract",
-      date: "",
-      active: false,
-    },
-    {
-      status: "Authenticate Contract",
-      date: "",
-      active: false,
-    },
-  ];
-
+function StatusDialog(props: {
+  timeline: {
+    status: string;
+    date: string;
+    active: boolean;
+  }[];
+}) {
+  const { timeline } = props;
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -263,69 +294,6 @@ function StatusDialog() {
               </div>
             ))}
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function EditSpecialistDialog() {
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button>Edit Data</Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>Edit Specialist Information</DialogTitle>
-        </DialogHeader>
-
-        <div className="grid gap-6">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Quad name</Label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Arabic - English" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ar-en">Arabic - English</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Email</Label>
-              <Input defaultValue="MMMMMMM@GMAIL.COM" />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Choose the age group</Label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Adults" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="adults">Adults</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Main Specialty</Label>
-              <Input defaultValue="Arabic - English" />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Write a Brief Professional Biography</Label>
-            <Textarea
-              className="min-h-[200px]"
-              placeholder="Enter your professional biography..."
-            />
-          </div>
-
-          <Button className="w-full">Edit Data</Button>
         </div>
       </DialogContent>
     </Dialog>
