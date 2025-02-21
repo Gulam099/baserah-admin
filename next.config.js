@@ -16,8 +16,11 @@ module.exports = {
     locales: ["ar", "en"], // 👈
     defaultLocale: "en", // 👈
   },
-  webpack: (config) => {
+  webpack: (config, { nextRuntime }) => {
     // load worker files as a urls with `file-loader`
+    if (nextRuntime === "nodejs") {
+      config.resolve.alias.canvas = false;
+    }
     config.module.rules.unshift({
       test: /pdf\.worker\.(min\.)?js/,
       use: [
