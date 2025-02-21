@@ -15,7 +15,7 @@ export const teams: Team[] = [
   { id: "5", name: "Networking team" },
 ];
 
-export const tickets: Ticket[] = [
+export const tickets: any[] = [
   {
     id: "1",
     ticketNumber: "187546321",
