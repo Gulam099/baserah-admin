@@ -21,31 +21,42 @@ import {
 } from "@/features/customer/types/customer.type";
 import { fetchCustomers } from "@/features/customer/data/customer.data";
 import { CustomerCard } from "@/features/customer/components/CustomerCard";
+import UnifiedPagination from "@/features/home/components/UnifiedPagination";
 
-export default function CustomersPage() {
+export default function CustomersPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string };
+}) {
+  // Read page/pageSize from the URL, or fallback to 1 / 9
+  const pageParam = searchParams.page;
+  const pageSizeParam = searchParams.pageSize;
+  let currentPage = pageParam ? parseInt(pageParam, 10) : 1;
+  const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 9;
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [activeTab, setActiveTab] = useState<CustomerType>("all");
-  const pageSize = 12;
+  const [total, setTotal] = useState(0); // track total items
 
   useEffect(() => {
-    const loadCustomers = async () => {
-      setLoading(true);
-      try {
-        const response = await fetchCustomers(activeTab, currentPage, pageSize);
-        setCustomers(response.data);
-        setTotalPages(Math.ceil(response.total / pageSize));
-      } catch (error) {
-        console.error("Failed to fetch customers:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    currentPage = 1;
+  }, [activeTab]);
 
-    loadCustomers();
-  }, [activeTab, currentPage]);
+  // Whenever page/pageSize changes in the URL, fetch new data
+  useEffect(() => {
+    setLoading(true);
+    fetchCustomers(activeTab, currentPage, pageSize)
+      .then((res) => {
+        setCustomers(res.data!);
+        setTotal(res.page?.total!); // for UnifiedPagination's `total` prop
+      })
+      .catch((err) => {
+        console.error("Failed to fetch questions:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [currentPage, pageSize, activeTab]);
 
   return (
     <div className="container mx-auto py-8">
@@ -55,7 +66,7 @@ export default function CustomersPage() {
           value={activeTab}
           onValueChange={(value) => {
             setActiveTab(value as CustomerType);
-            setCurrentPage(1);
+            currentPage = 1;
           }}
         >
           <TabsList>
@@ -67,53 +78,26 @@ export default function CustomersPage() {
         </Tabs>
         <NewCustomerDialog />
       </div>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {loading
-          ? Array.from({ length: pageSize }).map((_, i) => (
-              <div
-                key={`skeleton-${i}`}
-                className="h-[180px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
-              />
-            ))
-          : customers.map((customer) => (
-              <CustomerCard key={customer.id} customer={customer} />
-            ))}
+      <div className="min-h-[70vh]">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {loading
+            ? Array.from({ length: pageSize }).map((_, i) => (
+                <div
+                  key={`skeleton-${i}`}
+                  className="h-[180px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
+                />
+              ))
+            : customers.map((customer) => (
+                <CustomerCard key={customer.id} customer={customer} />
+              ))}
+        </div>
       </div>
-
-      <div className="mt-8 flex justify-center gap-2">
-        <button
-          className="px-3 py-1 rounded border disabled:opacity-50"
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          disabled={currentPage === 1 || loading}
-        >
-          Previous
-        </button>
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <button
-            key={page}
-            className={`px-3 py-1 rounded border ${
-              currentPage === page ? "bg-blue-800 text-white" : ""
-            }`}
-            onClick={() => setCurrentPage(page)}
-            disabled={loading}
-          >
-            {page}
-          </button>
-        ))}
-        <button
-          className="px-3 py-1 rounded border disabled:opacity-50"
-          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-          disabled={currentPage === totalPages || loading}
-        >
-          Next
-        </button>
-      </div>
+      <UnifiedPagination total={total} />
     </div>
   );
 }
 
- function NewCustomerDialog() {
+function NewCustomerDialog() {
   const [open, setOpen] = useState(false);
 
   const onSubmit = async (e: React.FormEvent) => {

@@ -1,76 +1,70 @@
-"use client"
+"use client";
+import { useEffect, useRef, useState } from "react";
+import { SpecialistType } from "@/features/specialist/types/specialist.type";
+import { SpecialistCard } from "@/features/specialist/components/SpecialistCard";
+import UnifiedPagination from "@/features/home/components/UnifiedPagination";
+import {
+  fetchSpecContentRecords,
+  fetchSpecialist,
+} from "@/features/specialist/utils/specialist.util";
+import ExportButton from "@/features/home/components/ExportButton";
 
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { fetchSpecialist } from "@/features/specialist/data/specialist.data"
-import { SpecialistType } from "@/features/specialist/types/specialist.type"
-import { SpecialistCard } from "@/features/specialist/components/SpecialistCard"
+export default function SpecialistsPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string };
+}) {
+  const contentRef = useRef<HTMLDivElement>(null);
+  // Read page/pageSize from the URL, or fallback to 1 / 9
+  const pageParam = searchParams.page;
+  const pageSizeParam = searchParams.pageSize;
+  const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
+  const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 9;
+  const [Specialists, setSpecialists] = useState<SpecialistType[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  const [total, setTotal] = useState(0); // track total items
 
-export default function SpecialistsPage() {
-  const [Specialists, setSpecialists] = useState<SpecialistType[]>([])
-  const [loading, setLoading] = useState(true)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const pageSize = 9
-
+  // Whenever page/pageSize changes in the URL, fetch new data
   useEffect(() => {
-    const loadSpecialists = async () => {
-      setLoading(true)
-      try {
-        const response = await fetchSpecialist(currentPage, pageSize)
-        setSpecialists(response.data)
-        setTotalPages(Math.ceil(response.total / pageSize))
-      } catch (error) {
-        console.error("Failed to fetch Specialists:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadSpecialists()
-  }, [currentPage])
+    setLoading(true);
+    fetchSpecialist(currentPage, pageSize)
+      .then((res) => {
+        setSpecialists(res.data!);
+        setTotal(res.page?.total!); // for UnifiedPagination's `total` prop
+      })
+      .catch((err) => {
+        console.error("Failed to fetch questions:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [currentPage, pageSize]);
 
   return (
     <div className="container mx-auto py-8">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {loading
-          ? Array.from({ length: pageSize }).map((_, i) => (
-              <div
-                key={`skeleton-${i}`}
-                className="h-[200px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
-              />
-            ))
-          : Specialists.map((employee) => <SpecialistCard key={employee.id} specialist={employee} />)}
+      <div className="flex justify-end items-center gap-2 pb-6">
+        <ExportButton contentRef={contentRef} />
+      </div>
+      <div className="min-h-[70vh]">
+        <div
+          className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+          ref={contentRef}
+        >
+          {loading
+            ? Array.from({ length: pageSize }).map((_, i) => (
+                <div
+                  key={`skeleton-${i}`}
+                  className="h-[200px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
+                />
+              ))
+            : Specialists.map((employee) => (
+                <SpecialistCard key={employee.id} specialist={employee} />
+              ))}
+        </div>
       </div>
 
-      <div className="mt-8 flex justify-center gap-2">
-        <Button
-          variant="outline"
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          disabled={currentPage === 1 || loading}
-        >
-          Previous
-        </Button>
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <Button
-            key={page}
-            variant={currentPage === page ? "default" : "outline"}
-            onClick={() => setCurrentPage(page)}
-            disabled={loading}
-          >
-            {page}
-          </Button>
-        ))}
-        <Button
-          variant="outline"
-          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-          disabled={currentPage === totalPages || loading}
-        >
-          Next
-        </Button>
-      </div>
+      <UnifiedPagination total={total} />
     </div>
-  )
+  );
 }
-

@@ -1,4 +1,5 @@
 export type CustomerType = "all" | "vip" | "incomplete" | "forbidden"
+export type MedicalType = "all" | "prescription" | "treatment-plans"
 
 export interface Customer {
   id: string

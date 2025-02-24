@@ -51,6 +51,10 @@ export default function TicketViewPage({
     },
   ];
 
+  if(ticketData === undefined) {
+    return <div>No ticket Found with this ID : {ticket_Id}</div>;
+  }
+
   return (
     <div className="container mx-auto py-8">
       <div className="grid gap-6 md:grid-cols-[3fr,2fr]">

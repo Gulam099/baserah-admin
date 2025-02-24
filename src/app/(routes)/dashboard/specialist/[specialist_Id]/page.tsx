@@ -163,7 +163,7 @@ export default function SpecialistViewPage({
               <Content searchParams={searchParams} />
             </TabsContent>
             <TabsContent value="rating">
-              <Rating />
+              <Rating searchParams={searchParams} />
             </TabsContent>
           </Tabs>
         </div>
