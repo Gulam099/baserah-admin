@@ -3,6 +3,7 @@ import {
   Customer,
   CustomerType,
   MedicalType,
+  MetricType,
   PaginatedResponse,
 } from "../types/customer.type";
 
@@ -21,8 +22,33 @@ const mockCustomers = Array.from({ length: 100 }, (_, i) => ({
         Math.floor(Math.random() * 3)
       ] as MedicalType,
       specialist_name: "Mada Muhammad Al-Muhammad",
+      specialist_image: "https://randomuser.me/api/portraits",
+      specialist_specialization: "Psychiatrist",
       date: new Date(),
       record_name: "Prescription name",
+    })),
+    metric: Array.from({ length: 40 }, (_, i) => ({
+      id: `scale-${i + 1}`,
+      type: [
+        "all",
+        "gad-scales",
+        "mood-scales",
+        "quality-Life-scales",
+        "depressive-scales",
+      ][Math.floor(Math.random() * 5)] as MetricType,
+      scale_score: Math.floor(Math.random() * 100),
+      date: new Date(),
+      scale_desc: "Moderate risk of depression",
+    })),
+    ticket: Array.from({ length: 40 }, (_, i) => ({
+      id: `ticket-${i + 1}`,
+      status: ["open", "closed"][Math.floor(Math.random() * 2)],
+      type: ["all", "complaint", "inquiry", "feedback"][
+        Math.floor(Math.random() * 4)
+      ],
+      subject: "I cannot add a card",
+      date: new Date(),
+      reply: "The problem has been solved, you can add it again",
     })),
   },
 }));
@@ -78,6 +104,37 @@ export async function fetchMedicalRecords(
     success: true,
     status: 200,
     message: "Customer's Medical Record Fetch Successfully",
+    data: filteredRecords.slice(start, end),
+    page: {
+      total: filteredRecords.length,
+      page,
+      size,
+    },
+  };
+}
+
+export async function fetchMetricRecords(
+  type: MetricType,
+  page: number,
+  size: number
+): Promise<ApiResponseType> {
+  // Simulate API delay
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  const filteredRecords =
+    type === "all"
+      ? mockCustomers[0].record.metric
+      : mockCustomers[0].record.metric.filter(
+          (customer) => customer.type === type
+        );
+
+  const start = (page - 1) * size;
+  const end = start + size;
+
+  return {
+    success: true,
+    status: 200,
+    message: "Customer's Metric Record Fetch Successfully",
     data: filteredRecords.slice(start, end),
     page: {
       total: filteredRecords.length,

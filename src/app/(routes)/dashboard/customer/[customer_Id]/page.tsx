@@ -5,6 +5,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import CustomerMedicalRecord from "@/features/customer/components/CustomerMedicalRecord";
+import CustomerMetricRecord from "@/features/customer/components/CustomerMetricRecord";
+import { Repeat, Trash } from "iconsax-react";
+import CustomerSpecialistRecord from "@/features/customer/components/CustomerSpecialistRecord";
+import CustomerTicketRecord from "@/features/customer/components/CustomerTicketRecord";
 
 export default function CustomerPage({
   params,
@@ -49,78 +53,94 @@ export default function CustomerPage({
     {
       title: "Medical Record",
       id: "medical_record",
-      content: <CustomerMedicalRecord customerId={customer_id} searchParams={searchParams} />,
+      content: (
+        <CustomerMedicalRecord
+          customerId={customer_id}
+          searchParams={searchParams}
+        />
+      ),
     },
     {
       title: "Metrics",
       id: "metrics",
       content: (
-        <Card className="mt-6">
-          <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 p-6">
-            {info.map((item) => (
-              <div key={item.label} className="space-y-1">
-                <div className="text-sm text-muted-foreground">
-                  {item.label}
-                </div>
-                <div className="font-medium">{item.value}</div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <CustomerMetricRecord
+          customerId={customer_id}
+          searchParams={searchParams}
+        />
       ),
     },
     {
       title: "Family",
       id: "family",
       content: (
-        <Card className="mt-6">
-          <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 p-6">
-            {info.map((item) => (
-              <div key={item.label} className="space-y-1">
-                <div className="text-sm text-muted-foreground">
-                  {item.label}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 py-6 ">
+          {[
+            {
+              name: "Rima Majid Al Majid",
+              relation: "Mother",
+              age: 50,
+              file: 564564566,
+            },
+            {
+              name: "Muhammad Majid Al Majid",
+              relation: "Mother",
+              age: 15,
+              file: 6546456456,
+            },
+          ].map((member, idx) => (
+            <Card className="" key={member.name + idx}>
+              <CardContent className="flex flex-row gap-2 pt-4">
+                <div className="flex-1 flex flex-col gap-2 text-sm">
+                  <p className=" text-lg font-semibold">{member.name}</p>
+                  <p>
+                    Age : <span>{member.age}</span>
+                  </p>
+                  <p>
+                    File Number : <span>{member.file}</span>
+                  </p>
+                  <p>
+                    Relative Relation : <span>{member.relation}</span>
+                  </p>
                 </div>
-                <div className="font-medium">{item.value}</div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+                <div className="flex flex-col justify-start items-end">
+                  <Button variant={"ghost"} size={"sm"} className="text-xs">
+                    <Repeat />
+                    <span>Switch Profile</span>
+                  </Button>
+                  <Button
+                    variant={"ghost"}
+                    size={"sm"}
+                    className="text-red-500 text-xs"
+                  >
+                    <Trash />
+                    <span>Delete</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       ),
     },
     {
       title: "Specialists",
       id: "specialist",
       content: (
-        <Card className="mt-6">
-          <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 p-6">
-            {info.map((item) => (
-              <div key={item.label} className="space-y-1">
-                <div className="text-sm text-muted-foreground">
-                  {item.label}
-                </div>
-                <div className="font-medium">{item.value}</div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <CustomerSpecialistRecord
+          customerId={customer_id}
+          searchParams={searchParams}
+        />
       ),
     },
     {
       title: "Tickets",
       id: "ticket",
       content: (
-        <Card className="mt-6">
-          <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 p-6">
-            {info.map((item) => (
-              <div key={item.label} className="space-y-1">
-                <div className="text-sm text-muted-foreground">
-                  {item.label}
-                </div>
-                <div className="font-medium">{item.value}</div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <CustomerTicketRecord
+        customerId={customer_id}
+        searchParams={searchParams}
+      />
       ),
     },
     {
