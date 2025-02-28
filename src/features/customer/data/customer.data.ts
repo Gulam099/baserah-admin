@@ -40,7 +40,7 @@ const mockCustomers = Array.from({ length: 100 }, (_, i) => ({
       date: new Date(),
       scale_desc: "Moderate risk of depression",
     })),
-    ticket: Array.from({ length: 40 }, (_, i) => ({
+    ticket: Array.from({ length: 20 }, (_, i) => ({
       id: `ticket-${i + 1}`,
       status: ["open", "closed"][Math.floor(Math.random() * 2)],
       type: ["all", "complaint", "inquiry", "feedback"][
@@ -49,6 +49,12 @@ const mockCustomers = Array.from({ length: 100 }, (_, i) => ({
       subject: "I cannot add a card",
       date: new Date(),
       reply: "The problem has been solved, you can add it again",
+    })),
+    comment: Array.from({ length: 20 }, (_, i) => ({
+      id: `comment-${i + 1}`,
+      name: "Dr. Mada Al-Abdullah Al-Abdulrahman",
+      date: new Date(),
+      comment: "The problem has been solved, you can add it again",
     })),
   },
 }));
@@ -135,6 +141,50 @@ export async function fetchMetricRecords(
     success: true,
     status: 200,
     message: "Customer's Metric Record Fetch Successfully",
+    data: filteredRecords.slice(start, end),
+    page: {
+      total: filteredRecords.length,
+      page,
+      size,
+    },
+  };
+}
+export async function fetchTicketRecords(
+  page: number,
+  size: number
+): Promise<ApiResponseType> {
+  // Simulate API delay
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  const filteredRecords = mockCustomers[0].record.ticket;
+  const start = (page - 1) * size;
+  const end = start + size;
+
+  return {
+    success: true,
+    status: 200,
+    message: "Customer's Ticket Record Fetch Successfully",
+    data: filteredRecords.slice(start, end),
+    page: {
+      total: filteredRecords.length,
+      page,
+      size,
+    },
+  };
+}
+export async function fetchCommentRecords(
+  page: number,
+  size: number
+): Promise<ApiResponseType> {
+  // Simulate API delay
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  const filteredRecords = mockCustomers[0].record.comment;
+  const start = (page - 1) * size;
+  const end = start + size;
+
+  return {
+    success: true,
+    status: 200,
+    message: "Customer's Ticket Record Fetch Successfully",
     data: filteredRecords.slice(start, end),
     page: {
       total: filteredRecords.length,

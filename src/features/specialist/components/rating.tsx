@@ -126,7 +126,9 @@ export default function Rating(props: {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-80">
                       <div className="p-4 space-y-4">
-                        {Object.entries(rating.details).map(([key, value]) => (
+                        {Object.entries(
+                          rating.details as Record<string, string>
+                        ).map(([key, value]) => (
                           <div key={key} className="space-y-1">
                             <div className="flex justify-between text-sm">
                               <span className="capitalize">
@@ -134,9 +136,10 @@ export default function Rating(props: {
                               </span>
                               <span>{value}%</span>
                             </div>
-                            <Progress value={value} className="h-2" />
+                            <Progress value={Number(value)} className="h-2" />
                           </div>
                         ))}
+
                         {rating.comment && (
                           <div className="mt-4 pt-4 border-t">
                             <p className="text-sm text-muted-foreground">

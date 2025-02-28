@@ -9,6 +9,7 @@ import CustomerMetricRecord from "@/features/customer/components/CustomerMetricR
 import { Repeat, Trash } from "iconsax-react";
 import CustomerSpecialistRecord from "@/features/customer/components/CustomerSpecialistRecord";
 import CustomerTicketRecord from "@/features/customer/components/CustomerTicketRecord";
+import CustomerCommentRecord from "@/features/customer/components/CustomerCommentRecord";
 
 export default function CustomerPage({
   params,
@@ -138,9 +139,9 @@ export default function CustomerPage({
       id: "ticket",
       content: (
         <CustomerTicketRecord
-        customerId={customer_id}
-        searchParams={searchParams}
-      />
+          customerId={customer_id}
+          searchParams={searchParams}
+        />
       ),
     },
     {
@@ -148,16 +149,7 @@ export default function CustomerPage({
       id: "wallet",
       content: (
         <Card className="mt-6">
-          <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 p-6">
-            {info.map((item) => (
-              <div key={item.label} className="space-y-1">
-                <div className="text-sm text-muted-foreground">
-                  {item.label}
-                </div>
-                <div className="font-medium">{item.value}</div>
-              </div>
-            ))}
-          </CardContent>
+          <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 p-6"></CardContent>
         </Card>
       ),
     },
@@ -165,18 +157,10 @@ export default function CustomerPage({
       title: "Comments",
       id: "comment",
       content: (
-        <Card className="mt-6">
-          <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 p-6">
-            {info.map((item) => (
-              <div key={item.label} className="space-y-1">
-                <div className="text-sm text-muted-foreground">
-                  {item.label}
-                </div>
-                <div className="font-medium">{item.value}</div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <CustomerCommentRecord
+          customerId={customer_id}
+          searchParams={searchParams}
+        />
       ),
     },
   ];

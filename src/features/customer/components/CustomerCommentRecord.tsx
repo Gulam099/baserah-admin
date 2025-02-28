@@ -2,11 +2,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
 import React, { useEffect, useState } from "react";
-import { fetchTicketRecords } from "../data/customer.data";
+import { fetchCommentRecords, fetchTicketRecords } from "../data/customer.data";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { format } from "date-fns";
 
-export default function CustomerTicketRecord(props: {
+export default function CustomerCommentRecord(props: {
   searchParams: {
     [key: string]: string;
   };
@@ -27,7 +28,7 @@ export default function CustomerTicketRecord(props: {
   // Whenever page/pageSize changes in the URL, fetch new data
   useEffect(() => {
     setLoading(true);
-    fetchTicketRecords(currentPage, pageSize)
+    fetchCommentRecords(currentPage, pageSize)
       .then((res) => {
         setRecords(res.data!);
         setTotal(res.page?.total!); // for UnifiedPagination's `total` prop
@@ -44,7 +45,7 @@ export default function CustomerTicketRecord(props: {
 
   return (
     <div className="py-4">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 py-6 ">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 py-6 ">
         {loading
           ? Array.from({ length: pageSize }).map((_, i) => (
               <div
@@ -52,8 +53,8 @@ export default function CustomerTicketRecord(props: {
                 className="h-[180px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
               />
             ))
-          : records.map((ticket, i) => (
-              <CustomerTicketCard key={`ticket-${i}`} ticket={ticket} />
+          : records.map((comment, i) => (
+              <CustomerCommentCard key={`comment-${i}`} comment={comment} />
             ))}
       </div>
       <UnifiedPagination total={total} />
@@ -61,30 +62,13 @@ export default function CustomerTicketRecord(props: {
   );
 }
 
-const CustomerTicketCard = ({ ticket }: any) => {
-  const ticketVariant = ticket.status === "open" ? "success" : "outline";
+const CustomerCommentCard = ({ comment }: any) => {
   return (
     <Card className="rounded-2xl shadow-none ">
       <CardContent className="flex flex-col items-start  gap-2 pt-4">
-        <div className="flex flex-row gap-2 w-full justify-between ">
-          <p className="text-sm font-medium">Ticket Status</p>
-          <Badge variant={ticketVariant} className="capitalize">
-            {ticket.status}
-          </Badge>
-        </div>
-        <Separator />
-        <p className="text-sm font-semibold">Ticket Type</p>
-        <p className="text-sm ">{ticket.type}</p>
-        <Separator />
-        <p className="text-sm font-semibold">Ticket Subject</p>
-        <p className="text-sm ">{ticket.subject}</p>
-        <Separator />
-        {ticket.reply && (
-          <>
-            <p className="text-sm font-semibold">Ticket Subject</p>
-            <p className="text-sm ">{ticket.reply}</p>
-          </>
-        )}
+        <p className="text-sm font-semibold">{comment.name}</p>
+        <p className="text-sm ">{format(comment.date, "dd MMM yyyy")}</p>
+        <p className="text-sm ">{comment.comment}</p>
       </CardContent>
     </Card>
   );
