@@ -31,6 +31,8 @@ import { useEffect, useRef, useState } from "react";
 import { AppointmentType } from "@/features/appointment/types/appointment.type";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
 import { fetchAppointmentsRecords } from "@/features/appointment/util/appointment.util";
+import { format } from "date-fns";
+import { toTitleCase } from "@/features/home/utils/string.utils";
 
 export default function AppointmentPage({
   searchParams,
@@ -51,6 +53,22 @@ export default function AppointmentPage({
       default:
         return "bg-gray-500 text-white";
     }
+  };
+
+  const badgeVariant: Record<
+    "confirmed" | "cancelled" | "upcoming" | "ongoing",
+    | "default"
+    | "secondary"
+    | "destructive"
+    | "outline"
+    | "success"
+    | "warning"
+    | "danger"
+  > = {
+    confirmed: "success",
+    cancelled: "danger",
+    upcoming: "default",
+    ongoing: "warning",
   };
 
   // Read page/pageSize from the URL, or fallback to 1 / 9
@@ -96,29 +114,45 @@ export default function AppointmentPage({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Number</TableHead>
-              <TableHead>Name</TableHead>
+              <TableHead>Appointment Number</TableHead>
+              <TableHead>Patient Id</TableHead>
+              <TableHead>Doctor Id</TableHead>
               <TableHead>Booking Date</TableHead>
-              <TableHead>Time</TableHead>
+              <TableHead>Duration</TableHead>
+              <TableHead>Time Slot</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead>Type</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right print:hidden">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {appointments.map((appointment) => (
-              <TableRow key={appointment.id}>
-                <TableCell>{appointment.number}</TableCell>
-                <TableCell>{appointment.name}</TableCell>
-                <TableCell>{appointment.bookingDate}</TableCell>
-                <TableCell>{appointment.time}</TableCell>
-                <TableCell>{appointment.date}</TableCell>
-                <TableCell>{appointment.type}</TableCell>
+              <TableRow key={appointment._id}>
+                <TableCell>{appointment._id}</TableCell>
+                <TableCell>{appointment.user}</TableCell>
+                <TableCell>{appointment.doctor}</TableCell>
+                <TableCell>
+                  {appointment.createdAt
+                    ? format(
+                        new Date(appointment.createdAt),
+                        "EEE , dd MMM yyyy , hh:mm a"
+                      )
+                    : "Invalid Date"}
+                </TableCell>
+                <TableCell>{appointment.duration}</TableCell>
+                <TableCell>{appointment.timeSlot}</TableCell>
+                <TableCell>
+                  {appointment.date
+                    ? format(
+                        new Date(appointment.date),
+                        "EEE , dd MMM yyyy , hh:mm a"
+                      )
+                    : "Invalid Date"}
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Badge className={getStatusColor(appointment.status)}>
-                      {appointment.status}
+                    <Badge variant={badgeVariant[appointment.status]}>
+                      {toTitleCase(appointment.status)}
                     </Badge>
                     {appointment.isImmediate && (
                       <AlertTriangle className="h-4 w-4 text-red-500" />

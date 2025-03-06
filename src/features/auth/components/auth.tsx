@@ -18,10 +18,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { Input } from "@/components/ui/input";
 import { appName } from "../../../../const";
 import Logo from "@/components/custom/logo";
-import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import {
   InputOTP,
@@ -59,7 +57,6 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  const router = useRouter();
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -103,17 +100,10 @@ export function LoginForm({
     setIsLoading(true);
     try {
       // Simulate API call to verify OTP
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      await login({
-        _id: "875475743798455",
-        name: "Zahid Ansari",
-        mobile_number: phoneNumber,
-        role: "super admin",
-        email: "zahjid@hhi.oo",
-      });
+      // const UserData = await verifyOtp(phoneNumber , values.otp)
+      login(phoneNumber, values.otp);
 
       toast.success("OTP verified successfully");
-      router.push("/dashboard/approval");
     } catch (error) {
       console.error("OTP verification error", error);
       toast.error("Failed to verify OTP. Please try again.");

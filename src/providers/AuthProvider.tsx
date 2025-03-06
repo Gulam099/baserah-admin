@@ -1,5 +1,4 @@
 "use client";
-
 import React, {
   createContext,
   useContext,
@@ -7,84 +6,64 @@ import React, {
   ReactNode,
   useEffect,
 } from "react";
-import { useSession } from "./SessionProvider";
 import { UserType } from "@/features/user/types/user.type";
-
+import { verifyOtp } from "@/features/auth/utils/otp.util";
+import { useRouter } from "next/navigation";
 interface AuthContextValue {
   user: UserType | null;
   isAuthenticated: boolean;
-  login: (userData: UserType) => void;
+  login: (phoneNumber: string, otp: string) => void;
   logout: () => void;
-  checkSession: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-
 interface AuthProviderProps {
   children: ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<UserType | null>(null);
-  const { createToken, setSessionToken, verifyToken } = useSession();
-
-  // If user is not null, we consider the user authenticated
+  const router = useRouter();
   const isAuthenticated = !!user;
-
-  /**
-   * login:
-   * 1) setUser
-   * 2) createToken with user._id & user.role
-   */
-  function login(userData: UserType) {
-    setUser(userData);
-    createToken(userData._id, userData.role);
+  async function login(phoneNumber: string, otp: string) {
+    const data = await verifyOtp(phoneNumber, otp);
+    setUser(data.data);
+    document.cookie = `token=${encodeURIComponent(
+      JSON.stringify(data.data)
+    )}; path=/; max-age=604800`; // Store in cookies (7 days)
+    router.push("/dashboard/approval");
   }
-
-  /**
-   * logout:
-   * 1) setUser to null
-   * 2) setSessionToken(null)
-   */
   function logout() {
     setUser(null);
-    setSessionToken(null);
+    document.cookie = "token=; path=/; max-age=0"; // Remove cookie
+    router.push("/login");
   }
-
-  /**
-   * checkSession:
-   * - calls verifyToken
-   * - if token valid => setUser from token?
-   *   (In a real scenario, you'd fetch user details from server or store them in localStorage.)
-   */
-  async function checkSession() {
-    const tokenData = await verifyToken();
-    console.log(tokenData);
-
-    if (tokenData) {
-      // If valid, we might set the user from token data
-      setUser({
-        _id: tokenData.userId,
-        role: tokenData.role,
-        name: "Placeholder",
-        mobile_number: "908409348094",
-        email: "szds@dfdd.ff",
-      });
-    } else {
-      // Invalid or expired token => logout
-      logout();
-    }
-  }
-
-  // On first mount, check if there's a valid session
   useEffect(() => {
-    checkSession();
+    const verifyUser = async () => {
+      try {
+        const storedUser = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("token="))
+          ?.split("=")[1];
+        if (!storedUser) {
+          logout();
+          return;
+        }
+        const userData = JSON.parse(decodeURIComponent(storedUser));
+        if (userData) {
+          setUser(userData); // Set user if verification is successful
+        } else {
+          logout();
+        }
+      } catch (error) {
+        console.error("Error verifying user:", error);
+        logout();
+      }
+    };
+    verifyUser();
   }, []);
-
   return (
-    <AuthContext.Provider
-      value={{ user, isAuthenticated, login, logout, checkSession }}
-    >
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

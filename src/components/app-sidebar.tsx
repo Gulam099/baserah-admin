@@ -36,6 +36,7 @@ import Link from "next/link";
 import Logo from "./custom/logo";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { EmptyWallet, People, Profile2User, Setting2 } from "iconsax-react";
+import { useAuth } from "@/providers/AuthProvider";
 
 const data = {
   user: {
@@ -93,6 +94,10 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuth();
+  if (!user) {
+    return null;
+  }
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -106,22 +111,24 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
         <div className="flex flex-col justify-center items-center gap-3 py-12">
-          <Avatar className="size-24">
-            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-            <AvatarFallback>CN</AvatarFallback>
+          <Avatar className="size-24 border-2 border-neutral-400">
+            <AvatarImage src={"https://avatar.iran.liara.run/public/34"} alt={user.name + "_avatar"} />
+            <AvatarFallback className="bg-primary-800 text-white font-semibold text-2xl uppercase">
+              {user.name.slice(0, 2)}
+            </AvatarFallback>
           </Avatar>
           <div className="flex flex-col gap-1 justify-center items-center">
-            <h3 className="text-base font-semibold">Manal Khalad</h3>
-            <p className="text-sm">@gdfhgdh</p>
+            <h3 className="text-base font-semibold">{user.name}</h3>
+            <p className="text-sm">{user._id}</p>
           </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
       </SidebarContent>
-      {/* <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter> */}
+      <SidebarFooter>
+        <NavUser />
+      </SidebarFooter>
     </Sidebar>
   );
 }

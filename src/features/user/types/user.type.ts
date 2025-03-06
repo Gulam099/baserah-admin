@@ -4,4 +4,5 @@ export interface UserType {
   mobile_number: string;
   email: string;
   role: string;
+  is_logged_in: boolean;
 }
