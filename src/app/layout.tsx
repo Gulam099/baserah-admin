@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { Noto_Kufi_Arabic } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import ReduxProvider from "@/store/redux-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { SessionProvider } from "@/providers/SessionProvider";
+import { AuthProvider } from "@/providers/AuthProvider";
 
 const notoKufiArabic = Noto_Kufi_Arabic({
   variable: "--font-geist-mono",
@@ -26,10 +27,12 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Baserah" />
       </head>
       <body className={` ${notoKufiArabic.variable} antialiased`}>
-        <ReduxProvider>
-          {children}
-          <Toaster />
-        </ReduxProvider>
+        <SessionProvider>
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
+        </SessionProvider>
       </body>
     </html>
   );

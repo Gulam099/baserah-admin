@@ -1,6 +1,5 @@
 "use client";
-
-import type React from "react";
+import React, { useEffect } from "react";
 
 import { useState } from "react";
 import { toast } from "sonner";
@@ -30,6 +29,8 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { useAuth } from "@/providers/AuthProvider";
+import { sendOtp } from "../utils/otp.util";
 
 // Schema for phone number step
 const phoneFormSchema = z.object({
@@ -44,6 +45,16 @@ const otpFormSchema = z.object({
     .max(6, "OTP cannot exceed 6 digits"),
 });
 
+export default function AuthPage() {
+  return (
+    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
+      <div className="w-full max-w-sm">
+        <LoginForm />
+      </div>
+    </div>
+  );
+}
+
 export function LoginForm({
   className,
   ...props
@@ -52,6 +63,9 @@ export function LoginForm({
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+
+  const { login } = useAuth();
 
   // Form for phone number step
   const phoneForm = useForm<z.infer<typeof phoneFormSchema>>({
@@ -73,17 +87,12 @@ export function LoginForm({
   async function onPhoneSubmit(values: z.infer<typeof phoneFormSchema>) {
     setIsLoading(true);
     try {
-      // Store the phone number for the next step
       setPhoneNumber(values.phone);
-
-      // Simulate API call to send OTP
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      await sendOtp(values.phone);
       toast.success(`OTP sent to ${values.phone}`);
       setStep("otp");
     } catch (error) {
       console.error("Failed to send OTP", error);
-      toast.error("Failed to send OTP. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -95,6 +104,13 @@ export function LoginForm({
     try {
       // Simulate API call to verify OTP
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      await login({
+        _id: "875475743798455",
+        name: "Zahid Ansari",
+        mobile_number: phoneNumber,
+        role: "super admin",
+        email: "zahjid@hhi.oo",
+      });
 
       toast.success("OTP verified successfully");
       router.push("/dashboard/approval");
@@ -105,6 +121,30 @@ export function LoginForm({
       setIsLoading(false);
     }
   }
+
+  async function handleResend() {
+    setIsLoading(true);
+    try {
+      await sendOtp(phoneNumber);
+      toast.success("OTP resent successfully");
+      // Lock the button for 60s
+      setSecondsLeft(60);
+    } catch (error) {
+      // 'sendOtp' already shows a toast error
+      console.error("Failed to resend OTP:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  // Countdown effect
+  useEffect(() => {
+    if (secondsLeft <= 0) return;
+    const timer = setInterval(() => {
+      setSecondsLeft((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [secondsLeft]);
 
   // Go back to phone number step
   function handleBack() {
@@ -194,13 +234,13 @@ export function LoginForm({
                     <FormLabel>Verification Code</FormLabel>
                     <FormControl className="w-full ">
                       {/* <Input
-                        placeholder="Enter OTP"
-                        {...field}
-                        maxLength={6}
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                      /> */}
-                      <InputOTP maxLength={4} {...field} >
+                          placeholder="Enter OTP"
+                          {...field}
+                          maxLength={6}
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                        /> */}
+                      <InputOTP maxLength={4} {...field}>
                         <InputOTPGroup>
                           <InputOTPSlot index={0} />
                           <InputOTPSlot index={1} />
@@ -229,19 +269,15 @@ export function LoginForm({
                 )}
               </Button>
               <Button
-                type="button"
-                variant="link"
+                variant="outline"
                 className="text-xs"
-                onClick={() => {
-                  setIsLoading(true);
-                  setTimeout(() => {
-                    toast.success("OTP resent successfully");
-                    setIsLoading(false);
-                  }, 1000);
-                }}
-                disabled={isLoading}
+                onClick={handleResend}
+                disabled={isLoading || secondsLeft > 0}
               >
-                Didn't receive the code? Resend OTP
+                Didn't receive the code?{" "}
+                {secondsLeft > 0
+                  ? `Resend OTP in ${secondsLeft}s`
+                  : "Resend OTP"}
               </Button>
             </div>
           </form>
