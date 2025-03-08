@@ -33,28 +33,12 @@ import UnifiedPagination from "@/features/home/components/UnifiedPagination";
 import { fetchAppointmentsRecords } from "@/features/appointment/util/appointment.util";
 import { format } from "date-fns";
 import { toTitleCase } from "@/features/home/utils/string.utils";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
-export default function AppointmentPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string };
-}) {
+export default function AppointmentPage() {
+  const searchParams = useSearchParams();
   const contentRef = useRef<HTMLDivElement>(null);
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "confirmed":
-        return "bg-green-500 text-white";
-      case "upcoming":
-        return "bg-yellow-500 text-white";
-      case "ongoing":
-        return "bg-blue-500 text-white";
-      case "cancelled":
-        return "bg-red-500 text-white";
-      default:
-        return "bg-gray-500 text-white";
-    }
-  };
-
   const badgeVariant: Record<
     "confirmed" | "cancelled" | "upcoming" | "ongoing",
     | "default"
@@ -72,8 +56,8 @@ export default function AppointmentPage({
   };
 
   // Read page/pageSize from the URL, or fallback to 1 / 9
-  const pageParam = searchParams.page;
-  const pageSizeParam = searchParams.pageSize;
+  const pageParam = searchParams.get("page");
+  const pageSizeParam = searchParams.get("pageSize");
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
   const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 10;
 
@@ -130,7 +114,11 @@ export default function AppointmentPage({
               <TableRow key={appointment._id}>
                 <TableCell>{appointment._id}</TableCell>
                 <TableCell>{appointment.user}</TableCell>
-                <TableCell>{appointment.doctor}</TableCell>
+                <TableCell>
+                  <Link href={`/dashboard/specialist/${appointment.doctor}`} className="underline">
+                    {appointment.doctor}
+                  </Link>
+                </TableCell>
                 <TableCell>
                   {appointment.createdAt
                     ? format(
@@ -179,14 +167,18 @@ export default function AppointmentPage({
                         <Ticket className="mr-2 h-4 w-4" />
                         Open ticket
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600">
-                        <X className="mr-2 h-4 w-4" />
-                        Cancel Session Appointment
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Calendar className="mr-2 h-4 w-4" />
-                        Change Session Appointment
-                      </DropdownMenuItem>
+                      {appointment.status !== "cancelled" && (
+                        <>
+                          <DropdownMenuItem className="text-red-600">
+                            <X className="mr-2 h-4 w-4" />
+                            Cancel Session Appointment
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Calendar className="mr-2 h-4 w-4" />
+                            Change Session Appointment
+                          </DropdownMenuItem>
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

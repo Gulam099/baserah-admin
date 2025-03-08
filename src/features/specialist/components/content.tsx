@@ -7,14 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { toTitleCase } from "@/features/home/utils/string.utils";
 import { Separator } from "@/components/ui/separator";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
+import { useSearchParams } from "next/navigation";
 
-export default function Content(props: {
-  searchParams: { [key: string]: string };
-}) {
-  const { searchParams } = props;
+export default function Content(props:{specilaistId:string}) {
+  const { specilaistId } = props;
+  const searchParams = useSearchParams();
   // Read page/pageSize from the URL, or fallback to 1 / 9
-  const pageParam = searchParams.page;
-  const pageSizeParam = searchParams.pageSize;
+  const pageParam = searchParams.get("page");
+  const pageSizeParam = searchParams.get("pageSize");
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
   const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 10;
 

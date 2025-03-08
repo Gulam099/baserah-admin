@@ -6,18 +6,17 @@ import { fetchMedicalRecords } from "../data/customer.data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import RescheduleSessionDrawer from "./RescheduleSessionDrawer";
 import CancelSessionDrawer from "./CancelSessionDrawer";
+import { useSearchParams } from "next/navigation";
 
 export default function CustomerSpecialistRecord(props: {
-  searchParams: {
-    [key: string]: string;
-  };
   customerId: string;
 }) {
-  const { customerId, searchParams } = props;
+  const { customerId } = props;
 
+  const searchParams = useSearchParams();
   // Read page/pageSize from the URL, or fallback to 1 / 9
-  const pageParam = searchParams.page;
-  const pageSizeParam = searchParams.pageSize;
+  const pageParam = searchParams.get("page");
+  const pageSizeParam = searchParams.get("pageSize");
   let currentPage = pageParam ? parseInt(pageParam, 10) : 1;
   const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 10;
 

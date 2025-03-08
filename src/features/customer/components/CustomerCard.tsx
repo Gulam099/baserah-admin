@@ -13,15 +13,15 @@ export function CustomerCard({ customer }: CustomerCardProps) {
     <Card className="w-full">
       <CardContent className="pt-6">
         <div className="space-y-4">
-          <h3 className="font-semibold">{customer.name}</h3>
+          <h3 className="font-semibold">{customer.name ?? "Not Provided"}</h3>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Mobile number:</span>
-              <span>{customer.mobileNumber}</span>
+              <span>{customer.phoneNumber}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">ID Number:</span>
-              <span>{customer.idNumber}</span>
+              <span>{customer._id}</span>
             </div>
           </div>
           <div className="flex justify-end">
@@ -31,7 +31,7 @@ export function CustomerCard({ customer }: CustomerCardProps) {
               className="flex items-center gap-1"
               asChild
             >
-              <Link href={`/dashboard/customer/${customer.id}`}>
+              <Link href={`/dashboard/customer/${customer._id}`}>
                 Show More
                 <ChevronRight className="h-4 w-4" />
               </Link>

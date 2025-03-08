@@ -20,7 +20,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 
-export default function Contracts() {
+export default function Contracts(props:{specilaistId:string}) {
   return (
     <div className="p-6 flex flex-col gap-4 border rounded-2xl">
       <PdfView pdfUrl="/pdf/text.pdf" />

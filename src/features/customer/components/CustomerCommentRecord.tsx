@@ -2,22 +2,16 @@
 import { Card, CardContent } from "@/components/ui/card";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
 import React, { useEffect, useState } from "react";
-import { fetchCommentRecords, fetchTicketRecords } from "../data/customer.data";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { fetchCommentRecords } from "../data/customer.data";
 import { format } from "date-fns";
+import { useSearchParams } from "next/navigation";
 
-export default function CustomerCommentRecord(props: {
-  searchParams: {
-    [key: string]: string;
-  };
-  customerId: string;
-}) {
-  const { customerId, searchParams } = props;
-
+export default function CustomerCommentRecord(props: { customerId: string }) {
+  const { customerId } = props;
+  const searchParams = useSearchParams();
   // Read page/pageSize from the URL, or fallback to 1 / 9
-  const pageParam = searchParams.page;
-  const pageSizeParam = searchParams.pageSize;
+  const pageParam = searchParams.get("page");
+  const pageSizeParam = searchParams.get("pageSize");
   let currentPage = pageParam ? parseInt(pageParam, 10) : 1;
   const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 10;
 

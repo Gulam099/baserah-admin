@@ -1,4 +1,5 @@
 import { ApiResponseType } from "@/features/home/types/type";
+import axios from "axios"
 import {
   Customer,
   CustomerType,
@@ -6,6 +7,7 @@ import {
   MetricType,
   PaginatedResponse,
 } from "../types/customer.type";
+import { ApiBaseUrl } from "../../../../const";
 
 const mockCustomers = Array.from({ length: 100 }, (_, i) => ({
   id: `cust${i + 1}`,
@@ -60,33 +62,85 @@ const mockCustomers = Array.from({ length: 100 }, (_, i) => ({
 }));
 
 export async function fetchCustomers(
-  type: CustomerType,
   page: number,
   size: number
 ): Promise<ApiResponseType> {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  try {
+    // 1) Make the real API call
+    // GET /api/admin/patients?page=2&pageSize=5
+    const res = await axios.get(`${ApiBaseUrl}/api/admin/patients`, {
+      params: { page, pageSize: size },
+    })
 
-  const filteredCustomers =
-    type === "all"
-      ? mockCustomers
-      : mockCustomers.filter((customer) => customer.type === type);
+    // The response shape from your example:
+    // {
+    //   "has_more": false,
+    //   "page": 2,
+    //   "page_size": 10,
+    //   "patients": [...],
+    //   "success": true,
+    //   "total": 10
+    // }
 
-  const start = (page - 1) * size;
-  const end = start + size;
+    const result = res.data
 
-  return {
-    success: true,
-    status: 200,
-    message: "Customers Fetch Successfully",
-    data: filteredCustomers.slice(start, end),
-    page: {
-      total: filteredCustomers.length,
-      page,
-      size,
-    },
-  };
+    // 2) Transform into your ApiResponseType
+    return {
+      success: result?.success ?? true,
+      status: 200,
+      message: "Customers Fetch Successfully",
+      data: result?.patients ?? [], // The array of patient objects
+      page: {
+        total: result?.total ?? 0,
+        page: result?.page ?? page,
+        size: result?.page_size ?? size,
+      },
+    }
+  } catch (error: any) {
+    // If something goes wrong, return a fallback response
+    console.error("Error fetching customers:", error)
+
+    return {
+      success: false,
+      status: error?.response?.status || 500,
+      message: error?.response?.data?.message || "Failed to fetch customers.",
+      data: [],
+      page: {
+        total: 0,
+        page,
+        size,
+      },
+    }
+  }
 }
+// export async function fetchCustomers(
+//   type: CustomerType,
+//   page: number,
+//   size: number
+// ): Promise<ApiResponseType> {
+//   // Simulate API delay
+//   await new Promise((resolve) => setTimeout(resolve, 1000));
+
+//   const filteredCustomers =
+//     type === "all"
+//       ? mockCustomers
+//       : mockCustomers.filter((customer) => customer.type === type);
+
+//   const start = (page - 1) * size;
+//   const end = start + size;
+
+//   return {
+//     success: true,
+//     status: 200,
+//     message: "Customers Fetch Successfully",
+//     data: filteredCustomers.slice(start, end),
+//     page: {
+//       total: filteredCustomers.length,
+//       page,
+//       size,
+//     },
+//   };
+// }
 
 export async function fetchMedicalRecords(
   type: "all" | "prescription" | "treatment-plans",

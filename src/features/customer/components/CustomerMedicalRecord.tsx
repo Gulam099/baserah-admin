@@ -22,18 +22,15 @@ import Link from "next/link";
 import CopyButton from "@/features/home/components/CopyButton";
 import PdfView from "@/features/home/components/PdfView";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useSearchParams } from "next/navigation";
 
-export default function CustomerMedicalRecord(props: {
-  searchParams: {
-    [key: string]: string;
-  };
-  customerId: string;
-}) {
-  const { customerId, searchParams } = props;
+export default function CustomerMedicalRecord(props: { customerId: string }) {
+  const { customerId } = props;
+  const searchParams = useSearchParams();
 
   // Read page/pageSize from the URL, or fallback to 1 / 9
-  const pageParam = searchParams.page;
-  const pageSizeParam = searchParams.pageSize;
+  const pageParam = searchParams.get("page");
+  const pageSizeParam = searchParams.get("pageSize");
   let currentPage = pageParam ? parseInt(pageParam, 10) : 1;
   const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 10;
 
@@ -225,7 +222,9 @@ const CustomerMedicalCard = ({ customer }: any) => {
                     </div>
                   </div>
                   <div className="flex justify-end">
-                    <Button onClick={(e) => e.stopPropagation()}>Share the file to the client</Button>
+                    <Button onClick={(e) => e.stopPropagation()}>
+                      Share the file to the client
+                    </Button>
                   </div>
                 </DialogContent>
               </Dialog>

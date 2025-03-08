@@ -16,7 +16,7 @@ export async function fetchAppointmentsRecords(
     const res = await axios.get(`${ApiBaseUrl}/api/admin/appointments`, {
       params: {
         page,
-        page_size: size,
+        pageSize: size,
       },
     })
 

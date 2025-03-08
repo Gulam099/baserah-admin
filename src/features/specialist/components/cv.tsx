@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import EditSpecialistDialog from "./edit-specialist-dialog";
 
-export default function CV() {
+export default function CV(props:{specilaistId:string}) {
   const info = [
     { label: "Full Name", value: "Mada Muhammad Al-Muhammad" },
     { label: "Main Specialty", value: "psychology" },
