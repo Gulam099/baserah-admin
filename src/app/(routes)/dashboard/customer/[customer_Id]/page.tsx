@@ -1,3 +1,8 @@
 import CustomerPage from "@/features/customer/components/customer";
+import { Suspense } from "react";
 
-export default () => <CustomerPage />;
+export default () => (
+  <Suspense>
+    <CustomerPage />
+  </Suspense>
+);

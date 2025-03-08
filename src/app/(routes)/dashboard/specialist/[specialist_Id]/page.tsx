@@ -1,2 +1,7 @@
 import SpecialistPage from "@/features/specialist/components/specialist";
-export default ()=> <SpecialistPage/>
+import { Suspense } from "react";
+export default () => (
+  <Suspense>
+    <SpecialistPage />
+  </Suspense>
+);
