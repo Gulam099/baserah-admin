@@ -1,6 +1,6 @@
 import { SpecialistType } from "../types/specialist.type";
 
-export const mockSpecialist: SpecialistType[] = Array.from(
+export const mockSpecialist = Array.from(
   { length: 50 },
   (_, i) => ({
     id: `emp${i + 1}`,
@@ -14,7 +14,7 @@ export const mockSpecialist: SpecialistType[] = Array.from(
       "Approval Pending",
       "Approved",
       "Previously Rejected",
-    ][Math.floor(Math.random() * 5)] as SpecialistType["status"],
+    ][Math.floor(Math.random() * 5)],
   })
 );
 
