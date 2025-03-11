@@ -94,13 +94,13 @@ export default function AppointmentPage() {
         </AlertDescription>
       </Alert>
 
-      <div ref={contentRef} className="rounded-md border min-h-[80vh]">
+      <div ref={contentRef} className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Appointment Number</TableHead>
-              <TableHead>Patient Id</TableHead>
-              <TableHead>Doctor Id</TableHead>
+              <TableHead>Patient</TableHead>
+              <TableHead>Doctor</TableHead>
               <TableHead>Booking Date</TableHead>
               <TableHead>Duration</TableHead>
               <TableHead>Time Slot</TableHead>
@@ -113,10 +113,10 @@ export default function AppointmentPage() {
             {appointments.map((appointment) => (
               <TableRow key={appointment._id}>
                 <TableCell>{appointment._id}</TableCell>
-                <TableCell>{appointment.user}</TableCell>
+                <TableCell><Link href={`/dashboard/customer/${appointment.user}`} className="underline">{appointment.patient_name}</Link></TableCell>
                 <TableCell>
                   <Link href={`/dashboard/specialist/${appointment.doctor}`} className="underline">
-                    {appointment.doctor}
+                    {appointment.doctor_name}
                   </Link>
                 </TableCell>
                 <TableCell>

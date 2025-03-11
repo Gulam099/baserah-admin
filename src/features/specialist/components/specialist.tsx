@@ -1,51 +1,137 @@
-"use client";
-import React from "react";
+"use client"
+
+import React, { useEffect, useState } from "react"
+import axios from "axios"
+
+import { useParams } from "next/navigation"
+
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { AlertTriangle } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent } from "@/components/ui/card";
-import Contracts from "@/features/specialist/components/contracts";
-import CV from "@/features/specialist/components/cv";
-import Content from "@/features/specialist/components/content";
-import Rating from "@/features/specialist/components/rating";
-import EditSpecialistDialog from "@/features/specialist/components/edit-specialist-dialog";
-import { useParams } from "next/navigation";
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { AlertTriangle } from "lucide-react"
+
+import Contracts from "@/features/specialist/components/contracts"
+import CV from "@/features/specialist/components/cv"
+import Content from "@/features/specialist/components/content"
+import Rating from "@/features/specialist/components/rating"
+import EditSpecialistDialog from "@/features/specialist/components/edit-specialist-dialog"
+
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { ApiBaseUrl } from "../../../../const"
+
+interface SpecialistData {
+  _id: string
+  address: string
+  age_categories: string[]
+  approval_status: string
+  available: boolean
+  bio: string
+  classification?: string
+  consultation_method: string[]
+  contract?: any
+  created_at: string
+  cv?: string | null
+  education: string[]
+  email: string
+  experience: string
+  fees: string
+  full_name: string
+  is_active: boolean
+  is_approved: boolean
+  is_authenticated: boolean
+  language: string[]
+  phoneNumber: string
+  profile_picture: string
+  response_time: string
+  specialization: string
+  sub_specialization: string
+  updated_at: string
+}
+
+interface ApiResponse {
+  // The server response
+  _id: string
+  // or "id" if it's consistent
+  // plus all other fields
+  [key: string]: any
+}
 
 export default function SpecialistPage() {
-  const params = useParams<{ specialist_Id: string }>();
+  const { specialist_Id } = useParams<{ specialist_Id: string }>()
+  
+  const [specialist, setSpecialist] = useState<SpecialistData | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const { specialist_Id } = params;
+  // 1) fetch the specialist on mount
+  useEffect(() => {
+    async function fetchSpecialist() {
+      if (!specialist_Id) return
+      setLoading(true)
+      setError(null)
+
+      try {
+        const res = await axios.get(`${ApiBaseUrl}/api/doctor/get-doctor/${specialist_Id}`)
+        const data = res.data 
+        setSpecialist(data as SpecialistData)
+      } catch (err: any) {
+        console.error("Failed to fetch specialist:", err)
+        setError("Failed to load specialist data.")
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchSpecialist()
+  }, [specialist_Id])
+
+  if (loading) {
+    return (
+      <div className="container mx-auto py-6">
+        <p>Loading...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-6">
+        <p className="text-red-500">{error}</p>
+      </div>
+    )
+  }
+
+  if (!specialist) {
+    return (
+      <div className="container mx-auto py-6">
+        <p>No specialist data found.</p>
+      </div>
+    )
+  }
 
   const info = [
-    { label: "Mobile Number", value: "0555555555" },
-    { label: "Email", value: "mmmmmmm@gmail.com" },
-    { label: "Language Selection", value: "Arabic" },
-    { label: "Age Category", value: "Adults" },
-    { label: "Profile Picture", value: "jpg and png file" },
-    { label: "Consultation Method", value: "Video - Audio" },
-    { label: "Bank IBAN", value: "Al Rajhi Bank" },
-    { label: "Account Number", value: "100000000000000000" },
-    { label: "Session Price or Pricing", value: "300 SAR" },
-  ];
+    { label: "ID", value: specialist._id },
+    { label: "Mobile Number", value: specialist.phoneNumber },
+    { label: "Email", value: specialist.email || "N/A" },
+    { label: "Language Selection", value: specialist.language.join(", ") || "N/A" },
+    { label: "Age Categories", value: specialist.age_categories.join(", ") || "N/A" },
+    { label: "Consultation Method", value: specialist.consultation_method.join(" - ") },
+    { label: "Address", value: specialist.address },
+    { label: "Fees", value: specialist.fees ? `${specialist.fees} SAR` : "N/A" },
+  ]
 
+  // 2) timeline could be partly dynamic if you want to reflect
+  // approval_status logic. Here's an example:
   const timeline = [
     {
       status: "Submit Specialist",
@@ -54,18 +140,18 @@ export default function SpecialistPage() {
     },
     {
       status: "Initial approval",
-      date: "G note",
-      active: true,
+      date: specialist.approval_status === "Initial Approved" ? "Date here" : "",
+      active: specialist.approval_status === "Initial Approved",
     },
     {
       status: "Interview",
-      date: "",
-      active: false,
+      date: specialist.approval_status === "Interview" ? "Date here" : "",
+      active: specialist.approval_status === "Interview",
     },
     {
       status: "Final approval",
-      date: "",
-      active: false,
+      date: specialist.approval_status === "Final Approved" ? "some date" : "",
+      active: specialist.approval_status === "Final Approved",
     },
     {
       status: "Send Contract",
@@ -77,7 +163,7 @@ export default function SpecialistPage() {
       date: "",
       active: false,
     },
-  ];
+  ]
 
   const tabData = [
     {
@@ -106,7 +192,7 @@ export default function SpecialistPage() {
     {
       title: "CV",
       id: "cv",
-      content: <CV specilaistId={specialist_Id} />,
+      content: <CV data={specialist} />,
     },
     {
       title: "Content",
@@ -118,36 +204,44 @@ export default function SpecialistPage() {
       id: "rating",
       content: <Rating specilaistId={specialist_Id} />,
     },
-  ];
+  ]
 
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="grid md:grid-cols-[5fr,2fr] gap-4 items-start justify-between h-full min-h-[80vh]">
         <div className="flex flex-col gap-8">
+          {/* Top row with avatar & name */}
           <div className="flex gap-4">
             <Avatar className="w-16 h-16">
-              <AvatarImage src="https://github.com/shadcn.png" />
+              <AvatarImage src={specialist.profile_picture || ""} />
               <AvatarFallback>RA</AvatarFallback>
             </Avatar>
+
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-semibold">
-                  Rayan Abdullah Al Abdullah
+                  {specialist.full_name || "Unknown Specialist"}
                 </h1>
+
                 <span className="text-sm px-2 py-1 bg-yellow-100 text-yellow-800 rounded">
-                  Approval Pending
+                  {specialist.approval_status}
                 </span>
               </div>
-              <p className="text-muted-foreground">Psychologist</p>
+
+              <p className="text-muted-foreground">
+                {specialist.specialization}
+              </p>
             </div>
           </div>
+
+          {/* Tabs */}
           <Tabs defaultValue="general" className="w-full">
-            <TabsList className="w-full justify-start  h-auto p-0 bg-background flex flex-row flex-wrap">
+            <TabsList className="w-full justify-start h-auto p-0 bg-background flex flex-row flex-wrap">
               {tabData.map((tab, idx) => (
                 <TabsTrigger
                   key={tab.id + idx}
                   value={tab.id}
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary  flex-1"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary flex-1"
                 >
                   {tab.title}
                 </TabsTrigger>
@@ -162,21 +256,23 @@ export default function SpecialistPage() {
           </Tabs>
         </div>
 
-        <div className="flex flex-col gap-4 h-full ">
-          <div className=" bg-red-100 p-6 rounded-2xl ">
-            <div className="flex  items-start gap-2 text-destructive mb-2">
+        {/* Right Column: classification + timeline */}
+        <div className="flex flex-col gap-4 h-full">
+          <div className="bg-red-100 p-6 rounded-2xl">
+            <div className="flex items-start gap-2 text-destructive mb-2">
               <AlertTriangle className="w-4 h-4" />
-              <div>
-                <div className="font-semibold">
-                  Commission Classification Number
-                </div>
+              <div className="font-semibold">
+                Commission Classification Number
               </div>
             </div>
-            <p className="text-destructive">204587599395</p>
+            <p className="text-destructive">
+              {specialist.classification || "N/A"}
+            </p>
             <div className="text-sm text-muted-foreground">
               Expiry Date: 2023/07/15
             </div>
           </div>
+
           <div className="h-full flex flex-col gap-2 border rounded-2xl p-6">
             <div className="relative flex-1">
               <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-muted" />
@@ -198,7 +294,7 @@ export default function SpecialistPage() {
                 ))}
               </div>
             </div>
-            <div className="flex gap-2 justify-end ">
+            <div className="flex gap-2 justify-end">
               <StatusDialog timeline={timeline} />
               <AddNoteDialog />
             </div>
@@ -206,9 +302,10 @@ export default function SpecialistPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
+// The dialog for adding a note
 function AddNoteDialog() {
   return (
     <Dialog>
@@ -247,17 +344,19 @@ function AddNoteDialog() {
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
+// The dialog for viewing full status timeline
 function StatusDialog(props: {
   timeline: {
-    status: string;
-    date: string;
-    active: boolean;
-  }[];
+    status: string
+    date: string
+    active: boolean
+  }[]
 }) {
-  const { timeline } = props;
+  const { timeline } = props
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -270,7 +369,6 @@ function StatusDialog(props: {
 
         <div className="relative mt-6">
           <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-muted" />
-
           <div className="space-y-8">
             {timeline.map((item, index) => (
               <div key={index} className="relative pl-8">
@@ -281,9 +379,7 @@ function StatusDialog(props: {
                 />
                 <div className="font-medium">{item.status}</div>
                 {item.date && (
-                  <div className="text-sm text-muted-foreground">
-                    {item.date}
-                  </div>
+                  <div className="text-sm text-muted-foreground">{item.date}</div>
                 )}
               </div>
             ))}
@@ -291,5 +387,5 @@ function StatusDialog(props: {
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

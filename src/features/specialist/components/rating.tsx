@@ -34,7 +34,7 @@ export default function Rating(props: { specilaistId: string }) {
 
   useEffect(() => {
     setLoading(true);
-    fetchSpecRatingRecords(currentPage, pageSize)
+    fetchSpecRatingRecords(specilaistId, currentPage, pageSize)
       .then((res) => {
         setRatings(res.data!);
         setTotal(res.page?.total!);
@@ -63,7 +63,7 @@ export default function Rating(props: { specilaistId: string }) {
     <div className="p-6 max-w-4xl mx-auto space-y-8">
       {/* Overall Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+        {/* <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-2xl font-bold text-center">
               120
@@ -82,18 +82,18 @@ export default function Rating(props: { specilaistId: string }) {
               Positive evaluation
             </CardDescription>
           </CardHeader>
-        </Card>
+        </Card> */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-2xl font-bold text-center">
-              14325
+              {total}
             </CardTitle>
             <CardDescription className="text-center">
               Total ratings
             </CardDescription>
           </CardHeader>
         </Card>
-        <Card className="bg-gradient-to-r from-blue-600 to-blue-400">
+        {/* <Card className="bg-gradient-to-r from-blue-600 to-blue-400">
           <CardHeader className="pb-2">
             <CardTitle className="text-2xl font-bold text-center text-white">
               98%
@@ -102,7 +102,7 @@ export default function Rating(props: { specilaistId: string }) {
               Overall assessment
             </CardDescription>
           </CardHeader>
-        </Card>
+        </Card> */}
       </div>
 
       {/* Individual Ratings */}

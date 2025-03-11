@@ -3,6 +3,7 @@ import { ApiResponseType } from "@/features/home/types/type";
 import { mockSpecialist, ratings } from "../data/specialist.data";
 import { ApiBaseUrl } from "../../../../const";
 import axios from "axios";
+import { toast } from "sonner";
 
 export async function fetchSpecialist(
   page: number,
@@ -13,22 +14,8 @@ export async function fetchSpecialist(
     // with query params { page: 2, pageSize: 5 }
     const response = await axios.get(`${ApiBaseUrl}/api/doctor/get-doctors`, {
       params: { page, pageSize: size },
-    })
-
-    // The server response looks like:
-    // {
-    //   "data": [...],
-    //   "has_more": false,
-    //   "message": "Doctors fetched successfully",
-    //   "page": 1,
-    //   "page_size": 10,
-    //   "status": 200,
-    //   "success": true,
-    //   "total": 4
-    // }
-
-    const resData = response.data
-
+    });
+    const resData = response.data;
     // Transform into your ApiResponseType
     return {
       success: resData?.success ?? true,
@@ -40,16 +27,97 @@ export async function fetchSpecialist(
         page: resData?.page ?? page,
         size: resData?.page_size ?? size,
       },
-    }
+    };
   } catch (error: any) {
     // Fallback in case of errors
-    console.error("Failed to fetch specialists:", error)
+    console.error("Failed to fetch specialists:", error);
 
     return {
       success: false,
       status: error?.response?.status || 500,
       message:
-        error?.response?.data?.message || "Failed to fetch specialists from server.",
+        error?.response?.data?.message ||
+        "Failed to fetch specialists from server.",
+      data: [],
+      page: {
+        total: 0,
+        page,
+        size,
+      },
+    };
+  }
+}
+
+export const specialistInitialApproved = async (
+  specialist_id: string
+) => {
+  try {
+    const res = await axios.put(
+      `${ApiBaseUrl}/api/admin/initial-approval/${specialist_id}`
+    );
+    const resData = res.data;
+    toast.success(resData.message);
+  } catch (error: any) {
+    const resData = error.response.data;
+    toast.error(
+      resData.error || "Failed to Initially Approved Specialist"
+    );
+  }
+};
+export const specialistFinalApproved = async (
+  specialist_id: string
+) => {
+  try {
+    const res = await axios.put(
+      `${ApiBaseUrl}/api/admin/final-approval/${specialist_id}`
+    );
+    const resData = res.data;
+    toast.success(resData.message);
+  } catch (error: any) {
+    const resData = error.response.data;
+    toast.error(
+      resData.error || "Failed to Finally Approved Specialist"
+    );
+  }
+};
+
+
+export async function fetchSpecContentRecords(
+  doctorId: string,
+  page: number,
+  size: number
+): Promise<ApiResponseType> {
+  try {
+    const res = await axios.get(
+      `${ApiBaseUrl}/api/admin/library/doctor/${doctorId}`,
+      {
+        params: { page, size },
+      }
+    )
+
+    const result = res.data
+    const pagination = result.pagination || {}
+
+    return {
+      success: true,
+      status: result.status || 200,
+      message: result.message || "Approvals Fetch Successfully",
+      data: result.data || [],
+      page: {
+        total: pagination.total_items ?? 0,
+        page: pagination.current_page ?? page,
+        size: pagination.per_page ?? size,
+      },
+    }
+  } catch (error: any) {
+    console.error("Failed to fetch specialist content:", error)
+
+    return {
+      success: false,
+      status: error?.response?.status || 500,
+      message:
+        error?.response?.data?.message ||
+        "Failed to fetch specialist content from server.",
       data: [],
       page: {
         total: 0,
@@ -60,72 +128,46 @@ export async function fetchSpecialist(
   }
 }
 
-// export async function fetchSpecialist(
-//   page: number,
-//   size: number
-// ): Promise<ApiResponseType> {
-//   // Simulate API delay
-//   await new Promise((resolve) => setTimeout(resolve, 1000));
-
-//   const start = (page - 1) * size;
-//   const end = start + size;
-
-//   return {
-//     success: true,
-//     status: 200,
-//     message: "Report Fetch Successfully",
-//     data: mockSpecialist.slice(start, end),
-//     page: {
-//       total: mockSpecialist.length,
-//       page,
-//       size,
-//     },
-//   };
-// }
-
-export async function fetchSpecContentRecords(
-  page: number,
-  size: number
-): Promise<ApiResponseType> {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  const sendData = approvals.slice(0, 3);
-
-  const start = (page - 1) * size;
-  const end = start + size;
-
-  return {
-    success: true,
-    status: 200,
-    message: "Approvals Fetch Successfully",
-    data: sendData.slice(start, end),
-    page: {
-      total: sendData.length,
-      page,
-      size,
-    },
-  };
-}
-
 export async function fetchSpecRatingRecords(
+  doctorId: string,
   page: number,
   size: number
 ): Promise<ApiResponseType> {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  try {
+    const res = await axios.get(`${ApiBaseUrl}/api/doctor/rating`, {
+      params: {
+        doctor_id: doctorId,
+        page,
+        pageSize: size,
+      },
+    })
+    const result = res.data
 
-  const start = (page - 1) * size;
-  const end = start + size;
+    return {
+      success: result.success,
+      status: result.status,
+      message: result.message,
+      data: result.data, // array of rating objects
+      page: {
+        total: result.total,
+        page: result.page,
+        size: result.pageSize,
+      },
+    }
+  } catch (error: any) {
+    console.error("Failed to fetch ratings:", error)
 
-  return {
-    success: true,
-    status: 200,
-    message: "Ratings Fetch Successfully",
-    data: ratings.slice(start, end),
-    page: {
-      total: ratings.length,
-      page,
-      size,
-    },
-  };
+    return {
+      success: false,
+      status: error?.response?.status || 500,
+      message:
+        error?.response?.data?.message || "Failed to fetch ratings from server.",
+      data: [],
+      page: {
+        total: 0,
+        page,
+        size,
+      },
+    }
+  }
 }

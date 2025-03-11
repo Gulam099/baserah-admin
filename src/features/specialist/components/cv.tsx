@@ -1,20 +1,29 @@
 import { Card, CardContent } from "@/components/ui/card";
 import EditSpecialistDialog from "./edit-specialist-dialog";
+import Link from "next/link";
 
-export default function CV(props:{specilaistId:string}) {
+export default function CV(props: { data: any }) {
+  const { data } = props;
   const info = [
-    { label: "Full Name", value: "Mada Muhammad Al-Muhammad" },
-    { label: "Main Specialty", value: "psychology" },
-    { label: "Subspecialties", value: "Forensic psychology" },
+    { label: "Full Name", value: data.full_name },
+    { label: "Main Specialty", value: data.specialization },
+    { label: "Subspecialty", value: data.sub_specialization },
     {
       label: "File of the latest academic qualification",
-      value: "jpg and png file",
+      value: data.education.join(", "),
     },
-    { label: "CV file", value: "jpg and png file" },
-    { label: "Number of Years of Experience", value: "17 years" },
+    {
+      label: "CV file",
+      value: (
+        <Link className="text-primary-200 underline" href={data.cv}>
+          CV File
+        </Link>
+      ),
+    },
+    { label: "Number of Years of Experience", value: data.experience },
   ];
 
-  const briefBiography = `Doctorate in Psychology, Diploma in Cognitive-Behavioral Therapy, Cognitive-Behavioral Therapist, Therapist with Dual Stimulation and Desensitization, Specialist in Treating Psychological Trauma, Disorder of Immediateness, Doctorate in Psychology, Diploma in Cognitive-Behavioral Therapy, Cognitive-Behavioral Therapist, Therapist with Dual Stimulation and Desensitization, Specialized in Treating Psychological Trauma , Disorder of Immediateness, Doctorate of Psychology, Diploma in Cognitive-Behavioral Therapy, Cognitive-Behavioral Therapist, Therapist with Dual Stimulation and Desensitization, Specialist in Treating Psychological Trauma, Disorder of Immediateness, Doctorate of Psychology, Diploma in Cognitive-Behavioral Therapy, Cognitive-Behavioral Therapist, Therapist with Dual Stimulation and Desensitization, Specialized in treating psychological trauma, immediate disorder,`;
+  const briefBiography = data.bio;
   return (
     <div className="p-6">
       <Card className="mt-6">
@@ -38,7 +47,7 @@ export default function CV(props:{specilaistId:string}) {
 
           {/* Edit button at bottom-right */}
           <div className="flex justify-end items-end col-span-3">
-            <EditSpecialistDialog />
+            <EditSpecialistDialog data={data} />
           </div>
         </CardContent>
       </Card>

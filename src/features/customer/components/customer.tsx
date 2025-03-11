@@ -1,33 +1,98 @@
 "use client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useParams } from "next/navigation";
+
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import CustomerMedicalRecord from "@/features/customer/components/CustomerMedicalRecord";
 import CustomerMetricRecord from "@/features/customer/components/CustomerMetricRecord";
-import { Repeat, Trash } from "iconsax-react";
 import CustomerSpecialistRecord from "@/features/customer/components/CustomerSpecialistRecord";
 import CustomerTicketRecord from "@/features/customer/components/CustomerTicketRecord";
 import CustomerCommentRecord from "@/features/customer/components/CustomerCommentRecord";
-import { useParams, useSearchParams } from "next/navigation";
+import { ApiBaseUrl } from "../../../../const";
+import { format } from "date-fns";
+
+interface ApiResponse {
+  message: string;
+  user: any;
+}
 
 export default function CustomerPage() {
-  const params = useParams<{ customer_id: string }>();
-  const { customer_id } = params;
+  const params = useParams<{ customer_Id: string }>();
+  const { customer_Id } = params;
+  const [customer, setCustomer] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // 1) Fetch the customer data on mount
+  useEffect(() => {
+    async function fetchCustomer() {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await axios.get<ApiResponse>(
+          `${ApiBaseUrl}/api/admin/patients/${customer_Id}`
+        );
+        setCustomer(res.data.user);
+      } catch (err: any) {
+        console.error("Failed to fetch customer:", err);
+        setError("Failed to load customer data.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (customer_Id) fetchCustomer();
+  }, [customer_Id]);
+
+  // 2) Loading and error states
+  if (loading) {
+    return (
+      <div className="container mx-auto py-8">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-8">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
+
+  // 3) If no data, show a fallback
+  if (!customer) {
+    return (
+      <div className="container mx-auto py-8">
+        <p>No customer data found.</p>
+      </div>
+    );
+  }
 
   const info = [
-    { label: "Sex", value: "Male" },
-    { label: "Mobile Number", value: "0555555555" },
-    { label: "Email", value: "mmmmmmm@gmail.com" },
-    { label: "Date of Birth", value: "24-06-2000" },
-    { label: "Language Selection", value: "Arabic" },
-    { label: "Age Category", value: "Adults" },
-    { label: "Profile Picture", value: "jpg and png file" },
-    { label: "Bank IBAN", value: "Al Rajhi Bank" },
-    { label: "Account Number", value: "100000000000000000" },
+    { label: "ID", value: customer._id ?? "N/A" },
+    { label: "Gender", value: customer.gender ?? "N/A" },
+    { label: "Mobile Number", value: customer.phoneNumber ?? "N/A" },
+    { label: "Email", value: customer.email ?? "N/A" },
+    {
+      label: "Date of Birth",
+      value: customer.dob ?? format(customer.dob, "dd-MMM-yyyy") ?? "N/A",
+    },
+    {
+      label: "Address",
+      value:
+        `${customer.address.line1} \n , ${customer.address.line2}` || "N/A",
+    },
   ];
 
+  // 5) Prepare tab data
   const tabData = [
     {
       title: "General Information",
@@ -50,155 +115,137 @@ export default function CustomerPage() {
     {
       title: "Medical Record",
       id: "medical_record",
-      content: (
-        <CustomerMedicalRecord
-          customerId={customer_id}
-        />
-      ),
+      content: <CustomerMedicalRecord customerId={customer_Id} />,
     },
     {
       title: "Metrics",
       id: "metrics",
-      content: (
-        <CustomerMetricRecord
-          customerId={customer_id}
-        />
-      ),
+      content: <CustomerMetricRecord customerId={customer_Id} />,
     },
     {
       title: "Family",
       id: "family",
       content: (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 py-6 ">
-          {[
-            {
-              name: "Rima Majid Al Majid",
-              relation: "Mother",
-              age: 50,
-              file: 564564566,
-            },
-            {
-              name: "Muhammad Majid Al Majid",
-              relation: "Mother",
-              age: 15,
-              file: 6546456456,
-            },
-          ].map((member, idx) => (
-            <Card className="" key={member.name + idx}>
-              <CardContent className="flex flex-row gap-2 pt-4">
-                <div className="flex-1 flex flex-col gap-2 text-sm">
-                  <p className=" text-lg font-semibold">{member.name}</p>
-                  <p>
-                    Age : <span>{member.age}</span>
-                  </p>
-                  <p>
-                    File Number : <span>{member.file}</span>
-                  </p>
-                  <p>
-                    Relative Relation : <span>{member.relation}</span>
-                  </p>
-                </div>
-                <div className="flex flex-col justify-start items-end">
-                  <Button variant={"ghost"} size={"sm"} className="text-xs">
-                    <Repeat />
-                    <span>Switch Profile</span>
-                  </Button>
-                  <Button
+          {customer.family.length !== 0
+            ? customer.family.map((member, idx) => (
+                <Card key={member.name + idx}>
+                  <CardContent className="flex flex-row gap-2 pt-4">
+                    <div className="flex-1 flex flex-col gap-2 text-sm">
+                      <p className=" text-lg font-semibold">{member.name}</p>
+                      <p>
+                        Age : <span>{member.age}</span>
+                      </p>
+                      <p>
+                        File Number : <span>{member.fileNo}</span>
+                      </p>
+                      <p>
+                        Id Number : <span>{member.idNumber}</span>
+                      </p>
+                      <p>
+                        Relation : <span>{member.relationship}</span>
+                      </p>
+                    </div>
+                    <div className="flex flex-col justify-start items-end">
+                      {/* <Button variant={"ghost"} size={"sm"} className="text-xs">
+                    Switch Profile
+                  </Button> */}
+                      {/* <Button
                     variant={"ghost"}
                     size={"sm"}
                     className="text-red-500 text-xs"
                   >
-                    <Trash />
-                    <span>Delete</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                    Delete
+                  </Button> */}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            : "No Member added"}
         </div>
       ),
     },
     {
       title: "Specialists",
       id: "specialist",
-      content: (
-        <CustomerSpecialistRecord
-          customerId={customer_id}
-        />
-      ),
+      content: <CustomerSpecialistRecord customerId={customer_Id} />,
     },
     {
       title: "Tickets",
       id: "ticket",
-      content: (
-        <CustomerTicketRecord
-          customerId={customer_id}
-        />
-      ),
+      content: <CustomerTicketRecord customerId={customer_Id} />,
     },
     {
       title: "Wallet",
       id: "wallet",
       content: (
         <Card className="mt-6">
-          <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 p-6"></CardContent>
+          <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 p-6">
+            {/* Insert wallet info here */}
+          </CardContent>
         </Card>
       ),
     },
     {
       title: "Comments",
       id: "comment",
-      content: (
-        <CustomerCommentRecord
-          customerId={customer_id}
-        />
-      ),
+      content: <CustomerCommentRecord customerId={customer_Id} />,
     },
   ];
 
+  // 6) Render the page
   return (
     <div className="container mx-auto py-8">
       <div className="h-full min-h-[80vh]">
         <div className="flex flex-col gap-8">
+          {/* Top row: avatar + name + phoneNumber + "Block" button */}
           <div className="flex flex-row justify-between gap-4">
             <div className="flex flex-row gap-4">
               <Avatar className="w-16 h-16">
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>RA</AvatarFallback>
+                <AvatarImage src={customer.imageUrl || ""} />
+                <AvatarFallback>
+                  {customer.name ? customer.name.slice(0, 2) : "U"}
+                </AvatarFallback>
               </Avatar>
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-2xl font-semibold">
-                    Rayan Abdullah Al Abdullah
+                    {customer.name || "Unknown Name"}
                   </h1>
-                  <Badge>Master</Badge>
+                  {/* <Badge>Master</Badge> */}
                 </div>
-                <p className="text-muted-foreground">0985430574895784</p>
+                <p className="text-muted-foreground">
+                  {customer.phoneNumber || "No phone"}
+                </p>
               </div>
             </div>
-            <div>
+            {/* <div>
               <Button>Block the client</Button>
-            </div>
+            </div> */}
           </div>
-          <Tabs defaultValue="general" className="w-full">
-            <TabsList className="w-full justify-start  h-auto p-0 bg-background flex flex-row flex-wrap">
-              {tabData.map((tab, idx) => (
-                <TabsTrigger
-                  key={tab.id + idx}
-                  value={tab.id}
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary  flex-1"
-                >
-                  {tab.title}
-                </TabsTrigger>
-              ))}
-            </TabsList>
 
-            {tabData.map((tab, idx) => (
-              <TabsContent key={tab.id + idx} value={tab.id}>
-                {tab.content}
-              </TabsContent>
-            ))}
-          </Tabs>
+          {/* Tabs */}
+          <div>
+            <Tabs defaultValue="general" className="w-full">
+              <TabsList className="w-full justify-start h-auto p-0 bg-background flex flex-row flex-wrap">
+                {tabData.map((tab, idx) => (
+                  <TabsTrigger
+                    key={tab.id + idx}
+                    value={tab.id}
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary flex-1"
+                  >
+                    {tab.title}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
+              {tabData.map((tab, idx) => (
+                <TabsContent key={tab.id + idx} value={tab.id}>
+                  {tab.content}
+                </TabsContent>
+              ))}
+            </Tabs>
+          </div>
         </div>
       </div>
     </div>

@@ -10,6 +10,12 @@ import {
 import { SpecialistType } from "../types/specialist.type";
 import Link from "next/link";
 import { format } from "date-fns";
+import { ApiBaseUrl } from "../../../../const";
+import axios from "axios";
+import {
+  specialistFinalApproved,
+  specialistInitialApproved,
+} from "../utils/specialist.util";
 
 interface SpecialistCardProps {
   specialist: SpecialistType;
@@ -18,14 +24,13 @@ interface SpecialistCardProps {
 export function SpecialistCard({ specialist }: SpecialistCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Initial Approved":
-      case "Approved":
+      case "Final Approved":
         return "bg-green-100 text-green-700";
       case "Will End soon":
         return "bg-red-100 text-red-700";
-      case "Approval Pending":
+      case "Initial Approved":
         return "bg-purple-100 text-purple-700";
-      case "Previously Rejected":
+      case "Contract Sent":
         return "bg-yellow-100 text-yellow-700";
       default:
         return "bg-gray-100 text-gray-700";
@@ -35,7 +40,9 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
   return (
     <Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <h3 className="font-semibold">{specialist.full_name}</h3>
+        <h3 className="font-semibold">
+          {specialist.full_name ?? "No Name Found"}
+        </h3>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
@@ -44,9 +51,20 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>Canceling the contract</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {}}>
+              Canceling the contract
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => specialistInitialApproved(specialist._id)}
+            >
+              Initial Approval of the contract
+            </DropdownMenuItem>
             <DropdownMenuItem>Contract renewal</DropdownMenuItem>
-            <DropdownMenuItem>Approval of the contract</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => specialistFinalApproved(specialist._id)}
+            >
+              FinalApproval of the contract
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </CardHeader>
@@ -54,14 +72,26 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
         <div className="grid gap-2">
           <div className="grid grid-cols-[auto,1fr] gap-2">
             <span className="text-sm text-muted-foreground">Job Title:</span>
-            <span className="text-sm font-medium">{specialist.specialization}</span>
+            <span className="text-sm font-medium">
+              {specialist.specialization ?? "NAN"}
+            </span>
             <span className="text-sm text-muted-foreground">Date:</span>
-            <span className="text-sm font-medium">{specialist.created_at?.$date ? format(new Date(specialist.created_at.$date) , "EEE , dd MMM yyyy") : "NAN"}</span>
+            <span className="text-sm font-medium">
+              {specialist.created_at
+                ? format(new Date(specialist.created_at), "EEE , dd MMM yyyy")
+                : "NAN"}
+            </span>
             <span className="text-sm text-muted-foreground">
               Qualification:
             </span>
             <span className="text-sm font-medium">
-              {specialist.education ? specialist.education?.map((edu:string)=><span key={edu} className="capitalize">{edu},</span>) : "NAN"}
+              {specialist.education
+                ? specialist.education?.map((edu: string) => (
+                    <span key={edu} className="capitalize">
+                      {edu},
+                    </span>
+                  ))
+                : "NAN"}
             </span>
           </div>
           <div className="flex items-center justify-between pt-2">
@@ -70,7 +100,7 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
                 specialist.approval_status
               )}`}
             >
-              {specialist.approval_status}
+              {specialist.approval_status ?? "No Status Found"}
             </span>
             <Button
               variant="ghost"
@@ -78,7 +108,7 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
               className="flex items-center gap-1"
               asChild
             >
-              <Link href={`/dashboard/specialist/${specialist._id.$oid}`}>
+              <Link href={`/dashboard/specialist/${specialist._id}`}>
                 Show More
                 <ChevronRight className="h-4 w-4" />
               </Link>
