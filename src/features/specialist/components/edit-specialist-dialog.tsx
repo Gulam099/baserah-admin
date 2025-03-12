@@ -46,12 +46,12 @@ const formSchema = z.object({
   profile_picture: z.string().optional(),
   specialization: z.string().min(3).optional(),
   sub_specialization: z.string().min(3).optional(),
-  age_categories: z.array(z.string()).optional(),
+  age_categories: z.array(z.string()),
   experience: z.string().min(1).optional(),
-  consultation_method: z.array(z.string()).optional(),
+  consultation_method: z.array(z.string()),
   response_time: z.string().min(1).optional(),
-  education: z.array(z.string()).optional(),
-  language: z.array(z.string()).optional(),
+  education: z.array(z.string()),
+  language: z.array(z.string()),
   bio: z.string().optional(),
 });
 
@@ -60,7 +60,6 @@ type EditSpecialistFormType = z.infer<typeof formSchema>;
 // 2) Props: `data` from the specialist, plus `specialistId` for the endpoint
 interface EditSpecialistDialogProps {
   data: any; // The existing specialist data
-  
 }
 
 export default function EditSpecialistDialog(props: EditSpecialistDialogProps) {
@@ -95,6 +94,8 @@ export default function EditSpecialistDialog(props: EditSpecialistDialogProps) {
 
   // 4) Submit => build FormData => PUT
   async function onSubmit(values: EditSpecialistFormType) {
+    console.log(values);
+
     try {
       // Prepare multipart/form-data
       const formData = new FormData();
@@ -109,22 +110,19 @@ export default function EditSpecialistDialog(props: EditSpecialistDialogProps) {
       formData.append("bio", values.bio ?? "");
 
       if (values.age_categories) {
-        values.age_categories.forEach((ageCat) =>
-          formData.append("age_categories[]", ageCat)
-        );
+        formData.append("age_categories", values.age_categories.join(","));
       }
       if (values.consultation_method) {
-        values.consultation_method.forEach((method) =>
-          formData.append("consultation_method[]", method)
+        formData.append(
+          "consultation_method",
+          values.consultation_method.join(",")
         );
       }
       if (values.education) {
-        values.education.forEach((edu) =>
-          formData.append("education[]", edu)
-        );
+        formData.append("education", values.education.join(","));
       }
       if (values.language) {
-        values.language.forEach((lang) => formData.append("language[]", lang));
+        formData.append("language", values.language.join(","));
       }
 
       if (files && files.length > 0) {
@@ -181,7 +179,11 @@ export default function EditSpecialistDialog(props: EditSpecialistDialogProps) {
                       <FormItem>
                         <FormLabel>Full Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="Jone doe" type="text" {...field} />
+                          <Input
+                            placeholder="Jone doe"
+                            type="text"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

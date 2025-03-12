@@ -1,9 +1,10 @@
-import React from 'react'
+import PermissionPage from "@/features/permission/components/permission";
+import React, { Suspense } from "react";
 
 export default function page() {
   return (
-    <div>
-      Permissions
-    </div>
-  )
+    <Suspense>
+      <PermissionPage />
+    </Suspense>
+  );
 }

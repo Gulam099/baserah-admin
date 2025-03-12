@@ -10,8 +10,8 @@ import { Separator } from "@/components/ui/separator";
 import { toTitleCase } from "@/features/home/utils/string.utils";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
 
-/** 
- * Renders content items for a given specialist 
+/**
+ * Renders content items for a given specialist
  */
 export default function Content(props: { specilaistId: string }) {
   const { specilaistId } = props;
@@ -125,12 +125,12 @@ export default function Content(props: { specilaistId: string }) {
         );
       })}
 
-      <UnifiedPagination total={total} defaultPageSize={pageSize} />
+      <UnifiedPagination total={total} />
     </div>
   );
 }
 
-/** 
+/**
  * Renders resource based on type: text, video, audio, etc.
  */
 function ResourceRenderer({ content }: any) {

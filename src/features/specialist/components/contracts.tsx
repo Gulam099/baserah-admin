@@ -1,4 +1,7 @@
 "use client";
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+
 import PdfView from "@/features/home/components/PdfView";
 import {
   Dialog,
@@ -18,28 +21,111 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
 
-export default function Contracts(props:{specilaistId:string}) {
+// The API returns { "contracts": [...] }, each possibly with a pdf_url
+interface ContractItem {
+  _id: string;
+  pdf_url?: string;
+  [key: string]: any; // other fields
+}
+
+interface ContractsResponse {
+  contracts: ContractItem[];
+}
+
+/**
+ * Renders the Contracts section, fetching from:
+ * GET /api/doctor/contracts/:specilaistId
+ */
+export default function Contracts(props: { specilaistId: string }) {
+  const { specilaistId } = props;
+
+  const [contracts, setContracts] = useState<ContractItem[] | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // 1) Fetch the contract(s) for this specialist
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchContracts() {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(
+          `https://monkfish-app-6ahnd.ondigitalocean.app/api/doctor/contracts/${specilaistId}`
+        );
+        if (!res.ok) {
+          throw new Error(`Failed to fetch. Status: ${res.status}`);
+        }
+        const data: ContractsResponse = await res.json();
+        if (isMounted) {
+          setContracts(data.contracts);
+        }
+      } catch (err: any) {
+        console.error("Failed to fetch contracts:", err);
+        if (isMounted) {
+          setError("Failed to fetch contract data.");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchContracts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [specilaistId]);
+
+  // 2) Handle loading, error, and empty
+  if (loading) {
+    return (
+      <div className="p-6 border rounded-2xl flex justify-center items-center min-h-[200px]">
+        <Loader2 className="animate-spin mx-2" />
+        <span>Loading contracts...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 border rounded-2xl text-red-500">
+        {error}
+      </div>
+    );
+  }
+
+  if (!contracts || contracts.length === 0) {
+    return (
+      <div className="p-6 border rounded-2xl">
+        <p className="text-muted-foreground">No contract found.</p>
+      </div>
+    );
+  }
+
+  // 3) Show the first (or multiple) contract's PDF if available
+  // (Adjust as needed for multiple contracts or other fields)
+  const firstContract = contracts[0];
+  const pdfUrl = firstContract.pdf_url || "/pdf/text.pdf"; // fallback to a local PDF?
+
   return (
     <div className="p-6 flex flex-col gap-4 border rounded-2xl">
-      <PdfView pdfUrl="/pdf/text.pdf" />
+      <PdfView pdfUrl={pdfUrl} />
       <div className="w-full p-4 flex flex-row justify-end items-end gap-4">
         <ContractApprovalDialog />
-        <Button variant={'secondary'}>
-          Canceling the Contract
-        </Button>
-        <Button variant={'secondary'}>
-          Contract Renewal
-        </Button>
-        <Button variant={'secondary'}>
-          Amending the contract
-        </Button>
+        <Button variant="secondary">Canceling the Contract</Button>
+        <Button variant="secondary">Contract Renewal</Button>
+        <Button variant="secondary">Amending the contract</Button>
       </div>
     </div>
   );
 }
 
+// The same ContractApprovalDialog from your example
 function ContractApprovalDialog() {
   const [open, setOpen] = useState(false);
 
@@ -88,7 +174,7 @@ function ContractApprovalDialog() {
           <Button
             className="w-full"
             onClick={() => {
-              // Handle note submission
+              // Handle note submission logic
               setOpen(false);
             }}
           >

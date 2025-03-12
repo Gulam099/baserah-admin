@@ -1,29 +1,56 @@
+"use client";
+
 import { Card, CardContent } from "@/components/ui/card";
 import EditSpecialistDialog from "./edit-specialist-dialog";
 import Link from "next/link";
 
-export default function CV(props: { data: any }) {
-  const { data } = props;
+export default function CV({ data }: any) {
+  // If no data at all, show a fallback
+  if (!data) {
+    return (
+      <div className="p-6">
+        <Card className="mt-6">
+          <CardContent className="p-6">
+            <p className="text-sm text-muted-foreground">No CV data found.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Safely handle each field with optional chaining or fallback text
+  const fullName = data.full_name || "N/A";
+  const mainSpecialty = data.specialization || "N/A";
+  const subSpecialty = data.sub_specialization || "N/A";
+  const educationList = Array.isArray(data.education) ? data.education : [];
+  const educationString = educationList.length
+    ? educationList.join(", ")
+    : "N/A";
+  const cvFile = data.cv;
+  const experience = data.experience || "N/A";
+  const briefBiography = data.bio || "No biography provided.";
+
   const info = [
-    { label: "Full Name", value: data.full_name },
-    { label: "Main Specialty", value: data.specialization },
-    { label: "Subspecialty", value: data.sub_specialization },
+    { label: "Full Name", value: fullName },
+    { label: "Main Specialty", value: mainSpecialty },
+    { label: "Subspecialty", value: subSpecialty },
     {
       label: "File of the latest academic qualification",
-      value: data.education.join(", "),
+      value: educationString,
     },
     {
       label: "CV file",
-      value: (
-        <Link className="text-primary-200 underline" href={data.cv}>
+      value: cvFile ? (
+        <Link className="text-primary-200 underline" href={cvFile}>
           CV File
         </Link>
+      ) : (
+        "N/A"
       ),
     },
-    { label: "Number of Years of Experience", value: data.experience },
+    { label: "Number of Years of Experience", value: experience },
   ];
 
-  const briefBiography = data.bio;
   return (
     <div className="p-6">
       <Card className="mt-6">
