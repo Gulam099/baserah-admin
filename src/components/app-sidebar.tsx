@@ -60,11 +60,11 @@ const data = {
       url: "/dashboard/appointment",
       icon: Briefcase,
     },
-    {
-      title: "Tickets",
-      url: "/dashboard/ticket",
-      icon: People,
-    },
+    // {
+    //   title: "Tickets",
+    //   url: "/dashboard/ticket",
+    //   icon: People,
+    // },
     {
       title: "Contracts and Specialists",
       url: "/dashboard/specialist",
@@ -80,11 +80,11 @@ const data = {
       url: "/dashboard/question",
       icon: Setting2,
     },
-    {
-      title: "Financial",
-      url: "/dashboard/finance",
-      icon: EmptyWallet,
-    },
+    // {
+    //   title: "Financial",
+    //   url: "/dashboard/finance",
+    //   icon: EmptyWallet,
+    // },
     {
       title: "Permissions",
       url: "/dashboard/permission",

@@ -1,10 +1,9 @@
 export type CustomerType = "all" | "vip" | "incomplete" | "forbidden";
 export type MedicalType = "all" | "prescription" | "treatment-plans";
 export type MetricType =
-  | "all"
   | "gad-scales"
   | "mood-scales"
-  | "quality-Life-scales"
+  // | "quality-Life-scales"
   | "depressive-scales";
 
 /**

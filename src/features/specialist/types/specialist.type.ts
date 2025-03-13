@@ -5,24 +5,20 @@ export type SpecialistStatusType =
   | "Approved"
   | "Previously Rejected";
 
-  export interface Oid {
-    $oid: string
-  }
+ 
   
   /**
    * Represents a single specialist record.
    */
   export interface SpecialistType {
-    _id: Oid
+    _id: string
     address: string
     age_categories: string[]
     approval_status: string
     available: boolean
     bio: string
     consultation_method: string[]
-    created_at: {
-      $date: string // e.g. "2025-02-22T01:08:09.081Z"
-    }
+    created_at: string
     cv: string
     education: string[]
     email: string
@@ -36,8 +32,6 @@ export type SpecialistStatusType =
     response_time: string
     specialization: string
     sub_specialization: string
-    updated_at: {
-      $date: string // e.g. "2025-03-07T06:53:15.223Z"
-    }
+    updated_at: string
   }
   

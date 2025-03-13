@@ -24,17 +24,30 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ExportButton from "@/features/home/components/ExportButton";
 import { useEffect, useRef, useState } from "react";
 import { AppointmentType } from "@/features/appointment/types/appointment.type";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
-import { fetchAppointmentsRecords } from "@/features/appointment/util/appointment.util";
+import {
+  cancelAppointment,
+  fetchAppointmentsRecords,
+} from "@/features/appointment/util/appointment.util";
 import { format } from "date-fns";
 import { toTitleCase } from "@/features/home/utils/string.utils";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import ChangeSessionDialog from "./ChangeSessionDialog";
 
 export default function AppointmentPage() {
   const searchParams = useSearchParams();
@@ -113,9 +126,19 @@ export default function AppointmentPage() {
             {appointments.map((appointment) => (
               <TableRow key={appointment._id}>
                 <TableCell>{appointment._id}</TableCell>
-                <TableCell><Link href={`/dashboard/customer/${appointment.user}`} className="underline">{appointment.patient_name}</Link></TableCell>
                 <TableCell>
-                  <Link href={`/dashboard/specialist/${appointment.doctor}`} className="underline">
+                  <Link
+                    href={`/dashboard/customer/${appointment.user}`}
+                    className="underline"
+                  >
+                    {appointment.patient_name}
+                  </Link>
+                </TableCell>
+                <TableCell>
+                  <Link
+                    href={`/dashboard/specialist/${appointment.doctor}`}
+                    className="underline"
+                  >
                     {appointment.doctor_name}
                   </Link>
                 </TableCell>
@@ -148,39 +171,7 @@ export default function AppointmentPage() {
                   </div>
                 </TableCell>
                 <TableCell className="text-right print:hidden">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
-                        <FileText className="mr-2 h-4 w-4" />
-                        Medical Record
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <MessageSquare className="mr-2 h-4 w-4" />
-                        Customer Conversation
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Ticket className="mr-2 h-4 w-4" />
-                        Open ticket
-                      </DropdownMenuItem>
-                      {appointment.status !== "cancelled" && (
-                        <>
-                          <DropdownMenuItem className="text-red-600">
-                            <X className="mr-2 h-4 w-4" />
-                            Cancel Session Appointment
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Calendar className="mr-2 h-4 w-4" />
-                            Change Session Appointment
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <AppointmentMenu appointment={appointment} />
                 </TableCell>
               </TableRow>
             ))}
@@ -189,5 +180,68 @@ export default function AppointmentPage() {
       </div>
       <UnifiedPagination total={total} />
     </div>
+  );
+}
+
+function AppointmentMenu({ appointment }: { appointment: AppointmentType }) {
+
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="h-8 w-8 p-0"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <MoreVertical className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {/* <DropdownMenuItem>
+                        <FileText className="mr-2 h-4 w-4" />
+                        Medical Record
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        Customer Conversation
+                      </DropdownMenuItem> */}
+        <DropdownMenuItem>
+          <Ticket className="mr-2 h-4 w-4" />
+          Open ticket
+        </DropdownMenuItem>
+        {appointment.status !== "cancelled" && (
+          <>
+            <DropdownMenuItem className="text-red-600">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    variant={"ghost"}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <X className="mr-2 h-4 w-4" />
+                    Cancel Session Appointment
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Are you absolutely sure?</DialogTitle>
+                    <DialogDescription>
+                      This action cannot be undone.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <Button onClick={() => cancelAppointment(appointment._id)}>
+                    Cancel Session Appointment
+                  </Button>
+                </DialogContent>
+              </Dialog>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <ChangeSessionDialog appointment={appointment} />
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

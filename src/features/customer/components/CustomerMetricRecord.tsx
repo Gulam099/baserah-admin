@@ -7,6 +7,7 @@ import { fetchMetricRecords } from "../data/customer.data";
 import { format } from "date-fns";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useSearchParams } from "next/navigation";
+import { MetricType } from "../types/customer.type";
 
 export default function CustomerMetricRecord(props: { customerId: string }) {
   const { customerId } = props;
@@ -20,7 +21,7 @@ export default function CustomerMetricRecord(props: { customerId: string }) {
   const [records, setRecords] = useState<any[]>();
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
-  const [activeTab, setActiveTab] = useState<any>("all");
+  const [activeTab, setActiveTab] = useState<any>("gad-scales");
 
   useEffect(() => {
     currentPage = 1;
@@ -29,7 +30,7 @@ export default function CustomerMetricRecord(props: { customerId: string }) {
   // Whenever page/pageSize changes in the URL, fetch new data
   useEffect(() => {
     setLoading(true);
-    fetchMetricRecords(activeTab, currentPage, pageSize)
+    fetchMetricRecords(activeTab, customerId, currentPage, pageSize)
       .then((res) => {
         setRecords(res.data!);
         setTotal(res.page?.total!); // for UnifiedPagination's `total` prop
@@ -45,24 +46,24 @@ export default function CustomerMetricRecord(props: { customerId: string }) {
   if (!records) return null;
 
   const tabData = [
-    {
-      title: "All",
-      id: "all",
-      content: (
-        <>
-          {loading
-            ? Array.from({ length: pageSize }).map((_, i) => (
-                <div
-                  key={`skeleton-${i}`}
-                  className="h-[180px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
-                />
-              ))
-            : records.map((record, i) => (
-                <CustomerScaleCard key={`scale-all-${i}`} customer={record} />
-              ))}
-        </>
-      ),
-    },
+    // {
+    //   title: "All",
+    //   id: "all",
+    //   content: (
+    //     <>
+    //       {loading
+    //         ? Array.from({ length: pageSize }).map((_, i) => (
+    //             <div
+    //               key={`skeleton-${i}`}
+    //               className="h-[180px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
+    //             />
+    //           ))
+    //         : records.map((record, i) => (
+    //             <CustomerScaleCard key={`scale-all-${i}`} customer={record} />
+    //           ))}
+    //     </>
+    //   ),
+    // },
     {
       title: "Generalized Anxiety Disorders",
       id: "gad-scales",
@@ -76,7 +77,11 @@ export default function CustomerMetricRecord(props: { customerId: string }) {
                 />
               ))
             : records.map((record, i) => (
-                <CustomerScaleCard key={`scale-gad-${i}`} customer={record} />
+                <CustomerScaleCard
+                  key={`scale-gad-${i}`}
+                  customer={record}
+                  scaleType="gad-scales"
+                />
               ))}
         </>
       ),
@@ -94,32 +99,36 @@ export default function CustomerMetricRecord(props: { customerId: string }) {
                 />
               ))
             : records.map((record, i) => (
-                <CustomerScaleCard key={`scale-mood-${i}`} customer={record} />
-              ))}
-        </>
-      ),
-    },
-    {
-      title: "Quality of Life",
-      id: "quality-Life-scales",
-      content: (
-        <>
-          {loading
-            ? Array.from({ length: pageSize }).map((_, i) => (
-                <div
-                  key={`skeleton-${i}`}
-                  className="h-[180px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
-                />
-              ))
-            : records.map((record, i) => (
                 <CustomerScaleCard
-                  key={`scale-quality-${i}`}
+                  key={`scale-mood-${i}`}
                   customer={record}
+                  scaleType="mood-scales"
                 />
               ))}
         </>
       ),
     },
+    // {
+    //   title: "Quality of Life",
+    //   id: "quality-Life-scales",
+    //   content: (
+    //     <>
+    //       {loading
+    //         ? Array.from({ length: pageSize }).map((_, i) => (
+    //             <div
+    //               key={`skeleton-${i}`}
+    //               className="h-[180px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
+    //             />
+    //           ))
+    //         : records.map((record, i) => (
+    //             <CustomerScaleCard
+    //               key={`scale-quality-${i}`}
+    //               customer={record}
+    //             />
+    //           ))}
+    //     </>
+    //   ),
+    // },
     {
       title: "Depressive Disorders",
       id: "depressive-scales",
@@ -134,6 +143,7 @@ export default function CustomerMetricRecord(props: { customerId: string }) {
               ))
             : records.map((record, i) => (
                 <CustomerScaleCard
+                  scaleType="depressive-scales"
                   key={`scale-depressive-${i}`}
                   customer={record}
                 />
@@ -178,7 +188,7 @@ export default function CustomerMetricRecord(props: { customerId: string }) {
   );
 }
 
-const CustomerScaleCard = (props: { customer: any }) => {
+const CustomerScaleCard = (props: { customer: any; scaleType: MetricType }) => {
   return (
     <Card className="h-full">
       <CardContent>
@@ -186,17 +196,29 @@ const CustomerScaleCard = (props: { customer: any }) => {
           <div className="flex flex-row items-center gap-4">
             <Avatar>
               <AvatarFallback className="bg-primary-800 text-white font-semibold">
-                {props.customer.scale_score}
+                {props.customer.score}
               </AvatarFallback>
             </Avatar>
 
             <div className="flex flex-col items-start gap-2">
-              <p className="text-base font-semibold">
-                {props.customer.scale_desc}
-              </p>
-              <p className="text-muted-foreground text-xs">
-                {format(props.customer.date, "dd MMM yyyy")}
-              </p>
+              {props.scaleType === "mood-scales" ? (
+                <p className="text-base font-semibold">
+                  {props.customer.mood} ( {props.customer.reasons.join(", ")} )
+                </p>
+              ) : (
+                <p className="text-base font-semibold">
+                  {props.customer.score <= 30
+                    ? "High Risk"
+                    : props.customer.score <= 60
+                    ? "Moderate Risk"
+                    : "No Risk"}
+                </p>
+              )}
+              {props.customer.createdAt && (
+                <p className="text-muted-foreground text-sm">
+                  {format(props.customer.createdAt, "dd MMM yyyy")}
+                </p>
+              )}
             </div>
           </div>
         </div>

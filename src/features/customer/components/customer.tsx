@@ -112,11 +112,11 @@ export default function CustomerPage() {
         </Card>
       ),
     },
-    {
-      title: "Medical Record",
-      id: "medical_record",
-      content: <CustomerMedicalRecord customerId={customer_Id} />,
-    },
+    // {
+    //   title: "Medical Record",
+    //   id: "medical_record",
+    //   content: <CustomerMedicalRecord customerId={customer_Id} />,
+    // },
     {
       title: "Metrics",
       id: "metrics",
@@ -128,7 +128,7 @@ export default function CustomerPage() {
       content: (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 py-6 ">
           {customer.family.length !== 0
-            ? customer.family.map((member, idx) => (
+            ? customer.family.map((member: any, idx: number) => (
                 <Card key={member.name + idx}>
                   <CardContent className="flex flex-row gap-2 pt-4">
                     <div className="flex-1 flex flex-col gap-2 text-sm">
@@ -165,32 +165,32 @@ export default function CustomerPage() {
         </div>
       ),
     },
-    {
-      title: "Specialists",
-      id: "specialist",
-      content: <CustomerSpecialistRecord customerId={customer_Id} />,
-    },
-    {
-      title: "Tickets",
-      id: "ticket",
-      content: <CustomerTicketRecord customerId={customer_Id} />,
-    },
-    {
-      title: "Wallet",
-      id: "wallet",
-      content: (
-        <Card className="mt-6">
-          <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 p-6">
-            {/* Insert wallet info here */}
-          </CardContent>
-        </Card>
-      ),
-    },
-    {
-      title: "Comments",
-      id: "comment",
-      content: <CustomerCommentRecord customerId={customer_Id} />,
-    },
+    // {
+    //   title: "Specialists",
+    //   id: "specialist",
+    //   content: <CustomerSpecialistRecord customerId={customer_Id} />,
+    // },
+    // {
+    //   title: "Tickets",
+    //   id: "ticket",
+    //   content: <CustomerTicketRecord customerId={customer_Id} />,
+    // },
+    // {
+    //   title: "Wallet",
+    //   id: "wallet",
+    //   content: (
+    //     <Card className="mt-6">
+    //       <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 p-6">
+    //         {/* Insert wallet info here */}
+    //       </CardContent>
+    //     </Card>
+    //   ),
+    // },
+    // {
+    //   title: "Comments",
+    //   id: "comment",
+    //   content: <CustomerCommentRecord customerId={customer_Id} />,
+    // },
   ];
 
   // 6) Render the page

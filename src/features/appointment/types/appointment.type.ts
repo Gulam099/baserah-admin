@@ -10,4 +10,6 @@ export interface AppointmentType {
   timeSlot: string;
   status: "confirmed" | "cancelled" | "upcoming" | "ongoing";
   isImmediate: boolean;
+  patient_name: string;
+  doctor_name : string;
 }

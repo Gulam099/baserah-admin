@@ -175,34 +175,64 @@ export async function fetchMedicalRecords(
 
 export async function fetchMetricRecords(
   type: MetricType,
+  userId: string,
   page: number,
   size: number
 ): Promise<ApiResponseType> {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  try {
+    let endpoint = "";
 
-  const filteredRecords =
-    type === "all"
-      ? mockCustomers[0].record.metric
-      : mockCustomers[0].record.metric.filter(
-          (customer) => customer.type === type
-        );
+    switch (type) {
+      case "gad-scales":
+        endpoint = `/api/gad-scale/user/${userId}?page=${page}`;
+        break;
+      case "mood-scales":
+        endpoint = `/api/mood-scale/${userId}?page=${page}`;
+        break;
+      case "depressive-scales":
+        endpoint = `/api/depression-scale/user/${userId}?page=${page}`;
+        break;
+      default:
+        throw new Error("Invalid metric type");
+    }
 
-  const start = (page - 1) * size;
-  const end = start + size;
+    const response = await fetch(
+      `https://monkfish-app-6ahnd.ondigitalocean.app${endpoint}`
+    );
 
-  return {
-    success: true,
-    status: 200,
-    message: "Customer's Metric Record Fetch Successfully",
-    data: filteredRecords.slice(start, end),
-    page: {
-      total: filteredRecords.length,
-      page,
-      size,
-    },
-  };
+    if (!response.ok) {
+      throw new Error("Failed to fetch data");
+    }
+
+    const data = await response.json();
+
+    return {
+      success: true,
+      status: 200,
+      message: "Metric records fetched successfully",
+      data: data.responses.slice(0, size), // Ensure pagination size
+      page: {
+        total: data.totalResponses,
+        page: data.currentPage,
+        size,
+      },
+    };
+  } catch (error) {
+    return {
+      success: false,
+      status: 500,
+      message: "Error fetching metric records",
+      data: [],
+      page: {
+        total: 0,
+        page,
+        size,
+      },
+    };
+  }
 }
+
+
 export async function fetchTicketRecords(
   page: number,
   size: number
