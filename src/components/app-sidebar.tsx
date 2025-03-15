@@ -50,11 +50,11 @@ const data = {
       url: "/dashboard/approval",
       icon: Gauge,
     },
-    {
-      title: "Reports",
-      url: "/dashboard/report",
-      icon: Folder,
-    },
+    // {
+    //   title: "Reports",
+    //   url: "/dashboard/report",
+    //   icon: Folder,
+    // },
     {
       title: "Appointments",
       url: "/dashboard/appointment",

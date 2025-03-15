@@ -19,12 +19,9 @@ export default function TeamsView(props: { teams: TeamItemType[] }) {
   return (
     <div className="p-4 space-y-4">
       {teams.map((team) => (
-        <Drawer>
+        <Drawer key={team._id}>
           <DrawerTrigger asChild>
-            <div
-              key={team._id}
-              className="p-4 border border-gray-200 rounded-lg"
-            >
+            <div className="p-4 border border-gray-200 rounded-lg">
               <h2 className="text-lg font-semibold">{team.name}</h2>
               <p className="text-sm text-muted-foreground">
                 Created At: {team.created_at ?? "N/A"}
@@ -42,10 +39,7 @@ export default function TeamsView(props: { teams: TeamItemType[] }) {
                   Set your daily activity goal.
                 </DrawerDescription>
               </DrawerHeader>
-              <div
-                key={team._id}
-                className="p-4 border border-gray-200 rounded-lg"
-              >
+              <div className="p-4 border border-gray-200 rounded-lg">
                 <h2 className="text-lg font-semibold">{team.name}</h2>
                 <p className="text-sm text-muted-foreground">
                   Created At: {team.created_at ?? "N/A"}

@@ -1,35 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -46,6 +18,7 @@ import {
 } from "@/features/question/utils/question.util";
 import { useSearchParams } from "next/navigation";
 import InformationFormDialog from "./QuestionDialog";
+import EditQuestionDialog from "./EditQuestionDilaog";
 
 const formSchema = z.object({
   question: z.string().min(10),
@@ -84,7 +57,7 @@ export default function QuestionPage() {
 
   const handleStatusChange = async (
     questionId: string,
-    status: "publish" | "hidden"
+    status: "Publish" | "hidden"
   ) => {
     const response = await updateQuestionStatus(questionId, status);
 
@@ -159,19 +132,17 @@ export default function QuestionPage() {
                       >
                         Hide
                       </Button>
-                      {/* <Button variant="outline" size="sm" className="flex-1">
-                        Edit
-                      </Button> */}
+                      <EditQuestionDialog question={question} />
                       <Button
                         variant="default"
                         size="sm"
                         className="flex-1"
                         onClick={() =>
-                          handleStatusChange(question._id, "publish")
+                          handleStatusChange(question._id, "Publish")
                         }
-                        disabled={question.status === "publish"}
+                        disabled={question.status === "Publish"}
                       >
-                        publish
+                        Publish
                       </Button>
                     </CardFooter>
                   </Card>
@@ -184,3 +155,4 @@ export default function QuestionPage() {
     </>
   );
 }
+

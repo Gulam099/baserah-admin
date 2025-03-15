@@ -43,19 +43,21 @@ export async function fetchQuestions(
   }
 }
 
-
 export async function updateQuestionStatus(
   questionId: string,
-  status: "publish" | "hidden"
+  status: "Publish" | "hidden"
 ): Promise<ApiResponseType> {
   try {
-    const response = await fetch(`${ApiBaseUrl}/api/admin/questions/${questionId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ status }),
-    });
+    const response = await fetch(
+      `${ApiBaseUrl}/api/admin/questions/${questionId}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status }),
+      }
+    );
 
     const data = await response.json();
 
@@ -73,7 +75,51 @@ export async function updateQuestionStatus(
     return {
       success: false,
       status: 500,
-      message: error instanceof Error ? error.message : "An unknown error occurred",
+      message:
+        error instanceof Error ? error.message : "An unknown error occurred",
+      data: null,
+    };
+  }
+}
+
+export async function editQuestion(
+  questionId: string,
+  updateData: Partial<{
+    answer: string;
+    question_title: string;
+    question_type: string;
+  }>
+): Promise<ApiResponseType> {
+  try {
+    const response = await fetch(
+      `${ApiBaseUrl}/api/admin/questions/${questionId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updateData),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to update question");
+    }
+
+    return {
+      success: true,
+      status: response.status,
+      message: "Question updated successfully",
+      data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      status: 500,
+      message:
+        error instanceof Error ? error.message : "An unknown error occurred",
       data: null,
     };
   }
