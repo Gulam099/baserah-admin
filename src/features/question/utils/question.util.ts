@@ -45,7 +45,7 @@ export async function fetchQuestions(
 
 export async function updateQuestionStatus(
   questionId: string,
-  status: "Publish" | "hidden"
+  status: "published" | "hidden"
 ): Promise<ApiResponseType> {
   try {
     const response = await fetch(

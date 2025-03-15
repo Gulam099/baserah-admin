@@ -57,7 +57,7 @@ export default function QuestionPage() {
 
   const handleStatusChange = async (
     questionId: string,
-    status: "Publish" | "hidden"
+    status: "published" | "hidden"
   ) => {
     const response = await updateQuestionStatus(questionId, status);
 
@@ -138,9 +138,9 @@ export default function QuestionPage() {
                         size="sm"
                         className="flex-1"
                         onClick={() =>
-                          handleStatusChange(question._id, "Publish")
+                          handleStatusChange(question._id, "published")
                         }
-                        disabled={question.status === "Publish"}
+                        disabled={question.status === "published"}
                       >
                         Publish
                       </Button>
@@ -155,4 +155,3 @@ export default function QuestionPage() {
     </>
   );
 }
-
