@@ -42,3 +42,39 @@ export async function fetchQuestions(
     };
   }
 }
+
+
+export async function updateQuestionStatus(
+  questionId: string,
+  status: "publish" | "hidden"
+): Promise<ApiResponseType> {
+  try {
+    const response = await fetch(`${ApiBaseUrl}/api/admin/questions/${questionId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to update question status");
+    }
+
+    return {
+      success: true,
+      status: response.status,
+      message: "Question status updated successfully",
+      data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      status: 500,
+      message: error instanceof Error ? error.message : "An unknown error occurred",
+      data: null,
+    };
+  }
+}

@@ -40,7 +40,10 @@ import { Badge } from "@/components/ui/badge";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
 import ExportButton from "@/features/home/components/ExportButton";
 import { Question } from "@/features/question/types/question.type";
-import { fetchQuestions } from "@/features/question/utils/question.util";
+import {
+  fetchQuestions,
+  updateQuestionStatus,
+} from "@/features/question/utils/question.util";
 import { useSearchParams } from "next/navigation";
 import InformationFormDialog from "./QuestionDialog";
 
@@ -79,6 +82,18 @@ export default function QuestionPage() {
       });
   }, [currentPage, pageSize]);
 
+  const handleStatusChange = async (
+    questionId: string,
+    status: "publish" | "hidden"
+  ) => {
+    const response = await updateQuestionStatus(questionId, status);
+
+    if (response.success) {
+      console.log("Status updated:", response.data);
+    } else {
+      console.error("Error:", response.message);
+    }
+  };
 
   return (
     <>
@@ -133,13 +148,29 @@ export default function QuestionPage() {
                       </p>
                     </CardContent>
                     <CardFooter className="flex gap-2 print:hidden">
-                      <Button variant="outline" size="sm" className="flex-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() =>
+                          handleStatusChange(question._id, "hidden")
+                        }
+                        disabled={question.status === "hidden"}
+                      >
                         Hide
                       </Button>
-                      <Button variant="outline" size="sm" className="flex-1">
+                      {/* <Button variant="outline" size="sm" className="flex-1">
                         Edit
-                      </Button>
-                      <Button variant="default" size="sm" className="flex-1">
+                      </Button> */}
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() =>
+                          handleStatusChange(question._id, "publish")
+                        }
+                        disabled={question.status === "publish"}
+                      >
                         publish
                       </Button>
                     </CardFooter>

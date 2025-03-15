@@ -184,8 +184,6 @@ export default function AppointmentPage() {
 }
 
 function AppointmentMenu({ appointment }: { appointment: AppointmentType }) {
-
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -206,10 +204,10 @@ function AppointmentMenu({ appointment }: { appointment: AppointmentType }) {
                         <MessageSquare className="mr-2 h-4 w-4" />
                         Customer Conversation
                       </DropdownMenuItem> */}
-        <DropdownMenuItem>
+        {/* <DropdownMenuItem>
           <Ticket className="mr-2 h-4 w-4" />
           Open ticket
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
         {appointment.status !== "cancelled" && (
           <>
             <DropdownMenuItem className="text-red-600">

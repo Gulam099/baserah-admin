@@ -1,8 +1,13 @@
 export type ApprovalContentItemType = {
-  id:string;
-  contentType: "program" | "support_group" | "cultural_library" | "add_specialist";
-  specialist: string;
-  datetime: string; // ISO string
-  approvalStatus: "completed" | "upcoming" | "ongoing" | "cancelled";
-  content:any;
+  _id: string;
+  approval_status: "approved" | "pending" | "cancelled"; // Assuming possible statuses
+  approved_at: string; // Date in string format
+  approved_by: string;
+  category: string;
+  doctor_name: string;
+  file_url: string | null;
+  note: string;
+  title: string;
+  type: "text" | "video" | "article" | "audio"; // Assuming possible types
+  uploaded_by: string;
 };

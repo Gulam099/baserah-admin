@@ -13,6 +13,8 @@ import { format } from "date-fns";
 import { ApiBaseUrl } from "../../../../const";
 import axios from "axios";
 import {
+  specialistContractAuth,
+  specialistContractSend,
   specialistFinalApproved,
   specialistInitialApproved,
 } from "../utils/specialist.util";
@@ -51,15 +53,25 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => {}}>
+            {/* <DropdownMenuItem onClick={() => {}}>
               Canceling the contract
+            </DropdownMenuItem> */}
+            <DropdownMenuItem
+              onClick={() => specialistContractSend(specialist._id)}
+            >
+              Contract Send
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => specialistContractAuth(specialist._id)}
+            >
+              Authenticate Contract
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => specialistInitialApproved(specialist._id)}
             >
               Initial Approval of the contract
             </DropdownMenuItem>
-            <DropdownMenuItem>Contract renewal</DropdownMenuItem>
+
             <DropdownMenuItem
               onClick={() => specialistFinalApproved(specialist._id)}
             >

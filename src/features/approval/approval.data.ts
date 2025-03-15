@@ -1,6 +1,5 @@
-import { ApprovalContentItemType } from "./approval.type";
 
-export const approvals: ApprovalContentItemType[] = [
+export const approvals = [
   {
     contentType: "cultural_library",
     specialist: "Muhammad Al-Muhammad",

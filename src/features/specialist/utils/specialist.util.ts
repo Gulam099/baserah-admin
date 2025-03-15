@@ -80,6 +80,38 @@ export const specialistFinalApproved = async (
     );
   }
 };
+export const specialistContractSend = async (
+  specialist_id: string
+) => {
+  try {
+    const res = await axios.put(
+      `${ApiBaseUrl}/api/admin/send-contract/${specialist_id}`
+    );
+    const resData = res.data;
+    toast.success(resData.message);
+  } catch (error: any) {
+    const resData = error.response.data;
+    toast.error(
+      resData.error || "Failed to send contract to specialist"
+    );
+  }
+};
+export const specialistContractAuth = async (
+  specialist_id: string
+) => {
+  try {
+    const res = await axios.put(
+      `${ApiBaseUrl}/api/admin/authenticate-contract/${specialist_id}`
+    );
+    const resData = res.data;
+    toast.success(resData.message);
+  } catch (error: any) {
+    const resData = error.response.data;
+    toast.error(
+      resData.error || "Failed to authenticate contract to specialist"
+    );
+  }
+};
 
 
 export async function fetchSpecContentRecords(

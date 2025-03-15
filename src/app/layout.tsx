@@ -27,7 +27,7 @@ export default function RootLayout({
       <body className={` ${notoKufiArabic.variable} antialiased`}>
         <AuthProvider>
           {children}
-          <Toaster />
+          <Toaster position={"top-right"} />
         </AuthProvider>
       </body>
     </html>
