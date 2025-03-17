@@ -1,36 +1,22 @@
-import { NextResponse, NextRequest } from "next/server";
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
-export function middleware(request: NextRequest) {
-  // 1) Check if user has a token cookie
-  const token = request.cookies.get("token")?.value;
+const isPublicRoute = createRouteMatcher([
+  '/sign-in(.*)',
+])
 
-  // 2) If user is authenticated
-  if (token) {
-    // If user tries to go to /login, redirect to /dashboard
-    if (
-      request.nextUrl.pathname === "/login" ||
-      request.nextUrl.pathname === "/"
-    ) {
-      return NextResponse.redirect(new URL("/dashboard/approval", request.url));
-    }
-    // Otherwise, allow the request (they can stay on /dashboard or any other route you permit)
-    return NextResponse.next();
-  } else {
-    // 3) If user is NOT authenticated:
-    // if user attempts any route under /dashboard, redirect them to /login
-    if (
-      request.nextUrl.pathname.startsWith("/dashboard") ||
-      request.nextUrl.pathname === "/"
-    ) {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-    // Otherwise, allow the request
-    return NextResponse.next();
+export default clerkMiddleware(async (auth, request) => {
+  const { userId, redirectToSignIn } = await auth()
+  if (!userId && !isPublicRoute(request)) {
+    await auth.protect()
+    return redirectToSignIn()
   }
-}
+})
 
 export const config = {
-  // Apply this middleware to any routes you want to protect or redirect.
-  // For example, if you want to handle /, /login, /dashboard, and all subroutes:
-  matcher: ["/", "/login", "/dashboard/:path*"],
-};
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
+  ],
+}

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Noto_Kufi_Arabic } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-import { AuthProvider } from "@/providers/AuthProvider";
+import { ClerkLoaded, ClerkLoading, ClerkProvider } from "@clerk/nextjs";
+import PageLoading from "@/components/page-loading";
 
 const notoKufiArabic = Noto_Kufi_Arabic({
   variable: "--font-geist-mono",
@@ -20,16 +21,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <meta name="apple-mobile-web-app-title" content="Baserah" />
-      </head>
-      <body className={` ${notoKufiArabic.variable} antialiased`}>
-        <AuthProvider>
-          {children}
-          <Toaster position={"top-right"} />
-        </AuthProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          <meta name="apple-mobile-web-app-title" content="Baserah" />
+        </head>
+        <body className={` ${notoKufiArabic.variable} antialiased`}>
+          <ClerkLoading>
+            <PageLoading />
+          </ClerkLoading>
+          <ClerkLoaded>
+            {children}
+          </ClerkLoaded>
+            <Toaster position={"top-right"} />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

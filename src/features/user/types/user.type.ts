@@ -1,8 +1,5 @@
-export interface UserType {
-  _id: string;
-  name: string;
-  mobile_number: string;
-  email: string;
-  role: string;
-  is_logged_in: boolean;
-}
+// /types/user.type.ts
+import { z } from "zod";
+import { UserSchema } from "../schema/user.schema";
+
+export type UserType = z.infer<typeof UserSchema>;

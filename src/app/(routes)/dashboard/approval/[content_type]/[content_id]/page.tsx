@@ -8,7 +8,7 @@ import {
   updateApprovalStatus,
 } from "@/features/approval/utils/approval.util";
 import { toTitleCase } from "@/features/home/utils/string.utils";
-import { useAuth } from "@/providers/AuthProvider";
+import { useUser } from "@clerk/nextjs";
 import { Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -19,7 +19,7 @@ export default function ApprovalContentPage({
   params: { content_type: string; content_id: string };
 }) {
   const { content_id } = params;
-  const { user } = useAuth();
+  const { user } = useUser();
   const content_type = decodeURIComponent(params.content_type);
   const [content, setContent] = useState<ApprovalContentItemType>();
   const [loading, setLoading] = useState(true);
@@ -33,7 +33,7 @@ export default function ApprovalContentPage({
       const response = await updateApprovalStatus(
         content_id,
         status,
-        user?._id!
+        user?.id!
       );
       toast.success(response.message);
     } catch (error) {
