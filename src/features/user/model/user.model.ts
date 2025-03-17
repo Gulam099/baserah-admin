@@ -20,7 +20,7 @@ const UserSchema = new Schema<User>(
     mobile_number: { type: String, required: true },
     imageUrl: { type: String, required: true },
     fullName: { type: String, required: true },
-    role: { type: String, required: true },
+    role: { type: String, default: "user" },
   },
   { timestamps: true }
 );

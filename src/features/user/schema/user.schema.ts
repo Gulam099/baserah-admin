@@ -8,5 +8,5 @@ export const UserSchema = z.object({
   mobile_number: z.string().min(1, "Mobile Number is required"),
   imageUrl: z.string().url("Invalid image URL"),
   fullName: z.string().min(1, "First name is required"),
-  role: z.string().min(1, "Role is required"),
+  role: z.string(),
 });
