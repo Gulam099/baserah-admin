@@ -12,6 +12,11 @@ export default clerkMiddleware(async (auth, request) => {
     await auth.protect();
     return redirectToSignIn();
   }
+
+  // If user is logged in and trying to access "/" or "/dashboard", redirect to "/dashboard/approval"
+  if (userId && ["/", "/dashboard"].includes(request.nextUrl.pathname)) {
+    return Response.redirect(new URL("/dashboard/approval", request.nextUrl));
+  }
 });
 
 export const config = {
