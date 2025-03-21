@@ -34,7 +34,7 @@ const DoctorSchema = new Schema<Doctor>(
     _id: { type: Schema.Types.ObjectId, auto: true },
     clerkId: { type: String, required: true, unique: true },
     full_name: { type: String },
-    email: { type: String},
+    email: { type: String, unique: true, sparse: true },
     phoneNumber: { type: String, required: true },
     specialization: { type: String },
     sub_specialization: { type: String },

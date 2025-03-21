@@ -74,7 +74,7 @@ export async function POST(req: Request) {
         clerkId: id,
         full_name: (first_name || " ") + (last_name || " "),
         phoneNumber: phone_numbers[0].phone_number,
-        email: email_addresses[0]?.email_address,
+        email: email_addresses[0].email_address,
         profile_picture: image_url,
         specialization: unsafe_metadata.specialization as string,
         sub_specialization: unsafe_metadata.sub_specialization as string,
