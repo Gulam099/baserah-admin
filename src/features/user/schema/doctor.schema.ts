@@ -5,7 +5,7 @@ const DoctorSchema = z.object({
   clerkId: z.string().min(1, "Clerk ID is required"),
   full_name: z.string().min(1, "Full name is required"),
   email: z.string().email("Invalid email address"),
-  phoneNumber: z.string().regex(/^\+\d{10,15}$/, "Invalid phone number"),
+  phoneNumber: z.string().min(1, "Phone Number is required"),
   specialization: z.string().min(1, "Specialization is required"),
   sub_specialization: z.string().optional(),
   experience: z.string().optional(),

@@ -21,11 +21,7 @@ export interface Doctor extends Document {
   fees: string;
   address?: string;
   available: boolean;
-  approval_status:
-    | "Initial Approved"
-    | "Under Review"
-    | "Approved"
-    | "Rejected";
+  approval_status:string;
 }
 
 // Define the Doctor schema
@@ -34,7 +30,7 @@ const DoctorSchema = new Schema<Doctor>(
     _id: { type: Schema.Types.ObjectId, auto: true },
     clerkId: { type: String, required: true, unique: true },
     full_name: { type: String },
-    email: { type: String, default: null, sparse: true },
+    email: { type: String, default: " ", sparse: true },
     phoneNumber: { type: String, required: true },
     specialization: { type: String },
     sub_specialization: { type: String },
@@ -52,7 +48,7 @@ const DoctorSchema = new Schema<Doctor>(
     available: { type: Boolean },
     approval_status: {
       type: String,
-      default: "Under Review",
+      default: "under_review",
     },
   },
   { timestamps: true }
