@@ -23,7 +23,7 @@ const DoctorSchema = z.object({
     .min(1, "At least one education entry is required"),
   profile_picture: z.string().url("Invalid profile picture URL"),
   cv: z.string().url("Invalid CV URL"),
-  fees: z.string().regex(/^\d+$/, "Fees must be a number"),
+  fees: z.string(),
   address: z.string().optional(),
   available: z.boolean(),
   approval_status: z.string(),

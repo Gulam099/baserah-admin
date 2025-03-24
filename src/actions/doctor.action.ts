@@ -6,14 +6,22 @@ import { connect } from "@/lib/db";
 
 export async function createUser(user: Partial<DoctorType>) {
   try {
-    await connect(); // Ensure that the database connection is established
-    const newUser = await Doctor.create(user); // Create a new user in the database
-    return JSON.parse(JSON.stringify(newUser)); // Return the newly created user as a plain object
+    await connect();
+    const existingUser = await Doctor.findOne({ clerkId: user.clerkId });
+
+    if (existingUser) {
+      console.log("User already exists — updating instead");
+      return await updateUser(existingUser._id, user);
+    }
+
+    const newUser = await Doctor.create(user);
+    return JSON.parse(JSON.stringify(newUser));
   } catch (error) {
-    console.error("Error creating user:", error); // Log any errors for debugging
-    throw new Error("Failed to create user"); // Throw an error to be handled by the caller
+    console.error("Error creating user:", error);
+    throw new Error("Failed to create user");
   }
 }
+
 
 export async function updateUser(userId: string, updateData: Partial<DoctorType>) {
   try {

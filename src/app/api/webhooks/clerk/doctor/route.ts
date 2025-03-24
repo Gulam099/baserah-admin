@@ -72,8 +72,8 @@ export async function POST(req: Request) {
 
       const user: Partial<DoctorType> = {
         clerkId: id,
-        full_name: (first_name || " ") + (last_name || " "),
-        phoneNumber: phone_numbers[0].phone_number,
+        full_name: (first_name || "") + (last_name || ""),
+        phoneNumber: phone_numbers[0]?.phone_number,
         email: email_addresses[0]?.email_address || "",
         profile_picture: image_url,
         specialization: unsafe_metadata.specialization as string,
@@ -95,12 +95,16 @@ export async function POST(req: Request) {
       const newUser = await createUser(user);
 
       if (newUser) {
-        await client.users?.updateUserMetadata(id, {
-          publicMetadata: {
-            dbUserId: newUser._id,
-          },
-        });
+        console.log("User created — syncing metadata");
+        try {
+          await client.users?.updateUserMetadata(id, {
+            publicMetadata: { dbUserId: newUser._id },
+          });
+        } catch (err) {
+          console.error("Failed to sync metadata to Clerk:", err);
+        }
       }
+      
 
       return NextResponse.json({
         message: "New doctor created",
@@ -127,8 +131,8 @@ export async function POST(req: Request) {
       } = evt.data;
 
       const updateData: Partial<DoctorType> = {
-        full_name: (first_name || " ") + (last_name || " "),
-        phoneNumber: phone_numbers[0].phone_number,
+        full_name: (first_name || "") + (last_name || ""),
+        phoneNumber: phone_numbers[0]?.phone_number,
         email: email_addresses[0]?.email_address,
         profile_picture: image_url,
         specialization: unsafe_metadata.specialization as string,
