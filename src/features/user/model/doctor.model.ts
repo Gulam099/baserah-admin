@@ -31,7 +31,7 @@ const DoctorSchema = new Schema<Doctor>(
     clerkId: { type: String, required: true, unique: true },
     full_name: { type: String },
     email: { type: String, default: " ", sparse: true },
-    phoneNumber: { type: String, required: true },
+    phoneNumber: { type: String, default: " ", sparse: true },
     specialization: { type: String },
     sub_specialization: { type: String },
     experience: { type: String },
