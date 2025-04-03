@@ -96,6 +96,12 @@ export async function POST(req: Request) {
 
       if (newUser) {
         console.log("User created — syncing metadata");
+        console.log("New User ID to sync:", newUser._id);
+        console.log("Clerk ID received:", id);
+
+        // Small delay to ensure Clerk has processed the user
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
         try {
           await client.users?.updateUserMetadata(id, {
             publicMetadata: { dbUserId: newUser._id },
@@ -104,7 +110,6 @@ export async function POST(req: Request) {
           console.error("Failed to sync metadata to Clerk:", err);
         }
       }
-      
 
       return NextResponse.json({
         message: "New doctor created",
