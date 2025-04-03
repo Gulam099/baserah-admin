@@ -48,9 +48,26 @@ export async function fetchSpecialist(
   }
 }
 
-export const specialistInitialApproved = async (
-  specialist_id: string
-) => {
+export async function updateDoctor(clerkId: string, updates: any) {
+  try {
+    const response = await fetch("/api/doctor", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ clerkId, updates }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message);
+
+    console.log("✅ Doctor updated successfully:", data);
+  } catch (error) {
+    console.error("❌ Error updating doctor:", error);
+  }
+}
+
+export const specialistInitialApproved = async (specialist_id: string) => {
   try {
     const res = await axios.put(
       `${ApiBaseUrl}/api/admin/initial-approval/${specialist_id}`
@@ -59,14 +76,10 @@ export const specialistInitialApproved = async (
     toast.success(resData.message);
   } catch (error: any) {
     const resData = error.response.data;
-    toast.error(
-      resData.error || "Failed to Initially Approved Specialist"
-    );
+    toast.error(resData.error || "Failed to Initially Approved Specialist");
   }
 };
-export const specialistFinalApproved = async (
-  specialist_id: string
-) => {
+export const specialistFinalApproved = async (specialist_id: string) => {
   try {
     const res = await axios.put(
       `${ApiBaseUrl}/api/admin/final-approval/${specialist_id}`
@@ -75,14 +88,10 @@ export const specialistFinalApproved = async (
     toast.success(resData.message);
   } catch (error: any) {
     const resData = error.response.data;
-    toast.error(
-      resData.error || "Failed to Finally Approved Specialist"
-    );
+    toast.error(resData.error || "Failed to Finally Approved Specialist");
   }
 };
-export const specialistContractSend = async (
-  specialist_id: string
-) => {
+export const specialistContractSend = async (specialist_id: string) => {
   try {
     const res = await axios.put(
       `${ApiBaseUrl}/api/admin/send-contract/${specialist_id}`
@@ -91,14 +100,10 @@ export const specialistContractSend = async (
     toast.success(resData.message);
   } catch (error: any) {
     const resData = error.response.data;
-    toast.error(
-      resData.error || "Failed to send contract to specialist"
-    );
+    toast.error(resData.error || "Failed to send contract to specialist");
   }
 };
-export const specialistContractAuth = async (
-  specialist_id: string
-) => {
+export const specialistContractAuth = async (specialist_id: string) => {
   try {
     const res = await axios.put(
       `${ApiBaseUrl}/api/admin/authenticate-contract/${specialist_id}`
@@ -113,7 +118,6 @@ export const specialistContractAuth = async (
   }
 };
 
-
 export async function fetchSpecContentRecords(
   doctorId: string,
   page: number,
@@ -125,10 +129,10 @@ export async function fetchSpecContentRecords(
       {
         params: { page, size },
       }
-    )
+    );
 
-    const result = res.data
-    const pagination = result.pagination || {}
+    const result = res.data;
+    const pagination = result.pagination || {};
 
     return {
       success: true,
@@ -140,9 +144,9 @@ export async function fetchSpecContentRecords(
         page: pagination.current_page ?? page,
         size: pagination.per_page ?? size,
       },
-    }
+    };
   } catch (error: any) {
-    console.error("Failed to fetch specialist content:", error)
+    console.error("Failed to fetch specialist content:", error);
 
     return {
       success: false,
@@ -156,7 +160,7 @@ export async function fetchSpecContentRecords(
         page,
         size,
       },
-    }
+    };
   }
 }
 
@@ -172,8 +176,8 @@ export async function fetchSpecRatingRecords(
         page,
         pageSize: size,
       },
-    })
-    const result = res.data
+    });
+    const result = res.data;
 
     return {
       success: result.success,
@@ -185,21 +189,22 @@ export async function fetchSpecRatingRecords(
         page: result.page,
         size: result.pageSize,
       },
-    }
+    };
   } catch (error: any) {
-    console.error("Failed to fetch ratings:", error)
+    console.error("Failed to fetch ratings:", error);
 
     return {
       success: false,
       status: error?.response?.status || 500,
       message:
-        error?.response?.data?.message || "Failed to fetch ratings from server.",
+        error?.response?.data?.message ||
+        "Failed to fetch ratings from server.",
       data: [],
       page: {
         total: 0,
         page,
         size,
       },
-    }
+    };
   }
 }

@@ -10,34 +10,42 @@ import {
 import { SpecialistType } from "../types/specialist.type";
 import Link from "next/link";
 import { format } from "date-fns";
-import { ApiBaseUrl } from "../../../../const";
-import axios from "axios";
-import {
-  specialistContractAuth,
-  specialistContractSend,
-  specialistFinalApproved,
-  specialistInitialApproved,
-} from "../utils/specialist.util";
+import { useMutation, useQueryClient } from "@tanstack/react-query"; // ✅ Import TanStack Query
+import { updateDoctor } from "../utils/specialist.util";
 
 interface SpecialistCardProps {
   specialist: SpecialistType;
 }
 
 export function SpecialistCard({ specialist }: SpecialistCardProps) {
+  const queryClient = useQueryClient();
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Final Approved":
+      case "final_approved":
         return "bg-green-100 text-green-700";
-      case "Will End soon":
+      case "auth_contract":
         return "bg-red-100 text-red-700";
-      case "Initial Approved":
+      case "initial_approved":
         return "bg-purple-100 text-purple-700";
-      case "Contract Sent":
+      case "contract_send":
         return "bg-yellow-100 text-yellow-700";
       default:
         return "bg-gray-100 text-gray-700";
     }
   };
+
+  // ✅ Use Mutation for updating approval status
+  const mutation = useMutation({
+    mutationFn: ({ clerkId, status }: { clerkId: string; status: string }) =>
+      updateDoctor(clerkId, { unsafeMetadata: { approval_status: status } }),
+    onSuccess: () => {
+      console.log("✅ Approval status updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["specialists"] });
+    },
+    onError: (error) => {
+      console.error("❌ Error updating approval status:", error);
+    },
+  });
 
   return (
     <Card className="w-full">
@@ -53,29 +61,45 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {/* <DropdownMenuItem onClick={() => {}}>
-              Canceling the contract
-            </DropdownMenuItem> */}
             <DropdownMenuItem
-              onClick={() => specialistContractSend(specialist._id)}
+              onClick={() =>
+                mutation.mutate({
+                  clerkId: specialist.clerkId,
+                  status: "contract_send",
+                })
+              }
             >
               Contract Send
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => specialistContractAuth(specialist._id)}
+              onClick={() =>
+                mutation.mutate({
+                  clerkId: specialist.clerkId,
+                  status: "auth_contract",
+                })
+              }
             >
               Authenticate Contract
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => specialistInitialApproved(specialist._id)}
+              onClick={() =>
+                mutation.mutate({
+                  clerkId: specialist.clerkId,
+                  status: "initial_approved",
+                })
+              }
             >
               Initial Approval of the contract
             </DropdownMenuItem>
-
             <DropdownMenuItem
-              onClick={() => specialistFinalApproved(specialist._id)}
+              onClick={() =>
+                mutation.mutate({
+                  clerkId: specialist.clerkId,
+                  status: "final_approved",
+                })
+              }
             >
-              FinalApproval of the contract
+              Final Approval of the contract
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -108,11 +132,12 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
           </div>
           <div className="flex items-center justify-between pt-2">
             <span
-              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(
+              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${getStatusColor(
                 specialist.approval_status
               )}`}
             >
-              {specialist.approval_status ?? "No Status Found"}
+              {specialist.approval_status.split("_").join(" ") ??
+                "No Status Found"}
             </span>
             <Button
               variant="ghost"

@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ClerkLoaded, ClerkLoading, ClerkProvider } from "@clerk/nextjs";
 import PageLoading from "@/components/page-loading";
+import { TanstackProvider } from "@/components/providers/tanstack-provider";
 
 const notoKufiArabic = Noto_Kufi_Arabic({
   variable: "--font-geist-mono",
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
   title: "Baserah",
   description: "Appointment Booking App",
 };
+// Create a client
 
 export default function RootLayout({
   children,
@@ -31,9 +33,9 @@ export default function RootLayout({
             <PageLoading />
           </ClerkLoading>
           <ClerkLoaded>
-            {children}
+            <TanstackProvider>{children}</TanstackProvider>
           </ClerkLoaded>
-            <Toaster position={"top-right"} />
+          <Toaster position={"top-right"} />
         </body>
       </html>
     </ClerkProvider>

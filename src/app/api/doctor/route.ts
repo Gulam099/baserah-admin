@@ -22,7 +22,7 @@ export async function PATCH(req: NextRequest) {
 
     // ✅ Update Clerk User
     console.log(`🔄 [API] Updating Clerk user: ${clerkId} with data`, updates);
-    const updatedUser = await clerkClient.users.updateUserMetadata(
+    const updatedUser = await clerkClient.users?.updateUserMetadata(
       clerkId,
       updates
     );

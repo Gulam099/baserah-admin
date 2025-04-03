@@ -12,6 +12,7 @@ export type SpecialistStatusType =
    */
   export interface SpecialistType {
     _id: string
+    clerkId : string;
     address: string
     age_categories: string[]
     approval_status: string
@@ -25,7 +26,6 @@ export type SpecialistStatusType =
     experience: string
     fees: string
     full_name: string
-    is_authenticated: boolean
     language: string[]
     phoneNumber: string
     profile_picture: string
