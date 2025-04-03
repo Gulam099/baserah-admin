@@ -2,20 +2,24 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { createUser, deleteUser, updateUser } from "@/actions/doctor.action";
 import { NextResponse } from "next/server";
-import { WebhookEvent, clerkClient } from "@clerk/nextjs/server";
+import { WebhookEvent, createClerkClient } from "@clerk/nextjs/server";
 import { DoctorType } from "@/features/user/types/doctor.type";
-import { createClerkClient } from "@clerk/backend";
+// import { createClerkClient } from "@clerk/backend";
+
+// ✅ Fix: Use the correct Clerk Secret Key
+const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY_DOCTOR!;
+const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET_DOCTOR!;
+
+if (!CLERK_SECRET_KEY || !WEBHOOK_SECRET) {
+  throw new Error(
+    "Please add CLERK_SECRET_KEY_DOCTOR and CLERK_WEBHOOK_SECRET_DOCTOR to .env"
+  );
+}
+
+// ✅ Fix: Create Clerk Client only once
+const client = createClerkClient({ secretKey: CLERK_SECRET_KEY });
 
 export async function POST(req: Request) {
-  // You can find this in the Clerk Dashboard -> Webhooks -> choose the endpoint
-  const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET_DOCTOR;
-
-  if (!WEBHOOK_SECRET) {
-    throw new Error(
-      "Please add WEBHOOK_SECRET from Clerk Dashboard to .env or .env.local"
-    );
-  }
-
   // Get the headers
   const headerPayload = await headers();
   const svix_id = headerPayload.get("svix-id");
@@ -57,10 +61,6 @@ export async function POST(req: Request) {
   const { id } = evt.data;
   const eventType = evt.type;
   // const client = await clerkClient();
-  const client = createClerkClient({
-    secretKey: process.env.CLERK_SECRET_KEY_DOCTOR!,
-  });
-  // const client = new Clerk(process.env.CLERK_SECRET_KEY_DOCTOR!);
 
   if (eventType === "user.created") {
     try {

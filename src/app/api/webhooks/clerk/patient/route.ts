@@ -8,16 +8,23 @@ import {
   deletePatient,
 } from "@/actions/patient.action";
 import { NextResponse } from "next/server";
-import { WebhookEvent, clerkClient } from "@clerk/nextjs/server";
+import { WebhookEvent, createClerkClient } from "@clerk/nextjs/server";
 import { PatientType } from "@/features/user/types/patient.type";
 
+// ✅ Fix: Use the correct Clerk Secret Key
+const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY_PATIENT!;
+const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET_PATIENT!;
+
+if (!CLERK_SECRET_KEY || !WEBHOOK_SECRET) {
+  throw new Error(
+    "Please add CLERK_SECRET_KEY_PATIENT and CLERK_WEBHOOK_SECRET_PATIENT to .env"
+  );
+}
+
+// ✅ Fix: Create Clerk Client only once
+const client = createClerkClient({ secretKey: CLERK_SECRET_KEY });
+
 export async function POST(req: Request) {
-  const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET_PATIENT;
-
-  if (!WEBHOOK_SECRET) {
-    throw new Error("Please add WEBHOOK_SECRET_PATIENT to .env");
-  }
-
   const headerPayload = await headers();
   const svix_id = headerPayload.get("svix-id");
   const svix_timestamp = headerPayload.get("svix-timestamp");
@@ -46,7 +53,7 @@ export async function POST(req: Request) {
 
   const { id } = evt.data;
   const eventType = evt.type;
-  const client = await clerkClient();
+  // const client = await clerkClient();
 
   if (eventType === "user.created") {
     try {
@@ -63,42 +70,57 @@ export async function POST(req: Request) {
       const patient: Partial<PatientType> = {
         clerkId: id,
         name: `${first_name || ""} ${last_name || ""}`.trim(),
-        dob: (unsafe_metadata as Record<string, any>)?.dob as string || "",
+        dob: ((unsafe_metadata as Record<string, any>)?.dob as string) || "",
         email: email_addresses[0]?.email_address || "",
         phoneNumber: phone_numbers[0]?.phone_number || "",
         gender: (unsafe_metadata as Record<string, any>)?.gender as string,
-        passcode: (unsafe_metadata as Record<string, any>)?.passcode as string || "",
+        passcode:
+          ((unsafe_metadata as Record<string, any>)?.passcode as string) || "",
         favorites: {
-          programs: ((unsafe_metadata as Record<string, any>)?.favorites?.programs as string[]) || [],
-          doctors: ((unsafe_metadata as Record<string, any>)?.favorites?.doctors as string[]) || [],
-          groups: ((unsafe_metadata as Record<string, any>)?.favorites?.groups as string[]) || [],
-          culturalContent: ((unsafe_metadata as Record<string, any>)?.favorites?.culturalContent as string[]) || [],
+          programs:
+            ((unsafe_metadata as Record<string, any>)?.favorites
+              ?.programs as string[]) || [],
+          doctors:
+            ((unsafe_metadata as Record<string, any>)?.favorites
+              ?.doctors as string[]) || [],
+          groups:
+            ((unsafe_metadata as Record<string, any>)?.favorites
+              ?.groups as string[]) || [],
+          culturalContent:
+            ((unsafe_metadata as Record<string, any>)?.favorites
+              ?.culturalContent as string[]) || [],
         },
         address: {
-          line1: ((unsafe_metadata as Record<string, any>)?.address?.line1 as string) || "",
-          line2: ((unsafe_metadata as Record<string, any>)?.address?.line2 as string) || "",
+          line1:
+            ((unsafe_metadata as Record<string, any>)?.address
+              ?.line1 as string) || "",
+          line2:
+            ((unsafe_metadata as Record<string, any>)?.address
+              ?.line2 as string) || "",
         },
         imageUrl: image_url || "",
-        cards: ((unsafe_metadata as Record<string, any>)?.cards as {
-          abbreviatedName: string;
-          cardNumber: string;
-          nameOnCard: string;
-          expiryDate: string;
-          cvvCode: string;
-        }[]) || [],
-        family: ((unsafe_metadata as Record<string, any>)?.family as {
-          name: string;
-          idNumber: string;
-          age: number;
-          fileNo: string;
-          relationship: string;
-        }[]) || [],
-        notifications: ((unsafe_metadata as Record<string, any>)?.notifications as {
-          date: string;
-          message: string;
-        }[]) || [],
+        cards:
+          ((unsafe_metadata as Record<string, any>)?.cards as {
+            abbreviatedName: string;
+            cardNumber: string;
+            nameOnCard: string;
+            expiryDate: string;
+            cvvCode: string;
+          }[]) || [],
+        family:
+          ((unsafe_metadata as Record<string, any>)?.family as {
+            name: string;
+            idNumber: string;
+            age: number;
+            fileNo: string;
+            relationship: string;
+          }[]) || [],
+        notifications:
+          ((unsafe_metadata as Record<string, any>)?.notifications as {
+            date: string;
+            message: string;
+          }[]) || [],
       };
-      
 
       const newPatient = await savePatient(patient);
 
@@ -204,6 +226,16 @@ export async function POST(req: Request) {
   if (eventType === "user.deleted") {
     try {
       const deletedPatient = await deletePatient(id as string);
+
+      if (deletedPatient) {
+        console.log(
+          `Patient with Clerk ID ${id} has been deleted from the database.`
+        );
+      } else {
+        console.log(
+          `Patient with Clerk ID ${id} was not found in the database.`
+        );
+      }
 
       return NextResponse.json({ message: "Patient deleted successfully" });
     } catch (error) {
