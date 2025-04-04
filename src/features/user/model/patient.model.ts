@@ -58,8 +58,8 @@ const PatientSchema = new Schema<Patient>(
     },
     gender: { type: String, enum: ["Male", "Female", "Other"] },
     dob: { type: Date, required: true },
-    email: { type: String, default: " ", sparse: true },
-    phoneNumber: { type: String, default: " ", sparse: true },
+    email: { type: String, default: "", sparse: true },
+    phoneNumber: { type: String, default: "", sparse: true },
     passcode: { type: String, required: true },
     favorites: {
       programs: [{ type: Schema.Types.ObjectId, ref: "Program", default: [] }],
