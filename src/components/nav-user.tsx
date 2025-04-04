@@ -17,7 +17,7 @@ export function NavUser() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-      <UserButton   />
+        <UserButton />
       </SidebarMenuItem>
     </SidebarMenu>
   );

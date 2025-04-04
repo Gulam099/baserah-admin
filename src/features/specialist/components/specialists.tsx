@@ -54,7 +54,9 @@ export default function SpecialistsPage() {
               ))}
         </div>
 
-        {error && <p className="text-red-500 mt-4">Failed to load specialists.</p>}
+        {error && (
+          <p className="text-red-500 mt-4">Failed to load specialists.</p>
+        )}
       </div>
 
       <UnifiedPagination total={total} />

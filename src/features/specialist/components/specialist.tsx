@@ -39,6 +39,7 @@ import { ApiBaseUrl } from "../../../../const";
 
 interface SpecialistData {
   _id: string;
+  clerkId: string;
   address: string;
   age_categories: string[];
   approval_status: string;
@@ -66,13 +67,6 @@ interface SpecialistData {
   updated_at: string;
 }
 
-interface ApiResponse {
-  // The server response
-  _id: string;
-  // or "id" if it's consistent
-  // plus all other fields
-  [key: string]: any;
-}
 
 export default function SpecialistPage() {
   const { specialist_Id } = useParams<{ specialist_Id: string }>();
@@ -228,6 +222,21 @@ export default function SpecialistPage() {
     },
   ];
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "final_approved":
+        return "bg-green-100 text-green-700";
+      case "auth_contract":
+        return "bg-red-100 text-red-700";
+      case "initial_approved":
+        return "bg-purple-100 text-purple-700";
+      case "contract_send":
+        return "bg-yellow-100 text-yellow-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="grid md:grid-cols-[5fr,2fr] gap-4 items-start justify-between h-full min-h-[80vh]">
@@ -245,9 +254,14 @@ export default function SpecialistPage() {
                   {specialist.full_name || "Unknown Specialist"}
                 </h1>
 
-                <span className="text-sm px-2 py-1 bg-yellow-100 text-yellow-800 rounded">
-                  {specialist.approval_status}
-                </span>
+                <span
+              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${getStatusColor(
+                specialist.approval_status
+              )}`}
+            >
+              {specialist.approval_status.split("_").join(" ") ??
+                "No Status Found"}
+            </span>
               </div>
 
               <p className="text-muted-foreground">

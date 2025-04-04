@@ -95,6 +95,7 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUser();
+  const userId = user?.publicMetadata?.dbUserId as string;
   if (!user) {
     return null;
   }
@@ -119,7 +120,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </Avatar>
           <div className="flex flex-col gap-1 justify-center items-center">
             <h3 className="text-base font-semibold">{user.fullName}</h3>
-            <p className="text-sm">{user.id}</p>
+            <p className="text-xs font-medium bg-primary-50/30 px-2 py-1 rounded-xl">
+              {userId}
+            </p>
           </div>
         </div>
       </SidebarHeader>

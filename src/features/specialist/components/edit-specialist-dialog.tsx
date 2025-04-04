@@ -38,10 +38,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ApiBaseUrl } from "../../../../const";
+import { clerkDoctorClient } from "@/lib/clerkClients";
+import { updateDoctor } from "../utils/specialist.util";
 
 // 1) Define your Zod schema for form fields
 const formSchema = z.object({
-  name: z.string().min(3).optional(),
+  fname: z.string().min(3).optional(),
+  lname: z.string().min(3).optional(),
   email: z.string().email().optional(),
   profile_picture: z.string().optional(),
   specialization: z.string().min(3).optional(),
@@ -52,6 +55,7 @@ const formSchema = z.object({
   response_time: z.string().min(1).optional(),
   education: z.array(z.string()),
   language: z.array(z.string()),
+  fees: z.string().optional(),
   bio: z.string().optional(),
 });
 
@@ -77,7 +81,8 @@ export default function EditSpecialistDialog(props: EditSpecialistDialogProps) {
   const form = useForm<EditSpecialistFormType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: data.full_name,
+      fname: data.full_name.split(" ")[0] || "",
+      lname: data.full_name.split(" ")[1] || "",
       email: data.email,
       profile_picture: data.profile_picture,
       specialization: data.specialization,
@@ -89,6 +94,7 @@ export default function EditSpecialistDialog(props: EditSpecialistDialogProps) {
       education: data.education,
       language: data.language,
       bio: data.bio,
+      fees: data.fees,
     },
   });
 
@@ -96,57 +102,65 @@ export default function EditSpecialistDialog(props: EditSpecialistDialogProps) {
   async function onSubmit(values: EditSpecialistFormType) {
     console.log(values);
 
+    const payload = {
+      firstName: values.fname,
+      lastName: values.lname,
+      unsafeMetadata: {
+        specialization: values.specialization,
+        sub_specialization: values.sub_specialization,
+        experience: values.experience,
+        response_time: values.response_time,
+        age_categories: values.age_categories,
+        consultation_method: values.consultation_method,
+        education: values.education,
+        language: values.language,
+        fees: values.fees,
+        bio: values.bio,
+      },
+    };
+
     try {
-      // Prepare multipart/form-data
-      const formData = new FormData();
+      // // Prepare multipart/form-data
+      // const formData = new FormData();
 
-      // Append text fields
-      formData.append("name", values.name ?? "");
-      formData.append("email", values.email ?? "");
-      formData.append("specialization", values.specialization ?? "");
-      formData.append("sub_specialization", values.sub_specialization ?? "");
-      formData.append("experience", values.experience ?? "");
-      formData.append("response_time", values.response_time ?? "");
-      formData.append("bio", values.bio ?? "");
+      // // Append text fields
+      // formData.append("name", values.name ?? "");
+      // formData.append("email", values.email ?? "");
+      // formData.append("specialization", values.specialization ?? "");
+      // formData.append("sub_specialization", values.sub_specialization ?? "");
+      // formData.append("experience", values.experience ?? "");
+      // formData.append("response_time", values.response_time ?? "");
+      // formData.append("bio", values.bio ?? "");
 
-      if (values.age_categories) {
-        formData.append("age_categories", values.age_categories.join(","));
-      }
-      if (values.consultation_method) {
-        formData.append(
-          "consultation_method",
-          values.consultation_method.join(",")
-        );
-      }
-      if (values.education) {
-        formData.append("education", values.education.join(","));
-      }
-      if (values.language) {
-        formData.append("language", values.language.join(","));
-      }
+      // if (values.age_categories) {
+      //   formData.append("age_categories", values.age_categories.join(","));
+      // }
+      // if (values.consultation_method) {
+      //   formData.append(
+      //     "consultation_method",
+      //     values.consultation_method.join(",")
+      //   );
+      // }
+      // if (values.education) {
+      //   formData.append("education", values.education.join(","));
+      // }
+      // if (values.language) {
+      //   formData.append("language", values.language.join(","));
+      // }
 
-      if (files && files.length > 0) {
-        formData.append("profile_picture", files[0]);
-      }
+      // if (files && files.length > 0) {
+      //   formData.append("profile_picture", files[0]);
+      // }
 
-      // 5) Send PUT request
-      const url = `${ApiBaseUrl}/api/doctor/update-profile/${data._id}`;
-      const res = await fetch(url, {
-        method: "PUT",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        // handle error
-        const errorData = await res.json();
-        console.error("Server error:", errorData);
-        toast.error(errorData?.message || "Failed to update specialist.");
-        return;
-      }
-
-      const responseData = await res.json();
+      // // 5) Send PUT request
+      // const url = `${ApiBaseUrl}/api/doctor/update-profile/${data._id}`;
+      // const res = await fetch(url, {
+      //   method: "PUT",
+      //   body: formData,
+      // });
+      const response = await updateDoctor(data.clerkId, payload);
       toast.success("Specialist updated successfully!");
-      console.log("Server response", responseData);
+      console.log("Server response", response);
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
@@ -174,16 +188,27 @@ export default function EditSpecialistDialog(props: EditSpecialistDialogProps) {
                 <div className="col-span-4">
                   <FormField
                     control={form.control}
-                    name="name"
+                    name="fname"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Full Name</FormLabel>
+                        <FormLabel>First Name</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="Jone doe"
-                            type="text"
-                            {...field}
-                          />
+                          <Input placeholder="Jone" type="text" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="col-span-4">
+                  <FormField
+                    control={form.control}
+                    name="lname"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Last Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="doe" type="text" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -365,6 +390,19 @@ export default function EditSpecialistDialog(props: EditSpecialistDialogProps) {
                 )}
               />
 
+              <FormField
+                control={form.control}
+                name="fees"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Fees ( SAR )</FormLabel>
+                    <FormControl>
+                      <Input placeholder="200 SAR" type="text" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="bio"
