@@ -24,6 +24,15 @@ const DoctorSchema = z.object({
   profile_picture: z.string().url("Invalid profile picture URL"),
   cv: z.string().url("Invalid CV URL"),
   fees: z.string(),
+  schedules: z.record(
+    z
+      .object({
+        start: z.string().nullable().optional(),
+        end: z.string().nullable().optional(),
+        isHoliday: z.boolean().optional(),
+      })
+      .optional()
+  ),
   address: z.string().optional(),
   available: z.boolean(),
   approval_status: z.string(),
