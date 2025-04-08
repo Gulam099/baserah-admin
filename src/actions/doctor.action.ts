@@ -22,11 +22,15 @@ export async function createUser(user: Partial<DoctorType>) {
   }
 }
 
-
-export async function updateUser(userId: string, updateData: Partial<DoctorType>) {
+export async function updateUser(
+  userId: string,
+  updateData: Partial<DoctorType>
+) {
   try {
     await connect();
-    const updatedUser = await Doctor.findByIdAndUpdate(userId, updateData, { new: true });
+    const updatedUser = await Doctor.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    });
     return JSON.parse(JSON.stringify(updatedUser));
   } catch (error) {
     console.log("Error updating user:", error);
