@@ -18,6 +18,15 @@ export default function Home() {
           <Button asChild>
             <Link href={"/privacy-policy"}>Privacy policy</Link>
           </Button>
+          <Button asChild>
+            <Link
+              href={`/payment/?${encodeURIComponent(
+                "doctor_id=67ee649e103cb69f36b5be80&patient_id=67ef8b5cbb0b7fdfb6bd9b12"
+              )}`}
+            >
+              Payment
+            </Link>
+          </Button>
         </div>
       </div>
     </>
