@@ -21,7 +21,7 @@ export default function PaymentPage() {
       currency: "SAR",
       description: "Test API",
       publishable_api_key: moyasarPublicKey,
-      callback_url: "http://localhost:3000/payment/status",
+      callback_url: "http://www.baserah.sa/payment/status",
       methods: ["creditcard", "stcpay"],
       payment_button_type: "book",
       language: "en",
