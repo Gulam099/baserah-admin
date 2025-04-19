@@ -8,7 +8,13 @@ import { useEffect, useRef, useState } from "react";
 
 const moyasarPublicKey = process.env.NEXT_PUBLIC_MOYASAR_TEST_PUBLIC_KEY;
 
-export default function PaymentPage() {
+export default function PaymentPage({
+  params,
+  searchParams,
+}: {
+  params: { slug: string }
+  searchParams: { [key: string]: string | string[] | undefined }
+}) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const [isCardSave, setIsCardSave] = useState(true);
@@ -23,13 +29,15 @@ export default function PaymentPage() {
       publishable_api_key: moyasarPublicKey,
       callback_url: "http://www.baserah.sa/payment/status",
       methods: ["creditcard", "stcpay"],
-      payment_button_type: "book",
-      language: "en",
+      language: "EN",
       credit_card: {
         save_card: isCardSave,
       },
     });
   };
+  useEffect(() => {
+    moyasarInit();
+  }, [isCardSave]);
 
   return (
     <>
@@ -41,8 +49,8 @@ export default function PaymentPage() {
         rel="stylesheet"
         href="https://cdn.moyasar.com/mpf/1.7.3/moyasar.css"
       />
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="bg-background rounded-xl max-w-2xl w-full overflow-hidden flex flex-col gap-6">
+      <div className="min-h-screen bg-background flex  items-center justify-center ">
+        <div className="bg-background rounded-xl max-w-sm w-full overflow-hidden flex flex-col gap-6 p-4">
           <div className="flex gap-2 justify-center items-center">
             <Logo variant="MINI" className="size-16" />
             <h1 className="text-2xl font-semibold">Payment</h1>
