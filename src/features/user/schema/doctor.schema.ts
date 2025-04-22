@@ -36,6 +36,16 @@ const DoctorSchema = z.object({
   address: z.string().optional(),
   available: z.boolean(),
   approval_status: z.string(),
+  schedule: z
+    .object({
+      start_time: z.string(),
+      end_time: z.string(),
+      days_of_week: z.array(z.string()),
+      timezone: z.string(),
+      effective_from: z.string(),
+      effective_to: z.string(),
+    })
+    .optional(),
 });
 
 export default DoctorSchema;
