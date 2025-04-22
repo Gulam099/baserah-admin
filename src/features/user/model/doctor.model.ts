@@ -21,7 +21,15 @@ export interface Doctor extends Document {
   fees: string;
   address?: string;
   available: boolean;
-  approval_status:string;
+  approval_status: string;
+  schedule: {
+    start_time: string;
+    end_time: string;
+    days_of_week: string[];
+    timezone: string;
+    effective_from: string;
+    effective_to: string;
+  };
 }
 
 // Define the Doctor schema
@@ -49,6 +57,14 @@ const DoctorSchema = new Schema<Doctor>(
     approval_status: {
       type: String,
       default: "under_review",
+    },
+    schedule: {
+      start_time: { type: String },
+      end_time: { type: String },
+      days_of_week: { type: [String] },
+      timezone: { type: String },
+      effective_from: { type: String },
+      effective_to: { type: String },
     },
   },
   { timestamps: true }
