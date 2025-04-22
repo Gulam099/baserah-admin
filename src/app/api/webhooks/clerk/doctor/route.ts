@@ -92,7 +92,7 @@ export async function POST(req: Request) {
         education: unsafe_metadata.education as string[],
         cv: unsafe_metadata.cv as string,
         fees: unsafe_metadata.fees as string,
-        schedules: unsafe_metadata.schedules as Record<string, any>,
+        schedule: unsafe_metadata.schedule as any,
         address: unsafe_metadata.address as string,
         available: unsafe_metadata.available as boolean,
         approval_status: unsafe_metadata.approval_status as string,
