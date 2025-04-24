@@ -1,8 +1,10 @@
 import { z } from "zod";
 
 export const PaymentZodSchema = z.object({
+  _id:z.string().optional(),
   patientId: z.string().min(1),
   doctorId: z.string().min(1),
+  moyasarPaymentId: z.string().optional(),
   amount: z.number().positive(),
   currency: z.string().default("SAR"),
   description: z.string(),
@@ -24,6 +26,7 @@ export const PaymentZodSchema = z.object({
     message: z.string().optional(),
   }),
   invoiceId: z.string().optional(),
+  paidAt: z.date().optional(), // To track successful payment date
   createdAt: z.date(),
   updatedAt: z.date().optional(),
 });

@@ -1,13 +1,50 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Document, ObjectId } from "mongoose";
 
-const PaymentSchema = new Schema(
+// Define the interface representing a Payment document in MongoDB
+export interface PaymentSchema extends Document {
+  _id: ObjectId;
+  patientId: ObjectId;
+  doctorId: ObjectId;
+  moyasarPaymentId?: string;
+  amount: number;
+  currency: string;
+  description: string;
+  status:
+    | "initiated"
+    | "paid"
+    | "failed"
+    | "authorized"
+    | "captured"
+    | "refunded"
+    | "voided"
+    | "verified";
+  source?: {
+    type: "stcpay" | "creditcard";
+    company?: string;
+    name?: string;
+    number?: string;
+    message?: string;
+  };
+  invoiceId?: ObjectId;
+  refundId?: ObjectId;
+  paidAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+// Define the Payment schema
+const PaymentSchema = new Schema<PaymentSchema>(
   {
-    patientId: { type: String, required: true },
-    doctorId: { type: String, required: true },
-    paymentId : { type: String },
+    _id: { type: Schema.Types.ObjectId, auto: true },
+
+    patientId: { type: Schema.Types.ObjectId, ref: "Patient", required: true },
+    doctorId: { type: Schema.Types.ObjectId, ref: "Doctor", required: true },
+
+    moyasarPaymentId: { type: String },
     amount: { type: Number, required: true },
     currency: { type: String, default: "SAR" },
     description: { type: String, required: true },
+
     status: {
       type: String,
       enum: [
@@ -22,6 +59,7 @@ const PaymentSchema = new Schema(
       ],
       default: "initiated",
     },
+
     source: {
       type: {
         type: String,
@@ -32,10 +70,24 @@ const PaymentSchema = new Schema(
       number: String,
       message: String,
     },
-    invoiceId: String,
+
+    invoiceId: {
+      type: Schema.Types.ObjectId,
+      ref: "Invoice",
+    },
+    refundId: {
+      type: Schema.Types.ObjectId,
+      ref: "Refund",
+    },
+
+    paidAt: { type: Date },
   },
   { timestamps: true }
 );
 
-export const Payment =
-  mongoose.models.Payment || mongoose.model("Payment", PaymentSchema);
+// Create and export the Payment model
+const Payment =
+  mongoose.models.Payment ||
+  mongoose.model<PaymentSchema>("Payment", PaymentSchema, "payments");
+
+export default Payment;

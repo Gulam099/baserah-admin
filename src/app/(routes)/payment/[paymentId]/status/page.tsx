@@ -8,13 +8,18 @@ import { Badge } from "@/components/ui/badge"
 import { motion } from "motion/react"
 import Link from "next/link"
 
-export default function PaymentStatusPage() {
-  const params = useSearchParams()
+export default function PaymentStatusPage({
+  params,
+  searchParams,
+}: {
+  params: { paymentId: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
 
-  const status = params.get("status") // success, failed
-  const message = decodeURIComponent(params.get("message") || "")
-  const amount = params.get("amount")
-  const paymentId = params.get("id")
+  const status = searchParams.status // success, failed
+  const message = decodeURIComponent(searchParams.message as string || "")
+  const amount = searchParams.amount
+  const paymentId = searchParams.id
   const formattedAmount = amount ? (Number(amount) / 100).toFixed(2) : "0.00"
 
   const isSuccess = status === "paid" || status === "success" || status === "successful"
