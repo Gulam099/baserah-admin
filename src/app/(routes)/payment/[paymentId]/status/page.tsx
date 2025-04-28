@@ -1,12 +1,15 @@
-"use client"
+"use client";
 
-import { useSearchParams } from "next/navigation"
-import { CheckCircle, XCircle, AlertTriangle, Home, Download, ArrowRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { motion } from "motion/react"
-import Link from "next/link"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { CheckCircle, XCircle, AlertTriangle, Home, Download, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { motion } from "motion/react";
+import Link from "next/link";
+
+const moyasarSecretKey = process.env.MOYASAR_TEST_SECRET_KEY;
 
 export default function PaymentStatusPage({
   params,
@@ -15,19 +18,85 @@ export default function PaymentStatusPage({
   params: { paymentId: string };
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
+  const router = useRouter();
+  const status = searchParams.status; // initial status from query (may change after verifying)
+  const message = decodeURIComponent(searchParams.message as string || "");
+  const amount = searchParams.amount;
+  const moyasarPaymentId = searchParams.id as string;
 
-  const status = searchParams.status // success, failed
-  const message = decodeURIComponent(searchParams.message as string || "")
-  const amount = searchParams.amount
-  const paymentId = searchParams.id
-  const formattedAmount = amount ? (Number(amount) / 100).toFixed(2) : "0.00"
+  const [loading, setLoading] = useState(true);
+  const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
+  const [paymentMessage, setPaymentMessage] = useState<string>("");
+  const [formattedAmount, setFormattedAmount] = useState<string>("0.00");
 
-  const isSuccess = status === "paid" || status === "success" || status === "successful"
-  const isFailed = status === "failed"
-  const isPending = !isSuccess && !isFailed
+  const isSuccess = paymentStatus === "paid" || paymentStatus === "success" || paymentStatus === "successful";
+  const isFailed = paymentStatus === "failed";
+  const isPending = !isSuccess && !isFailed;
+
+  useEffect(() => {
+    async function verifyAndUpdatePayment() {
+      if (!moyasarPaymentId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // 1. Fetch Payment Details from Moyasar
+        const moyasarRes = await fetch(`https://api.moyasar.com/v1/payments/${moyasarPaymentId}`, {
+          headers: {
+            Authorization: `Basic ${btoa(`${moyasarSecretKey}:`)}`, 
+          },
+        });
+
+        if (!moyasarRes.ok) throw new Error("Failed to fetch Moyasar payment details.");
+
+        const paymentData = await moyasarRes.json();
+
+        // 2. Update Payment + Booking in DB via Mutation
+        const updateRes = await fetch("/api/payment", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            moyasarPaymentId: paymentData.id,
+            status: paymentData.status,
+            amount: paymentData.amount,
+            source : paymentData.source,
+            invoiceId : paymentData.invoice_id,
+            paidAt: paymentData.captured_at,
+          }),
+        });
+
+        if (!updateRes.ok) throw new Error("Failed to update payment status.");
+
+        // 3. Update UI State
+        setPaymentStatus(paymentData.status);
+        setFormattedAmount((Number(paymentData.amount) / 100).toFixed(2));
+        setPaymentMessage(paymentData.description || "");
+
+      } catch (err: any) {
+        console.error(err.message);
+        setPaymentStatus("failed");
+        setPaymentMessage(err.message || "Something went wrong while verifying payment.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    verifyAndUpdatePayment();
+  }, [moyasarPaymentId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-slate-500"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100 p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -51,8 +120,8 @@ export default function PaymentStatusPage({
                 isSuccess
                   ? "bg-emerald-50 text-emerald-500"
                   : isFailed
-                    ? "bg-rose-50 text-rose-500"
-                    : "bg-amber-50 text-amber-500"
+                  ? "bg-rose-50 text-rose-500"
+                  : "bg-amber-50 text-amber-500"
               }`}
             >
               {isSuccess ? (
@@ -72,8 +141,8 @@ export default function PaymentStatusPage({
               {isSuccess
                 ? "Your transaction has been completed successfully."
                 : isFailed
-                  ? `Transaction failed. ${message}`
-                  : `Status: ${status || "Unknown"}`}
+                ? `Transaction failed. ${paymentMessage}`
+                : `Status: ${paymentStatus || "Unknown"}`}
             </p>
           </CardHeader>
 
@@ -86,7 +155,7 @@ export default function PaymentStatusPage({
 
               <div className="flex justify-between items-center">
                 <span className="text-slate-500">Payment ID</span>
-                <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded">{paymentId || "N/A"}</span>
+                <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded">{moyasarPaymentId || "N/A"}</span>
               </div>
 
               <div className="flex justify-between items-center">
@@ -96,18 +165,18 @@ export default function PaymentStatusPage({
                     isSuccess
                       ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
                       : isFailed
-                        ? "bg-rose-100 text-rose-700 hover:bg-rose-100"
-                        : "bg-amber-100 text-amber-700 hover:bg-amber-100"
+                      ? "bg-rose-100 text-rose-700 hover:bg-rose-100"
+                      : "bg-amber-100 text-amber-700 hover:bg-amber-100"
                   }`}
                 >
-                  {status || "Unknown"}
+                  {paymentStatus || "Unknown"}
                 </Badge>
               </div>
 
-              {message && (
+              {paymentMessage && (
                 <div className="pt-2">
                   <span className="text-slate-500 text-sm">Message</span>
-                  <p className="text-slate-700 text-sm mt-1 break-words">{message}</p>
+                  <p className="text-slate-700 text-sm mt-1 break-words">{paymentMessage}</p>
                 </div>
               )}
             </div>
@@ -121,22 +190,15 @@ export default function PaymentStatusPage({
               </Link>
             </Button>
 
-            {isSuccess ? (
-              <Button className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600">
-                <Download className="mr-2 size-4" />
-                Download Receipt
-              </Button>
-            ) : isFailed ? (
-              <Button className="w-full sm:w-auto bg-rose-500 hover:bg-rose-600">
-                Try Again
-                <ArrowRight className="ml-2 size-4" />
-              </Button>
-            ) : (
-              <Button className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600">
-                Check Status
-                <ArrowRight className="ml-2 size-4" />
-              </Button>
-            )}
+            <Button
+              className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600"
+              onClick={() => {
+                router.push(`myapp://account/appointment`); // 👈 Deep link back to your app booking page
+              }}
+            >
+              Continue
+              <ArrowRight className="ml-2 size-4" />
+            </Button>
           </CardFooter>
         </Card>
 
@@ -145,5 +207,5 @@ export default function PaymentStatusPage({
         </p>
       </motion.div>
     </div>
-  )
+  );
 }

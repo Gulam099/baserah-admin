@@ -26,15 +26,6 @@ export default function PaymentPage({
 
   const [isCardSave, setIsCardSave] = useState(true);
 
-  const fetchPayment = async () => {
-    const res = await fetch(`/api/payment?paymentId=${paymentId}`);
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.message);
-    }
-    return data;
-  };
-
   const {
     data: paymentObj,
     isLoading: isPaymentLoading,
@@ -42,29 +33,55 @@ export default function PaymentPage({
     error: PaymentError,
   } = useQuery({
     queryKey: ["payment", paymentId],
-    queryFn: fetchPayment,
+    queryFn: async () => {
+      const res = await fetch(`/api/payment?paymentId=${paymentId}`);
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.message);
+      }
+      return data;
+    },
     refetchOnWindowFocus: false,
   });
 
-  if (isPaymentLoading) {
+  const {
+    data: bookingObj,
+    isLoading: isBookingLoading,
+    isError: isBookingError,
+    error: BookingError,
+  } = useQuery({
+    queryKey: ["booking", paymentId],
+    queryFn: async () => {
+      const res = await fetch(`/api/booking?paymentId=${paymentId}`);
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.message);
+      }
+      return data;
+    },
+    refetchOnWindowFocus: false,
+  });
+
+  if (isPaymentLoading || isBookingLoading) {
     return <div>Loading...</div>;
   }
   const payment: any = paymentObj?.data;
   const doctor = payment?.doctorId;
   const patient = payment?.patientId;
-  console.log(payment);
+  const booking = bookingObj?.data;
+  // console.log(payment);
 
-  if (isPaymentError) {
+  if (isPaymentError || isBookingError) {
     return (
       <div className="min-h-screen bg-background flex  items-center justify-center ">
         <div className="bg-background rounded-xl max-w-sm w-full overflow-hidden flex flex-col gap-6 p-4">
           <div className="flex gap-2 justify-center items-center">
             <Logo variant="MINI" className="size-16" />
-            <h1 className="text-2xl font-semibold">Payment</h1>
+            <h1 className="text-2xl font-semibold">Payment </h1>
           </div>
           <div>
             <p className="text-center text-muted-foreground">
-              {PaymentError.message}
+              {PaymentError?.message} or {BookingError?.message}
             </p>
           </div>
         </div>
@@ -80,7 +97,7 @@ export default function PaymentPage({
       currency: payment.currency,
       description: payment.description,
       publishable_api_key: moyasarPublicKey,
-      callback_url: `http://www.baserah.sa/payment/${payment._id}/status`,
+      callback_url: `https://localhost:3000/payment/${payment._id}/status`,
       methods: ["creditcard", "stcpay"],
       language: language,
       credit_card: {
@@ -88,6 +105,7 @@ export default function PaymentPage({
       },
       metadata: {
         payment_id: payment._id,
+        booking_id: booking?._id,
       },
     });
   };
@@ -113,7 +131,7 @@ export default function PaymentPage({
           </div>
           <div className="border rounded-xl px-4 py-4">
             <div className="flex gap-4 items-start">
-              <Avatar className="size-16">
+              <Avatar className="size-14">
                 <AvatarImage src={doctor.profile_picture} />
                 <AvatarFallback>{doctor.full_name.split(0, 2)}</AvatarFallback>
               </Avatar>
@@ -129,6 +147,7 @@ export default function PaymentPage({
                     {currencyFormatter(payment.amount, 0, payment.currency)}
                   </p>
                   <p>Description : {payment?.description}</p>
+                  <p>Booking id : {booking?._id}</p>
                 </div>
               </div>
             </div>
