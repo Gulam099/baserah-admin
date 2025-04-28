@@ -97,7 +97,7 @@ export default function PaymentPage({
       currency: payment.currency,
       description: payment.description,
       publishable_api_key: moyasarPublicKey,
-      callback_url: `https://localhost:3000/payment/${payment._id}/status`,
+      callback_url: `https://www.baserah.sa/payment/${payment._id}/status`,
       methods: ["creditcard", "stcpay"],
       language: language,
       credit_card: {
