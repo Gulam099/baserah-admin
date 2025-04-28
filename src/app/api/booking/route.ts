@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { connect } from "@/lib/db";
 import Booking from "@/features/appointment/model/booking.model";
+import "@/features/user/model/doctor.model";
+import  "@/features/user/model/patient.model";
+import  "@/features/finance/model/payment.model";
 
 interface ApiResponseType<T = any> {
   success: boolean;
