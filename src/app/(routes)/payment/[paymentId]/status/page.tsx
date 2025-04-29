@@ -2,14 +2,25 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle, XCircle, AlertTriangle, Home, Download, ArrowRight } from "lucide-react";
+import {
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Home,
+  ArrowRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "motion/react";
 import Link from "next/link";
-
-const moyasarSecretKey = process.env.MOYASAR_TEST_SECRET_KEY;
+import { useMutation } from "@tanstack/react-query";
+import PageLoading from "@/components/page-loading";
 
 export default function PaymentStatusPage({
   params,
@@ -19,92 +30,87 @@ export default function PaymentStatusPage({
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const router = useRouter();
-  const status = searchParams.status; // initial status from query (may change after verifying)
-  const message = decodeURIComponent(searchParams.message as string || "");
+  const status = searchParams.status as string;
+  const message = decodeURIComponent((searchParams.message as string) || "");
   const amount = searchParams.amount;
   const moyasarPaymentId = searchParams.id as string;
 
+  const [shouldUpdate, setShouldUpdate] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
-  const [paymentMessage, setPaymentMessage] = useState<string>("");
-  const [formattedAmount, setFormattedAmount] = useState<string>("0.00");
 
-  const isSuccess = paymentStatus === "paid" || paymentStatus === "success" || paymentStatus === "successful";
-  const isFailed = paymentStatus === "failed";
-  const isPending = !isSuccess && !isFailed;
+  const isSuccess =
+    status === "paid" || status === "success" || status === "successful";
+  const isFailed = status === "failed";
+
+  const mutation = useMutation({
+    mutationFn: async function updatePaymentStatus() {
+      await fetch(`/api/payment?paymentId=${params.paymentId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          moyasarPaymentId,
+          status,
+          amount,
+          paidAt: new Date(),
+        }),
+      });
+    },
+  });
 
   useEffect(() => {
-    async function verifyAndUpdatePayment() {
-      if (!moyasarPaymentId) {
-        setLoading(false);
-        return;
-      }
-
+    async function checkAndUpdate() {
       try {
-        // 1. Fetch Payment Details from Moyasar
-        const moyasarRes = await fetch(`https://api.moyasar.com/v1/payments/${moyasarPaymentId}`, {
-          headers: {
-            Authorization: `Basic ${btoa(`${moyasarSecretKey}:`)}`, 
-          },
-        });
+        const res = await fetch(`/api/payment?paymentId=${params.paymentId}`);
+        if (!res.ok) throw new Error("Failed to fetch payment data");
 
-        if (!moyasarRes.ok) throw new Error("Failed to fetch Moyasar payment details.");
+        const existingPayment = await res.json();
 
-        const paymentData = await moyasarRes.json();
-
-        // 2. Update Payment + Booking in DB via Mutation
-        const updateRes = await fetch("/api/payment", {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            moyasarPaymentId: paymentData.id,
-            status: paymentData.status,
-            amount: paymentData.amount,
-            source : paymentData.source,
-            invoiceId : paymentData.invoice_id,
-            paidAt: paymentData.captured_at,
-          }),
-        });
-
-        if (!updateRes.ok) throw new Error("Failed to update payment status.");
-
-        // 3. Update UI State
-        setPaymentStatus(paymentData.status);
-        setFormattedAmount((Number(paymentData.amount) / 100).toFixed(2));
-        setPaymentMessage(paymentData.description || "");
-
-      } catch (err: any) {
-        console.error(err.message);
-        setPaymentStatus("failed");
-        setPaymentMessage(err.message || "Something went wrong while verifying payment.");
+        if (
+          !existingPayment.status ||
+          existingPayment.status.toLowerCase() !== status.toLowerCase()
+        ) {
+          setShouldUpdate(true);
+        }
+      } catch (err) {
+        console.error("Error fetching payment:", err);
       } finally {
         setLoading(false);
       }
     }
 
-    verifyAndUpdatePayment();
-  }, [moyasarPaymentId]);
+    checkAndUpdate();
+  }, [params.paymentId, status]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-slate-500"></div>
-      </div>
-    );
+  useEffect(() => {
+    if (!loading && shouldUpdate) {
+      mutation.mutate();
+    }
+  }, [shouldUpdate]);
+
+  if (loading || mutation.isPending) {
+    return <PageLoading />;
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-neutral-50 to-neutral-100 p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <Card className="border-0 shadow-lg overflow-hidden">
-          <div className={`h-2 w-full ${isSuccess ? "bg-emerald-500" : isFailed ? "bg-rose-500" : "bg-amber-500"}`} />
+        <Card className="border shadow-none overflow-hidden">
+          <div
+            className={`h-2 w-full ${
+              isSuccess
+                ? "bg-emerald-500"
+                : isFailed
+                ? "bg-rose-500"
+                : "bg-amber-500"
+            }`}
+          />
 
           <CardHeader className="pt-8 pb-0 flex flex-col items-center">
             <motion.div
@@ -133,33 +139,39 @@ export default function PaymentStatusPage({
               )}
             </motion.div>
 
-            <h1 className="text-2xl font-bold text-center">
-              {isSuccess ? "Payment Successful" : isFailed ? "Payment Failed" : "Payment Processing"}
+            <h1 className="text-xl font-bold text-center">
+              {isSuccess
+                ? "Payment Successful"
+                : isFailed
+                ? "Payment Failed"
+                : "Payment Processing"}
             </h1>
 
-            <p className="text-slate-500 mt-2 text-center max-w-xs">
+            <p className="text-neutral-500 mt-2 text-center text-sm max-w-xs">
               {isSuccess
                 ? "Your transaction has been completed successfully."
                 : isFailed
-                ? `Transaction failed. ${paymentMessage}`
-                : `Status: ${paymentStatus || "Unknown"}`}
+                ? `Transaction failed. ${message}`
+                : `Status: ${status || "Unknown"}`}
             </p>
           </CardHeader>
 
           <CardContent className="pt-6">
-            <div className="bg-slate-50 rounded-lg p-4 space-y-3">
+            <div className="bg-neutral-50 rounded-lg p-4 space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-slate-500">Amount</span>
-                <span className="font-semibold text-lg">{formattedAmount} SAR</span>
+                <span className="text-neutral-500 text-sm">Amount</span>
+                <span className="font-semibold text-base">{amount} SAR</span>
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="text-slate-500">Payment ID</span>
-                <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded">{moyasarPaymentId || "N/A"}</span>
+                <span className="text-neutral-500 text-sm">Payment ID</span>
+                <span className="font-mono text-xs bg-neutral-100 px-2 py-1 rounded">
+                  {params.paymentId || "N/A"}
+                </span>
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="text-slate-500">Status</span>
+                <span className="text-neutral-500 text-sm">Status</span>
                 <Badge
                   className={`${
                     isSuccess
@@ -167,33 +179,28 @@ export default function PaymentStatusPage({
                       : isFailed
                       ? "bg-rose-100 text-rose-700 hover:bg-rose-100"
                       : "bg-amber-100 text-amber-700 hover:bg-amber-100"
-                  }`}
+                  } , capitalize`}
                 >
-                  {paymentStatus || "Unknown"}
+                  {status || "Unknown"}
                 </Badge>
               </div>
 
-              {paymentMessage && (
-                <div className="pt-2">
-                  <span className="text-slate-500 text-sm">Message</span>
-                  <p className="text-slate-700 text-sm mt-1 break-words">{paymentMessage}</p>
+              {message && (
+                <div className="flex justify-between items-center">
+                  <span className="text-neutral-500 text-sm">Message</span>
+                  <p className="text-neutral-700 text-sm mt-1 break-words">
+                    {message}
+                  </p>
                 </div>
               )}
             </div>
           </CardContent>
 
           <CardFooter className="flex flex-col sm:flex-row gap-3 pt-2 pb-6">
-            <Button asChild variant="outline" className="w-full sm:w-auto">
-              <Link href="/">
-                <Home className="mr-2 size-4" />
-                Return Home
-              </Link>
-            </Button>
-
             <Button
-              className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600"
+              className="w-full bg-emerald-500 hover:bg-emerald-600"
               onClick={() => {
-                router.push(`myapp://account/appointment`); // 👈 Deep link back to your app booking page
+                router.push(`myapp://account/appointment`);
               }}
             >
               Continue
@@ -202,7 +209,7 @@ export default function PaymentStatusPage({
           </CardFooter>
         </Card>
 
-        <p className="text-center text-slate-400 text-xs mt-4">
+        <p className="text-center text-neutral-400 text-xs mt-4">
           If you have any questions, please contact our support team.
         </p>
       </motion.div>
