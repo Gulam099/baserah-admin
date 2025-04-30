@@ -43,77 +43,102 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: Request) {
-    try {
-      await connect();
-      const { searchParams } = new URL(req.url);
-      const id = searchParams.get("paymentId");
-      const isAdmin = searchParams.get("isAdmin") === "true";
-      const page = parseInt(searchParams.get("page") || "1", 10);
-      const limit = parseInt(searchParams.get("limit") || "10", 10);
-  
-      if (isAdmin) {
-        const skip = (page - 1) * limit;
-  
-        const [payments, total] = await Promise.all([
-          Payment.find({})
-            .populate("doctorId", "full_name profile_picture")
-            .populate("patientId", "name imageUrl cards phoneNumber email")
-            .skip(skip)
-            .limit(limit)
-            .sort({ createdAt: -1 }),
-          Payment.countDocuments(),
-        ]);
-  
-        const hasNext = skip + payments.length < total;
-  
-        return NextResponse.json<ApiResponseType>({
-          success: true,
-          message: "Payments fetched successfully.",
-          data: payments,
-          total,
-          currentPage: page,
-          hasNext,
-        });
-      }
-  
-      if (!id) {
-        return NextResponse.json<ApiResponseType>({
-          success: false,
-          message: "paymentId is required.",
-        }, { status: 400 });
-      }
-  
-      const payment = await Payment.findById(id)
-      .populate({
-        path: "doctorId",
-        select: "full_name profile_picture specialization",
-        model: "Doctor",
-      })
-      .populate({
-        path: "patientId",
-        select: "name imageUrl cards phoneNumber email",
-        model: "Patient",
+  try {
+    await connect();
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("paymentId");
+    const doctorId = searchParams.get("doctorId");
+    const patientId = searchParams.get("patientId");
+    const isAdmin = searchParams.get("isAdmin") === "true";
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const skip = (page - 1) * limit;
+
+    // Admin: fetch paginated list of all payments
+    if (isAdmin) {
+      const [payments, total] = await Promise.all([
+        Payment.find({})
+          .populate("doctorId", "full_name profile_picture")
+          .populate("patientId", "name imageUrl cards phoneNumber email")
+          .skip(skip)
+          .limit(limit)
+          .sort({ createdAt: -1 }),
+        Payment.countDocuments(),
+      ]);
+
+      const hasNext = skip + payments.length < total;
+
+      return NextResponse.json<ApiResponseType>({
+        success: true,
+        message: "Payments fetched successfully.",
+        data: payments,
+        total,
+        currentPage: page,
+        hasNext,
       });
-  
+    }
+
+    // Filter by patientId or doctorId
+    if (patientId || doctorId) {
+      const filter: any = {};
+      if (patientId) filter.patientId = patientId;
+      if (doctorId) filter.doctorId = doctorId;
+
+      const [payments, total] = await Promise.all([
+        Payment.find(filter)
+          .populate("doctorId", "full_name profile_picture specialization")
+          .populate("patientId", "name imageUrl cards phoneNumber email")
+          .skip(skip)
+          .limit(limit)
+          .sort({ createdAt: -1 }),
+        Payment.countDocuments(filter),
+      ]);
+
+      const hasNext = skip + payments.length < total;
+
+      return NextResponse.json<ApiResponseType>({
+        success: true,
+        message: "Filtered payments fetched successfully.",
+        data: payments,
+        total,
+        currentPage: page,
+        hasNext,
+      });
+    }
+
+    // Single payment by ID
+    if (id) {
+      const payment = await Payment.findById(id)
+        .populate("doctorId", "full_name profile_picture specialization")
+        .populate("patientId", "name imageUrl cards phoneNumber email");
+
       if (!payment) {
         return NextResponse.json<ApiResponseType>({
           success: false,
           message: "Payment not found.",
         }, { status: 404 });
       }
-  
+
       return NextResponse.json<ApiResponseType>({
         success: true,
         message: "Payment fetched successfully.",
         data: payment,
       });
-    } catch (err: any) {
-      return NextResponse.json<ApiResponseType>({
-        success: false,
-        message: err.message || "Failed to fetch payment.",
-      }, { status: 500 });
     }
+
+    return NextResponse.json<ApiResponseType>({
+      success: false,
+      message: "paymentId, patientId or doctorId is required.",
+    }, { status: 400 });
+
+  } catch (err: any) {
+    return NextResponse.json<ApiResponseType>({
+      success: false,
+      message: err.message || "Failed to fetch payment.",
+    }, { status: 500 });
   }
+}
+
 
 export async function PATCH(req: Request) {
   try {
