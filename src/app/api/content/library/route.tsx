@@ -1,6 +1,11 @@
 import LibraryContent from "@/features/content/model/library.model";
 import { connect } from "@/lib/db";
 import mongoose from "mongoose";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import multer from "multer";
+import { Readable } from "stream";
+import { promisify } from "util";
+import { NextRequest, NextResponse } from "next/server";
 
 // types/api-response.ts
 
@@ -9,8 +14,112 @@ interface ApiResponseType<T = any> {
   message: string;
   data?: T;
   hasNext?: boolean;
+  limit?: number;
   total?: number;
   currentPage?: number;
+}
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+// ---------- S3 Setup ----------
+const s3Client = new S3Client({
+  endpoint: process.env.DO_SPACES_ENDPOINT!,
+  region: process.env.DO_SPACES_REGION!,
+  credentials: {
+    accessKeyId: process.env.DO_SPACES_KEY!,
+    secretAccessKey: process.env.DO_SPACES_SECRET!,
+  },
+});
+
+const uploadFileToS3 = async (file) => {
+  const params = {
+    Bucket: process.env.DO_SPACES_BUCKET!,
+    Key: `cultural-content/${Date.now()}_${file.originalname}`,
+    Body: file.buffer,
+    ACL: "public-read",
+    ContentType: file.mimetype,
+  };
+  const command = new PutObjectCommand(params);
+  await s3Client.send(command);
+  return `https://${process.env.DO_SPACES_BUCKET}.${process.env.DO_SPACES_REGION}.digitaloceanspaces.com/${params.Key}`;
+};
+
+// ---------- Multer Setup ----------
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+const multerUpload = upload.fields([
+  { name: "thumbnail", maxCount: 1 },
+  { name: "media", maxCount: 1 }, // only for audio or video
+]);
+
+const runMiddleware = promisify(multerUpload);
+
+// ---------- POST Handler ----------
+export async function POST(req: NextRequest): Promise<NextResponse<ApiResponseType>> {
+  try {
+    await connect();
+
+    const formData = await new Promise<any>((resolve, reject) => {
+      runMiddleware(req as any, {} as any, (err: any) => {
+        if (err) return reject(err);
+        resolve((req as any).files);
+      });
+    });
+
+    const body = Object.fromEntries((await req.formData()).entries());
+    const {
+      title,
+      category,
+      description,
+      type,
+      publishedDate,
+      authorId,
+      message,
+    } = body;
+
+    if (!formData.thumbnail?.[0]) {
+      return NextResponse.json({
+        success: false,
+        message: "Thumbnail is required.",
+      });
+    }
+
+    const thumbnailUrl = await uploadFileToS3(formData.thumbnail[0]);
+
+    let mediaUrl;
+    if (["audio", "video"].includes(type) && formData.media?.[0]) {
+      mediaUrl = await uploadFileToS3(formData.media[0]);
+    }
+
+    const newContent = await LibraryContent.create({
+      title,
+      category: Array.isArray(category) ? category : [category],
+      description,
+      type,
+      url: mediaUrl,
+      text: type === "article" ? body.text : undefined,
+      publishedDate,
+      authorId,
+      message,
+      thumbnail: thumbnailUrl,
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Library content created successfully.",
+      data: newContent,
+    });
+  } catch (error: any) {
+    console.error("Error creating library content:", error);
+    return NextResponse.json({
+      success: false,
+      message: error.message || "Something went wrong.",
+    });
+  }
 }
 
 export async function GET(request: Request) {
