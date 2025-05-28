@@ -45,11 +45,11 @@ const data = {
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
-    {
-      title: "Approval",
-      url: "/dashboard/approval",
-      icon: Gauge,
-    },
+    // {
+    //   title: "Approval",
+    //   url: "/dashboard/approval",
+    //   icon: Gauge,
+    // },
     // {
     //   title: "Reports",
     //   url: "/dashboard/report",
@@ -75,21 +75,21 @@ const data = {
       url: "/dashboard/customer",
       icon: Profile2User,
     },
-    {
-      title: "Information Bank",
-      url: "/dashboard/question",
-      icon: Setting2,
-    },
+    // {
+    //   title: "Information Bank",
+    //   url: "/dashboard/question",
+    //   icon: Setting2,
+    // },
     // {
     //   title: "Financial",
     //   url: "/dashboard/finance",
     //   icon: EmptyWallet,
     // },
-    {
-      title: "Permissions",
-      url: "/dashboard/permission",
-      icon: Monitor,
-    },
+    // {
+    //   title: "Permissions",
+    //   url: "/dashboard/permission",
+    //   icon: Monitor,
+    // },
   ],
 };
 
@@ -100,9 +100,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return null;
   }
   return (
-    <Sidebar variant="inset" {...props}>
-      <SidebarHeader>
-        <SidebarMenu>
+    <Sidebar variant="inset" {...props} className="bg-blue-100">
+      <SidebarHeader className="bg-blue-100">
+        {/* <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/">
@@ -110,28 +110,30 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
-        </SidebarMenu>
-        <div className="flex flex-col justify-center items-center gap-3 py-12">
+        </SidebarMenu> */}
+        <div className="flex flex-col justify-center items-center gap-3 py-6 ">
           <Avatar className="size-24 border-2 border-neutral-400">
-            <AvatarImage src={user.imageUrl} alt={user.fullName + "_avatar"} />
+            <Link href="/">
+              <AvatarImage src={user.imageUrl} alt={user.fullName + "_avatar"} />
+            </Link>
             <AvatarFallback className="bg-primary-800 text-white font-semibold text-2xl uppercase">
               {user.fullName?.slice(0, 2)}
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col gap-1 justify-center items-center">
             <h3 className="text-base font-semibold">{user.fullName}</h3>
-            <p className="text-xs font-medium bg-primary-50/30 px-2 py-1 rounded-xl">
+            {/* <p className="text-xs font-medium bg-primary-50/30 px-2 py-1 rounded-xl">
               {userId}
-            </p>
+            </p> */}
           </div>
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="bg-blue-100">
         <NavMain items={data.navMain} />
       </SidebarContent>
-      <SidebarFooter>
+      {/* <SidebarFooter>
         <NavUser />
-      </SidebarFooter>
+      </SidebarFooter> */}
     </Sidebar>
   );
 }

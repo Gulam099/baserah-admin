@@ -77,6 +77,7 @@ export default function AppointmentPage() {
   const [appointments, setAppointments] = useState<AppointmentType[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0); // track total items
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Whenever page/pageSize changes in the URL, fetch new data
   useEffect(() => {
@@ -92,11 +93,46 @@ export default function AppointmentPage() {
       .finally(() => {
         setLoading(false);
       });
+    setSearchTerm("");
   }, [currentPage, pageSize]);
+
+  const filteredAppointments = appointments.filter((appointment) => {
+    const name = appointment.userId?.name?.toLowerCase() || "";
+    const appointmentId = appointment._id?.toLowerCase() || "";
+    const urgent = (appointment.program || "").toLowerCase();
+    const term = searchTerm.toLowerCase();
+
+    return (
+      name.includes(term) ||
+      appointmentId.includes(term) ||
+      urgent.includes(term)
+    );
+  });
+
+
+  console.log("appoinments", appointments);
 
   return (
     <div className="container mx-auto ">
-      <div className="flex justify-end items-center gap-2 py-4">
+      <div className="flex justify-between items-center gap-2 py-4">
+        <div className="relative w-full max-w-md">
+          <input
+            type="text"
+            placeholder="Search by patient name or appointment ID"
+            className="w-full border rounded px-4 py-2 pr-10"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-red-400 hover:text-red-600"
+              aria-label="Clear search"
+            >
+              &#x2715; {/* Unicode ✕ */}
+            </button>
+          )}
+        </div>
         <ExportButton contentRef={contentRef} />
       </div>
       <Alert className="mb-6 border-yellow-500 bg-yellow-50">
@@ -113,64 +149,69 @@ export default function AppointmentPage() {
             <TableRow>
               <TableHead>Appointment Number</TableHead>
               <TableHead>Patient</TableHead>
-              <TableHead>Doctor</TableHead>
+              {/* <TableHead>Doctor</TableHead> */}
               <TableHead>Booking Date</TableHead>
-              <TableHead>Duration</TableHead>
+              <TableHead>Program</TableHead>
               <TableHead>Time Slot</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead>Status</TableHead>
+              {/* <TableHead>Status</TableHead> */}
               <TableHead className="text-right print:hidden">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {appointments.map((appointment) => (
+            {filteredAppointments.map((appointment) => (
               <TableRow key={appointment._id}>
                 <TableCell>{appointment._id}</TableCell>
                 <TableCell>
-                  <Link
-                    href={`/dashboard/customer/${appointment.user}`}
-                    className="underline"
-                  >
-                    {appointment.patient_name}
-                  </Link>
+                  {appointment.userId?.name}
                 </TableCell>
-                <TableCell>
+
+
+                {/*  <TableCell>
                   <Link
                     href={`/dashboard/specialist/${appointment.doctor}`}
                     className="underline"
                   >
                     {appointment.doctor_name}
                   </Link>
-                </TableCell>
+                </TableCell> */}
                 <TableCell>
                   {appointment.createdAt
                     ? format(
-                        new Date(appointment.createdAt),
-                        "EEE , dd MMM yyyy , hh:mm a"
-                      )
+                      new Date(appointment.createdAt),
+                      "EEE , dd MMM yyyy , hh:mm a"
+                    )
                     : "Invalid Date"}
                 </TableCell>
-                <TableCell>{appointment.duration}</TableCell>
-                <TableCell>{appointment.timeSlot}</TableCell>
+                <TableCell>
+                  <div className="flex gap-1">
+                    {/* Display the urgent symbol next to the program if it's urgent */}
+                    {appointment.program.toLowerCase() === "urgent" && (
+                      <AlertTriangle className="h-4 w-4 text-yellow-600  " />
+                    )}
+                    {appointment.program}
+                  </div>
+                </TableCell>
+                <TableCell>{appointment.time}</TableCell>
                 <TableCell>
                   {appointment.date
                     ? format(
-                        new Date(appointment.date),
-                        "EEE , dd MMM yyyy , hh:mm a"
-                      )
+                      new Date(appointment.date),
+                      "EEE , dd MMM yyyy , hh:mm a"
+                    )
                     : "Invalid Date"}
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2">
+                  {/* <div className="flex items-center gap-2">
                     <Badge variant={badgeVariant[appointment.status]}>
                       {toTitleCase(appointment.status)}
                     </Badge>
                     {appointment.isImmediate && (
                       <AlertTriangle className="h-4 w-4 text-red-500" />
                     )}
-                  </div>
+                  </div> */}
                 </TableCell>
-                <TableCell className="text-right print:hidden">
+                <TableCell className="text-right print:hidden px-1">
                   <AppointmentMenu appointment={appointment} />
                 </TableCell>
               </TableRow>

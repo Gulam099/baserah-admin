@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClerkClient } from "@clerk/nextjs/server";
+import axios from "axios";
 
 // ✅ Create Clerk Client
 const clerkClient = createClerkClient({
@@ -26,6 +27,14 @@ export async function PATCH(req: NextRequest) {
       clerkId,
       updates
     );
+
+    const response = await axios.put(
+      `/api/doctors/${clerkId}/approval-status`,
+      {
+        status: updatedUser.unsafeMetadata.approval_status,
+      }
+    );
+    console.log("✅ Updated in backend DB", response.data);
 
     console.log("✅ [API] Clerk user updated successfully:", updatedUser);
     return NextResponse.json({

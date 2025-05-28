@@ -20,8 +20,8 @@ export function NavMain({
 }) {
   const pathname = usePathname();
   return (
-    <SidebarGroup>
-      <SidebarMenu className="gap-2">
+    <SidebarGroup >
+      <SidebarMenu className="gap-2 ">
         {items.map((item, index) => {
           const isActive: boolean = pathname.includes(item.url);
           return (
@@ -31,8 +31,8 @@ export function NavMain({
               className={cn(
                 "flex items-center justify-start gap-4 rounded-lg flex-row p-4",
                 isActive
-                  ? " bg-primary-100 text-primary-600"
-                  : " bg-white text-neutral-500"
+                  ? " bg-primary-200 text-primary-600"
+                  : " bg-blue-100 hover:bg-white text-neutral-500"
               )}
             >
               <item.icon size={24} />

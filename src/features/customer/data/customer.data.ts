@@ -1,5 +1,5 @@
 import { ApiResponseType } from "@/features/home/types/type";
-import axios from "axios"
+import axios from "axios";
 import {
   Customer,
   CustomerType,
@@ -68,9 +68,9 @@ export async function fetchCustomers(
   try {
     // 1) Make the real API call
     // GET /api/admin/patients?page=2&pageSize=5
-    const res = await axios.get(`${ApiBaseUrl}/api/admin/patients`, {
+    const res = await axios.get(`/api/admin/patients`, {
       params: { page, pageSize: size },
-    })
+    });
 
     // The response shape from your example:
     // {
@@ -82,23 +82,23 @@ export async function fetchCustomers(
     //   "total": 10
     // }
 
-    const result = res.data
+    const result = res.data;
 
     // 2) Transform into your ApiResponseType
     return {
       success: result?.success ?? true,
       status: 200,
       message: "Customers Fetch Successfully",
-      data: result?.patients ?? [], // The array of patient objects
+      data: result, // The array of patient objects
       page: {
         total: result?.total ?? 0,
         page: result?.page ?? page,
         size: result?.page_size ?? size,
       },
-    }
+    };
   } catch (error: any) {
     // If something goes wrong, return a fallback response
-    console.error("Error fetching customers:", error)
+    console.error("Error fetching customers:", error);
 
     return {
       success: false,
@@ -110,7 +110,7 @@ export async function fetchCustomers(
         page,
         size,
       },
-    }
+    };
   }
 }
 // export async function fetchCustomers(
@@ -231,7 +231,6 @@ export async function fetchMetricRecords(
     };
   }
 }
-
 
 export async function fetchTicketRecords(
   page: number,

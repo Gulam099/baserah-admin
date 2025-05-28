@@ -1,7 +1,7 @@
 import { approvals } from "@/features/approval/approval.data";
 import { ApiResponseType } from "@/features/home/types/type";
 import { mockSpecialist, ratings } from "../data/specialist.data";
-import { ApiBaseUrl } from "../../../../const";
+import { ApiBaseUrl, ApiBaseUrlLocal } from "../../../../const";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -12,7 +12,7 @@ export async function fetchSpecialist(
   try {
     // Example GET request to /api/doctor/get-doctors
     // with query params { page: 2, pageSize: 5 }
-    const response = await axios.get(`${ApiBaseUrl}/api/doctor/get-doctors`, {
+    const response = await axios.get(`${ApiBaseUrlLocal}/api/doctors/getall`, {
       params: { page, pageSize: size },
     });
     const resData = response.data;

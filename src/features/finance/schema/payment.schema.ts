@@ -1,9 +1,11 @@
 import { z } from "zod";
 
+const objectIdRegex = /^[0-9a-fA-F]{24}$/;
+
 export const PaymentZodSchema = z.object({
-  _id:z.string().optional(),
-  patientId: z.string().min(1),
-  doctorId: z.string().min(1),
+  _id: z.string().optional(),
+  patientId: z.string().regex(objectIdRegex, "Invalid ObjectId string"),
+  doctorId: z.string().regex(objectIdRegex, "Invalid ObjectId string"),
   moyasarPaymentId: z.string().optional(),
   amount: z.number().positive(),
   currency: z.string().default("SAR"),
