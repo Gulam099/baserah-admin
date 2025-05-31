@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, ObjectId } from "mongoose";
 // Define the interface representing a Payment document in MongoDB
 export interface PaymentSchema extends Document {
   _id: ObjectId;
-  patientId: ObjectId;
+  userId: ObjectId;
   doctorId: ObjectId;
   moyasarPaymentId?: string;
   amount: number;
@@ -37,7 +37,7 @@ const PaymentSchema = new Schema<PaymentSchema>(
   {
     _id: { type: Schema.Types.ObjectId, auto: true },
 
-    patientId: { type: Schema.Types.ObjectId, ref: "Patient", required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     doctorId: { type: Schema.Types.ObjectId, ref: "Doctor", required: true },
 
     moyasarPaymentId: { type: String },

@@ -34,6 +34,8 @@ const PaymentPage = () => {
     fetchPayments();
   }, []);
 
+  console.log("payments data", paymentsData);
+
   return (
     <PaymentList
       payments={paymentsData.payments}

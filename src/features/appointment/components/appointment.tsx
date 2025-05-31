@@ -155,7 +155,7 @@ export default function AppointmentPage() {
               <TableHead>Time Slot</TableHead>
               <TableHead>Date</TableHead>
               {/* <TableHead>Status</TableHead> */}
-              <TableHead className="text-right print:hidden">Actions</TableHead>
+              {/* <TableHead className="text-right print:hidden">Actions</TableHead> */}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -211,9 +211,9 @@ export default function AppointmentPage() {
                     )}
                   </div> */}
                 </TableCell>
-                <TableCell className="text-right print:hidden px-1">
+                {/* <TableCell className="text-right print:hidden px-1">
                   <AppointmentMenu appointment={appointment} />
-                </TableCell>
+                </TableCell> */}
               </TableRow>
             ))}
           </TableBody>

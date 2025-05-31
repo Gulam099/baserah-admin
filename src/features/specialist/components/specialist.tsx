@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ApiBaseUrl } from "../../../../const";
+import { ApiBaseUrl, ApiBaseUrlLocal } from "../../../../const";
 
 interface SpecialistData {
   _id: string;
@@ -72,47 +72,38 @@ export default function SpecialistPage() {
   const { specialist_Id } = useParams<{ specialist_Id: string }>();
 
   const [specialist, setSpecialist] = useState<SpecialistData | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // const [loading, setLoading] = useState(false);
+  // const [error, setError] = useState<string | null>(null);
 
   // 1) fetch the specialist on mount
   useEffect(() => {
     async function fetchSpecialist() {
-      if (!specialist_Id) return;
-      setLoading(true);
-      setError(null);
-
-      try {
-        const res = await axios.get(
-          `${ApiBaseUrl}/api/doctor/get-doctor/${specialist_Id}`
-        );
-        const data = res.data;
-        setSpecialist(data as SpecialistData);
-      } catch (err: any) {
-        console.error("Failed to fetch specialist:", err);
-        setError("Failed to load specialist data.");
-      } finally {
-        setLoading(false);
-      }
+      const res = await axios.get(
+        `${ApiBaseUrlLocal}/api/doctors/doctor/${specialist_Id}`
+      );
+      const data = res.data?.data;
+      setSpecialist(data as SpecialistData);
     }
-    fetchSpecialist();
+    if (specialist_Id) {
+      fetchSpecialist();
+    }
   }, [specialist_Id]);
 
-  if (loading) {
-    return (
-      <div className="container mx-auto py-6">
-        <p>Loading...</p>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="container mx-auto py-6">
+  //       <p>Loading...</p>
+  //     </div>
+  //   );
+  // }
 
-  if (error) {
-    return (
-      <div className="container mx-auto py-6">
-        <p className="text-red-500">{error}</p>
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div className="container mx-auto py-6">
+  //       <p className="text-red-500">{error}</p>
+  //     </div>
+  //   );
+  // }
 
   if (!specialist) {
     return (
@@ -123,25 +114,25 @@ export default function SpecialistPage() {
   }
 
   const info = [
-    { label: "ID", value: specialist._id },
-    { label: "Mobile Number", value: specialist.phoneNumber },
-    { label: "Email", value: specialist.email || "N/A" },
+    // { label: "ID", value: specialist?._id },
+    { label: "Mobile Number", value: specialist?.phoneNumber },
+    { label: "Email", value: specialist?.email || "N/A" },
     {
       label: "Language Selection",
-      value: specialist.language.join(", ") || "N/A",
+      value: specialist?.language?.join(", ") || "N/A",
     },
     {
       label: "Age Categories",
-      value: specialist.age_categories.join(", ") || "N/A",
+      value: specialist?.age_categories?.join(", ") || "N/A",
     },
     {
       label: "Consultation Method",
-      value: specialist.consultation_method.join(" - "),
+      value: specialist?.consultation_method?.join(" - "),
     },
-    { label: "Address", value: specialist.address },
+    { label: "Address", value: specialist?.address },
     {
       label: "Fees",
-      value: specialist.fees ? `${specialist.fees} SAR` : "N/A",
+      value: specialist?.fees ? `${specialist?.fees} SAR` : "N/A",
     },
   ];
 
@@ -149,36 +140,31 @@ export default function SpecialistPage() {
   // approval_status logic. Here's an example:
   const timeline = [
     {
-      status: "Submit Specialist",
-      date: "12-12-2023",
-      active: true,
-    },
-    {
-      status: "Initial approval",
-      date:
-        specialist.approval_status === "Initial Approved" ? "Date here" : "",
-      active: specialist.approval_status === "Initial Approved",
-    },
-    {
-      status: "Interview",
-      date: specialist.approval_status === "Interview" ? "Date here" : "",
-      active: specialist.approval_status === "Interview",
-    },
-    {
-      status: "Final approval",
-      date: specialist.approval_status === "Final Approved" ? "some date" : "",
-      active: specialist.approval_status === "Final Approved",
-    },
-    {
-      status: "Send Contract",
+      status: "Contract Send",
+      key: "contract_send",
       date: "",
       active: false,
     },
     {
       status: "Authenticate Contract",
+      key: "auth_contract",
       date: "",
       active: false,
     },
+    {
+      status: "Initial Approval",
+      key: "initial_approved",
+      date:
+        specialist.approval_status === "Initial Approved" ? "Date here" : "",
+      active: specialist.approval_status === "Initial Approved",
+    },
+    {
+      status: "Final Approval",
+      key: "final_approved",
+      date: specialist.approval_status === "Final Approved" ? "some date" : "",
+      active: specialist.approval_status === "Final Approved",
+    },
+
   ];
 
   const tabData = [
@@ -200,11 +186,11 @@ export default function SpecialistPage() {
         </Card>
       ),
     },
-    {
-      title: "Contracts",
-      id: "contracts",
-      content: <Contracts specilaistId={specialist_Id} />,
-    },
+    // {
+    //   title: "Contracts",
+    //   id: "contracts",
+    //   content: <Contracts specilaistId={specialist_Id} />,
+    // },
     {
       title: "CV",
       id: "cv",
@@ -244,28 +230,28 @@ export default function SpecialistPage() {
           {/* Top row with avatar & name */}
           <div className="flex gap-4">
             <Avatar className="w-16 h-16">
-              <AvatarImage src={specialist.profile_picture || ""} />
+              <AvatarImage src={specialist?.profile_picture || ""} />
               <AvatarFallback>RA</AvatarFallback>
             </Avatar>
 
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-semibold">
-                  {specialist.full_name || "Unknown Specialist"}
+                  {specialist?.full_name || "Unknown Specialist"}
                 </h1>
 
                 <span
-              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${getStatusColor(
-                specialist.approval_status
-              )}`}
-            >
-              {specialist.approval_status.split("_").join(" ") ??
-                "No Status Found"}
-            </span>
+                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${getStatusColor(
+                    specialist?.approval_status
+                  )}`}
+                >
+                  {specialist?.approval_status?.split("_").join(" ") ??
+                    "No Status Found"}
+                </span>
               </div>
 
               <p className="text-muted-foreground">
-                {specialist.specialization}
+                {specialist?.specialization}
               </p>
             </div>
           </div>
@@ -302,7 +288,7 @@ export default function SpecialistPage() {
               </div>
             </div>
             <p className="text-destructive">
-              {specialist.classification || "N/A"}
+              {specialist?.classification || "N/A"}
             </p>
             <div className="text-sm text-muted-foreground">
               Expiry Date: 2023/07/15
@@ -316,9 +302,8 @@ export default function SpecialistPage() {
                 {timeline.map((item, index) => (
                   <div key={index} className="relative pl-8">
                     <div
-                      className={`absolute left-4 w-2.5 h-2.5 rounded-full -translate-x-1/2 ${
-                        item.active ? "bg-primary" : "bg-muted-foreground"
-                      }`}
+                      className={`absolute left-4 w-2.5 h-2.5 rounded-full -translate-x-1/2 ${specialist?.approval_status === item.key ? "bg-primary" : "bg-muted-foreground"
+                        }`}
                     />
                     <div className="font-medium">{item.status}</div>
                     {item.date && (
@@ -409,9 +394,8 @@ function StatusDialog(props: {
             {timeline.map((item, index) => (
               <div key={index} className="relative pl-8">
                 <div
-                  className={`absolute left-3.5 w-2.5 h-2.5 rounded-full -translate-x-1/2 ${
-                    item.active ? "bg-primary" : "bg-muted-foreground"
-                  }`}
+                  className={`absolute left-3.5 w-2.5 h-2.5 rounded-full -translate-x-1/2 ${item.active ? "bg-primary" : "bg-muted-foreground"
+                    }`}
                 />
                 <div className="font-medium">{item.status}</div>
                 {item.date && (

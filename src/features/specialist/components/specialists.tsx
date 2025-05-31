@@ -30,15 +30,17 @@ export default function SpecialistsPage() {
   // Extract specialists and total count from API response
   const specialists: SpecialistType[] = data?.data ?? [];
   const total = data?.page?.total ?? 0;
+  console.log("total", total);
 
 
   const filteredSpecialists = specialists.filter((specialist) => {
-    const name = specialist.full_name?.toLowerCase() || "";
+    const name = specialist.firstName?.toLowerCase() || "";
     const id = specialist._id?.toLowerCase() || "";
     const term = searchTerm.toLowerCase();
 
     return name.includes(term) || id.includes(term);
   });
+
 
   console.log("doctor", specialists);
 

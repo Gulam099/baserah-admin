@@ -19,7 +19,7 @@ const PaymentPage = () => {
 
   const fetchPayments = async (page = 1) => {
     const limit = 10;
-    const res = await fetch(`/api/payments?page=${page}&limit=${limit}`);
+    const res = await fetch(`/api/payments?page=${page}&limit=${limit}&isAdmin=true`);
     const data = await res.json();
     if (data.success) {
       setPaymentsData({

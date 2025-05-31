@@ -1,10 +1,8 @@
 import Payment from "@/features/finance/model/payment.model";
 import "@/features/user/model/doctor.model";
-import  "@/features/user/model/patient.model";
+import "@/features/user/model/patient.model";
 import { connect } from "@/lib/db";
 import { NextResponse } from "next/server";
-
-
 
 interface ApiResponseType<T = any> {
   success: boolean;
@@ -25,20 +23,25 @@ export async function POST(req: Request) {
       status: "initiated",
     });
 
-    return NextResponse.json<ApiResponseType>({
-      success: true,
-      message: "Payment object created successfully.",
-      data: {
-        payment,
-        redirectUrl: `/payment/${payment._id}`,
+    return NextResponse.json<ApiResponseType>(
+      {
+        success: true,
+        message: "Payment object created successfully.",
+        data: {
+          payment,
+          redirectUrl: `/payment/${payment._id}`,
+        },
       },
-    }, { status: 201 });
-
+      { status: 201 }
+    );
   } catch (err: any) {
-    return NextResponse.json<ApiResponseType>({
-      success: false,
-      message: err.message || "Failed to create payment.",
-    }, { status: 500 });
+    return NextResponse.json<ApiResponseType>(
+      {
+        success: false,
+        message: err.message || "Failed to create payment.",
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -58,7 +61,7 @@ export async function GET(req: Request) {
     if (isAdmin) {
       const [payments, total] = await Promise.all([
         Payment.find({})
-          .populate("doctorId", "full_name profile_picture")
+          .populate("doctorId", "full_name profile_picture specialization")
           .populate("patientId", "name imageUrl cards phoneNumber email")
           .skip(skip)
           .limit(limit)
@@ -113,10 +116,13 @@ export async function GET(req: Request) {
         .populate("patientId", "name imageUrl cards phoneNumber email");
 
       if (!payment) {
-        return NextResponse.json<ApiResponseType>({
-          success: false,
-          message: "Payment not found.",
-        }, { status: 404 });
+        return NextResponse.json<ApiResponseType>(
+          {
+            success: false,
+            message: "Payment not found.",
+          },
+          { status: 404 }
+        );
       }
 
       return NextResponse.json<ApiResponseType>({
@@ -126,19 +132,23 @@ export async function GET(req: Request) {
       });
     }
 
-    return NextResponse.json<ApiResponseType>({
-      success: false,
-      message: "paymentId, patientId or doctorId is required.",
-    }, { status: 400 });
-
+    return NextResponse.json<ApiResponseType>(
+      {
+        success: false,
+        message: "paymentId, patientId or doctorId is required.",
+      },
+      { status: 400 }
+    );
   } catch (err: any) {
-    return NextResponse.json<ApiResponseType>({
-      success: false,
-      message: err.message || "Failed to fetch payment.",
-    }, { status: 500 });
+    return NextResponse.json<ApiResponseType>(
+      {
+        success: false,
+        message: err.message || "Failed to fetch payment.",
+      },
+      { status: 500 }
+    );
   }
 }
-
 
 export async function PATCH(req: Request) {
   try {
@@ -147,20 +157,28 @@ export async function PATCH(req: Request) {
     const id = searchParams.get("paymentId");
 
     if (!id) {
-      return NextResponse.json<ApiResponseType>({
-        success: false,
-        message: "paymentId is required.",
-      }, { status: 400 });
+      return NextResponse.json<ApiResponseType>(
+        {
+          success: false,
+          message: "paymentId is required.",
+        },
+        { status: 400 }
+      );
     }
 
     const updateData = await req.json();
-    const updated = await Payment.findByIdAndUpdate(id, updateData, { new: true });
+    const updated = await Payment.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
 
     if (!updated) {
-      return NextResponse.json<ApiResponseType>({
-        success: false,
-        message: "Payment not found.",
-      }, { status: 404 });
+      return NextResponse.json<ApiResponseType>(
+        {
+          success: false,
+          message: "Payment not found.",
+        },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json<ApiResponseType>({
@@ -169,9 +187,12 @@ export async function PATCH(req: Request) {
       data: updated,
     });
   } catch (err: any) {
-    return NextResponse.json<ApiResponseType>({
-      success: false,
-      message: err.message || "Failed to update payment.",
-    }, { status: 500 });
+    return NextResponse.json<ApiResponseType>(
+      {
+        success: false,
+        message: err.message || "Failed to update payment.",
+      },
+      { status: 500 }
+    );
   }
 }

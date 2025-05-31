@@ -12,9 +12,12 @@ export async function fetchSpecialist(
   try {
     // Example GET request to /api/doctor/get-doctors
     // with query params { page: 2, pageSize: 5 }
-    const response = await axios.get(`${ApiBaseUrlLocal}/api/doctors/getall`, {
-      params: { page, pageSize: size },
-    });
+    const response = await axios.get(
+      `${ApiBaseUrlLocal}/api/doctors/get-all-doctors`,
+      {
+        params: { page, pageSize: size },
+      }
+    );
     const resData = response.data;
     // Transform into your ApiResponseType
     return {
@@ -66,6 +69,28 @@ export async function updateDoctor(clerkId: string, updates: any) {
     console.error("❌ Error updating doctor:", error);
   }
 }
+
+export const createDoctor = async (clerkId: string) => {
+  try {
+    const response = await axios.post(
+      "/api/doctor",
+      {
+        clerkId,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("✅ Axios response:", response.data);
+    return response.data;
+    // console.log("✅ Doctor created successfully:", data);
+  } catch (error) {
+    console.error("❌ Error creating doctor:", error);
+  }
+};
 
 export const specialistInitialApproved = async (specialist_id: string) => {
   try {

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 
 type Payment = {
   _id: string;
-  patientId: { name?: string } | null;
+  userId: { name?: string } | null;
   doctorId: { full_name?: string } | null;
   amount: number;
   currency: string;
@@ -34,10 +34,10 @@ const PaymentList: React.FC<Props> = ({
   onPageChange,
 }) => {
 
-
+  console.log("payment >>>", payments);
   // Calculate summary stats
   const totalPayments = total;
-  const completedPayments = payments.filter(p => p.status === 'completed').length;
+  const completedPayments = payments.filter(p => p.status === 'paid').length;
   const pendingPayments = payments.filter(p => p.status === 'initiated').length;
 
   return (
@@ -144,7 +144,7 @@ const PaymentList: React.FC<Props> = ({
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <User className="w-4 h-4 text-gray-400" />
-                          <span>{payment.patientId?.name || "N/A"}</span>
+                          <span>{payment.userId?.name || "N/A"}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

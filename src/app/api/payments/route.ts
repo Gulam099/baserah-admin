@@ -1,6 +1,6 @@
 import Payment from "@/features/finance/model/payment.model";
 import "@/features/user/model/doctor.model";
-import "@/features/user/model/patient.model";
+import "@/features/user/model/user.model";
 import { connect } from "@/lib/db";
 import { NextResponse } from "next/server";
 
@@ -61,10 +61,12 @@ export async function GET(req: Request) {
     );
     const skip = (page - 1) * limit;
 
+    console.log("GET PAYMENTS", isAdmin);
+
     // Define population fields for doctor and patient references
     const populateFields = [
       { path: "doctorId", select: "full_name profile_picture specialization" },
-      { path: "patientId", select: "name imageUrl cards phoneNumber email" },
+      { path: "userId", select: "name imageUrl cards phoneNumber email" },
     ];
 
     // Function to fetch payments with filter and pagination
