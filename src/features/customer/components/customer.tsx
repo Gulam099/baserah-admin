@@ -37,9 +37,9 @@ export default function CustomerPage() {
       setError(null);
       try {
         const res = await axios.get<ApiResponse>(
-          `${ApiBaseUrl}/api/admin/patients/${customer_Id}`
+          `/api/admin/patients/${customer_Id}`
         );
-        setCustomer(res.data.user);
+        setCustomer(res.data?.data);
       } catch (err: any) {
         console.error("Failed to fetch customer:", err);
         setError("Failed to load customer data.");
@@ -49,6 +49,8 @@ export default function CustomerPage() {
     }
     if (customer_Id) fetchCustomer();
   }, [customer_Id]);
+
+  console.log("single patient", customer);
 
   // 2) Loading and error states
   if (loading) {
@@ -77,20 +79,22 @@ export default function CustomerPage() {
   }
 
   const info = [
-    { label: "ID", value: customer._id ?? "N/A" },
     { label: "Gender", value: customer.gender ?? "N/A" },
     { label: "Mobile Number", value: customer.phoneNumber ?? "N/A" },
     { label: "Email", value: customer.email ?? "N/A" },
     {
       label: "Date of Birth",
-      value: customer.dob ?? format(customer.dob, "dd-MMM-yyyy") ?? "N/A",
+      value: customer.dob ? format(new Date(customer.dob), "dd-MMM-yyyy") : "N/A",
     },
     {
       label: "Address",
       value:
-        `${customer.address.line1} \n , ${customer.address.line2}` || "N/A",
+        `${customer.address?.line1 ?? ""} \n , ${customer.address?.line2 ?? ""}`.trim() ||
+        "N/A",
     },
   ];
+
+
 
   // 5) Prepare tab data
   const tabData = [
@@ -129,38 +133,38 @@ export default function CustomerPage() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 py-6 ">
           {customer.family.length !== 0
             ? customer.family.map((member: any, idx: number) => (
-                <Card key={member.name + idx}>
-                  <CardContent className="flex flex-row gap-2 pt-4">
-                    <div className="flex-1 flex flex-col gap-2 text-sm">
-                      <p className=" text-lg font-semibold">{member.name}</p>
-                      <p>
-                        Age : <span>{member.age}</span>
-                      </p>
-                      <p>
-                        File Number : <span>{member.fileNo}</span>
-                      </p>
-                      <p>
-                        Id Number : <span>{member.idNumber}</span>
-                      </p>
-                      <p>
-                        Relation : <span>{member.relationship}</span>
-                      </p>
-                    </div>
-                    <div className="flex flex-col justify-start items-end">
-                      {/* <Button variant={"ghost"} size={"sm"} className="text-xs">
+              <Card key={member.name + idx}>
+                <CardContent className="flex flex-row gap-2 pt-4">
+                  <div className="flex-1 flex flex-col gap-2 text-sm">
+                    <p className=" text-lg font-semibold">{member.name}</p>
+                    <p>
+                      Age : <span>{member.age}</span>
+                    </p>
+                    <p>
+                      File Number : <span>{member.fileNo}</span>
+                    </p>
+                    <p>
+                      Id Number : <span>{member.idNumber}</span>
+                    </p>
+                    <p>
+                      Relation : <span>{member.relationship}</span>
+                    </p>
+                  </div>
+                  <div className="flex flex-col justify-start items-end">
+                    {/* <Button variant={"ghost"} size={"sm"} className="text-xs">
                     Switch Profile
                   </Button> */}
-                      {/* <Button
+                    {/* <Button
                     variant={"ghost"}
                     size={"sm"}
                     className="text-red-500 text-xs"
                   >
                     Delete
                   </Button> */}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
+                  </div>
+                </CardContent>
+              </Card>
+            ))
             : "No Member added"}
         </div>
       ),

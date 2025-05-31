@@ -104,6 +104,6 @@ const PatientSchema = new Schema<Patient>(
 // Create and export the Patient model
 const Patient =
   mongoose.models.Patient ||
-  mongoose.model<Patient>("Patient", PatientSchema, "users");
+  mongoose.model<Patient>("Patient", PatientSchema, "patients");
 
 export default Patient;

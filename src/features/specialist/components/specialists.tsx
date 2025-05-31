@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { SpecialistType } from "@/features/specialist/types/specialist.type";
 import { SpecialistCard } from "@/features/specialist/components/SpecialistCard";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
@@ -19,6 +19,8 @@ export default function SpecialistsPage() {
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
   const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 9;
 
+  const [searchTerm, setSearchTerm] = useState("");
+
   // ✅ Use TanStack Query for fetching specialists
   const { data, isLoading, error } = useQuery({
     queryKey: ["specialists", currentPage, pageSize], // Cache based on pagination
@@ -28,10 +30,42 @@ export default function SpecialistsPage() {
   // Extract specialists and total count from API response
   const specialists: SpecialistType[] = data?.data ?? [];
   const total = data?.page?.total ?? 0;
+  console.log("total", total);
+
+
+  const filteredSpecialists = specialists.filter((specialist) => {
+    const name = specialist.firstName?.toLowerCase() || "";
+    const id = specialist._id?.toLowerCase() || "";
+    const term = searchTerm.toLowerCase();
+
+    return name.includes(term) || id.includes(term);
+  });
+
+
+  console.log("doctor", specialists);
 
   return (
     <div className="container mx-auto py-8">
-      <div className="flex justify-end items-center gap-2 pb-6">
+      <div className="flex justify-between items-center gap-2 pb-6">
+        <div className="relative  w-full max-w-md">
+          <input
+            type="text"
+            placeholder="Search specialists by name or ID"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              aria-label="Clear search"
+              type="button"
+            >
+              ×
+            </button>
+          )}
+        </div>
         <ExportButton contentRef={contentRef} />
       </div>
       <div className="min-h-[70vh]">
@@ -41,17 +75,17 @@ export default function SpecialistsPage() {
         >
           {isLoading
             ? Array.from({ length: pageSize }).map((_, i) => (
-                <div
-                  key={`skeleton-${i}`}
-                  className="h-[200px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
-                />
-              ))
-            : specialists.map((specialist, idx) => (
-                <SpecialistCard
-                  key={specialist.phoneNumber + idx}
-                  specialist={specialist}
-                />
-              ))}
+              <div
+                key={`skeleton-${i}`}
+                className="h-[200px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
+              />
+            ))
+            : filteredSpecialists.map((specialist, idx) => (
+              <SpecialistCard
+                key={specialist.phoneNumber + idx}
+                specialist={specialist}
+              />
+            ))}
         </div>
 
         {error && (

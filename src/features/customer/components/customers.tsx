@@ -34,6 +34,7 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<CustomerType>("all");
   const [total, setTotal] = useState(0); // track total items
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     currentPage = 1;
@@ -44,8 +45,11 @@ export default function CustomersPage() {
     setLoading(true);
     fetchCustomers(currentPage, pageSize)
       .then((res) => {
-        setCustomers(res.data!);
-        setTotal(res.page?.total!); // for UnifiedPagination's `total` prop
+        if (Array.isArray(res.data?.data)) {
+          setCustomers(res.data.data);
+        } else {
+          setCustomers([]);
+        }
       })
       .catch((err) => {
         console.error("Failed to fetch questions:", err);
@@ -54,6 +58,17 @@ export default function CustomersPage() {
         setLoading(false);
       });
   }, [currentPage, pageSize]);
+
+  const filteredCustomers = customers.filter((customer) => {
+    const name = customer.name?.toLowerCase() || "";
+    const id = customer._id?.toLowerCase() || "";
+    const term = searchTerm.toLowerCase();
+
+    return name.includes(term) || id.includes(term);
+  });
+
+
+  console.log("patients", customers);
 
   //   useEffect(() => {
   //     currentPage = 1;
@@ -76,7 +91,26 @@ export default function CustomersPage() {
   //   }, [currentPage, pageSize, activeTab]);
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-5">
+      <div className="relative w-full max-w-md pb-5">
+        <Input
+          type="text"
+          placeholder="Search by name or ID"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pr-10"
+        />
+        {searchTerm && (
+          <button
+            onClick={() => setSearchTerm("")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            aria-label="Clear search"
+            type="button"
+          >
+            &#x2715;
+          </button>
+        )}
+      </div>
       {/* <div className="flex justify-between items-center mb-6">
         <Tabs
           defaultValue="all"
@@ -99,14 +133,14 @@ export default function CustomersPage() {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           {loading
             ? Array.from({ length: pageSize }).map((_, i) => (
-                <div
-                  key={`skeleton-${i}`}
-                  className="h-[180px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
-                />
-              ))
-            : customers.map((customer) => (
-                <CustomerCard key={customer._id} customer={customer} />
-              ))}
+              <div
+                key={`skeleton-${i}`}
+                className="h-[180px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
+              />
+            ))
+            : filteredCustomers.map((customer) => (
+              <CustomerCard key={customer._id} customer={customer} />
+            ))}
         </div>
       </div>
       <UnifiedPagination total={total} />

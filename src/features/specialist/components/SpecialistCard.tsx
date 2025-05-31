@@ -11,7 +11,7 @@ import { SpecialistType } from "../types/specialist.type";
 import Link from "next/link";
 import { format } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query"; // ✅ Import TanStack Query
-import { updateDoctor } from "../utils/specialist.util";
+import { updateDoctor, createDoctor } from "../utils/specialist.util";
 
 interface SpecialistCardProps {
   specialist: SpecialistType;
@@ -38,7 +38,21 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
   const mutation = useMutation({
     mutationFn: ({ clerkId, status }: { clerkId: string; status: string }) =>
       updateDoctor(clerkId, { unsafeMetadata: { approval_status: status } }),
-    onSuccess: () => {
+    onSuccess: async (data, variables) => {
+      const { status, clerkId } = variables;
+      console.log("✅ Approval status updated successfully!");
+
+      if (status === "final_approved") {
+        try {
+          console.log("✅ Creating Doctor!", clerkId);
+
+          // Assuming you have a createDoctor function that calls your Next.js API
+          await createDoctor(clerkId);
+          console.log("✅ Doctor inserted into DB successfully!");
+        } catch (error) {
+          console.error("❌ Error inserting doctor into DB:", error);
+        }
+      }
       console.log("✅ Approval status updated successfully!");
       queryClient.invalidateQueries({ queryKey: ["specialists"] });
     },
@@ -51,7 +65,7 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
     <Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <h3 className="font-semibold">
-          {specialist.full_name ?? "No Name Found"}
+          {specialist?.firstName ?? "No Name Found"}
         </h3>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -64,7 +78,7 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
             <DropdownMenuItem
               onClick={() =>
                 mutation.mutate({
-                  clerkId: specialist.clerkId,
+                  clerkId: specialist?.id,
                   status: "contract_send",
                 })
               }
@@ -74,7 +88,7 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
             <DropdownMenuItem
               onClick={() =>
                 mutation.mutate({
-                  clerkId: specialist.clerkId,
+                  clerkId: specialist?.id,
                   status: "auth_contract",
                 })
               }
@@ -84,7 +98,7 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
             <DropdownMenuItem
               onClick={() =>
                 mutation.mutate({
-                  clerkId: specialist.clerkId,
+                  clerkId: specialist?.id,
                   status: "initial_approved",
                 })
               }
@@ -94,7 +108,7 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
             <DropdownMenuItem
               onClick={() =>
                 mutation.mutate({
-                  clerkId: specialist.clerkId,
+                  clerkId: specialist?.id,
                   status: "final_approved",
                 })
               }
@@ -109,34 +123,34 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
           <div className="grid grid-cols-[auto,1fr] gap-2">
             <span className="text-sm text-muted-foreground">Job Title:</span>
             <span className="text-sm font-medium">
-              {specialist.specialization ?? "NAN"}
+              {specialist?.unsafeMetadata?.specialization ?? "NAN"}
             </span>
             <span className="text-sm text-muted-foreground">Date:</span>
             <span className="text-sm font-medium">
-              {specialist.created_at
-                ? format(new Date(specialist.created_at), "EEE , dd MMM yyyy")
+              {specialist?.createdAt
+                ? format(new Date(specialist?.createdAt), "EEE , dd MMM yyyy")
                 : "NAN"}
             </span>
             <span className="text-sm text-muted-foreground">
               Qualification:
             </span>
-            <span className="text-sm font-medium">
+            {/* <span className="text-sm font-medium">
               {specialist.education
                 ? specialist.education?.map((edu: string) => (
-                    <span key={edu} className="capitalize">
-                      {edu},
-                    </span>
-                  ))
+                  <span key={edu} className="capitalize">
+                    {edu},
+                  </span>
+                ))
                 : "NAN"}
-            </span>
+            </span> */}
           </div>
           <div className="flex items-center justify-between pt-2">
             <span
               className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${getStatusColor(
-                specialist.approval_status
+                specialist?.unsafeMetadata?.approval_status
               )}`}
             >
-              {specialist.approval_status.split("_").join(" ") ??
+              {specialist.unsafeMetadata?.approval_status?.split("_")?.join(" ") ??
                 "No Status Found"}
             </span>
             <Button
@@ -145,7 +159,7 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
               className="flex items-center gap-1"
               asChild
             >
-              <Link href={`/dashboard/specialist/${specialist._id}`}>
+              <Link href={`/dashboard/specialist/${specialist.id}`}>
                 Show More
                 <ChevronRight className="h-4 w-4" />
               </Link>

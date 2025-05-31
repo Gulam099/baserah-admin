@@ -18,7 +18,9 @@ export default clerkMiddleware(async (auth, request) => {
 
   // If user is logged in and trying to access "/" or "/dashboard", redirect to "/dashboard/approval"
   if (userId && ["/dashboard"].includes(request.nextUrl.pathname)) {
-    return Response.redirect(new URL("/dashboard/approval", request.nextUrl));
+    return Response.redirect(
+      new URL("/dashboard/appointment", request.nextUrl)
+    );
   }
 });
 
