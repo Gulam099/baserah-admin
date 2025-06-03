@@ -22,6 +22,7 @@ export interface Doctor extends Document {
   address?: string;
   available: boolean;
   approval_status: string;
+  fcmToken: string;
   schedule: {
     start_time: string;
     end_time: string;
@@ -54,6 +55,7 @@ const DoctorSchema = new Schema<Doctor>(
     fees: { type: String },
     address: { type: String },
     available: { type: Boolean },
+    fcmToken: { type: String },
     approval_status: {
       type: String,
       default: "under_review",

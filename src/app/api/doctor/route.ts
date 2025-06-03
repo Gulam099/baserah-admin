@@ -44,9 +44,8 @@ export async function POST(req: NextRequest) {
     // Prepare doctor data from Clerk user
     const doctorData = {
       clerkId: clerkUser.id,
-      full_name: `${clerkUser.firstName || ""} ${
-        clerkUser.lastName || ""
-      }`.trim(),
+      full_name: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""
+        }`.trim(),
       email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
       phoneNumber: clerkUser.phoneNumbers?.[0]?.phoneNumber || "",
       specialization: clerkUser.unsafeMetadata?.specialization || "",
@@ -63,6 +62,7 @@ export async function POST(req: NextRequest) {
       fees: clerkUser.unsafeMetadata?.fees || "",
       address: clerkUser.unsafeMetadata?.address || "",
       available: clerkUser.unsafeMetadata?.available || false,
+      fcmToken: clerkUser.unsafeMetadata?.fcmToken || "",
       approval_status:
         clerkUser.unsafeMetadata?.approval_status || "under_review",
       schedule: (() => {
@@ -78,8 +78,8 @@ export async function POST(req: NextRequest) {
               : "",
           days_of_week:
             typeof schedule === "object" &&
-            schedule &&
-            "days_of_week" in schedule
+              schedule &&
+              "days_of_week" in schedule
               ? (schedule as any).days_of_week || []
               : [],
           timezone:
@@ -88,14 +88,14 @@ export async function POST(req: NextRequest) {
               : "",
           effective_from:
             typeof schedule === "object" &&
-            schedule &&
-            "effective_from" in schedule
+              schedule &&
+              "effective_from" in schedule
               ? (schedule as any).effective_from || ""
               : "",
           effective_to:
             typeof schedule === "object" &&
-            schedule &&
-            "effective_to" in schedule
+              schedule &&
+              "effective_to" in schedule
               ? (schedule as any).effective_to || ""
               : "",
         };
@@ -112,6 +112,22 @@ export async function POST(req: NextRequest) {
     );
 
     console.log("✅ Doctor saved successfully");
+
+    try {
+      const updatedClerkUser = await clerkClient.users.updateUser(clerkId, {
+        publicMetadata: {
+          ...clerkUser.publicMetadata,
+          dbUserId: doctor._id.toString(),
+          userType: "doctor",
+          createdAt: new Date().toISOString(),
+        },
+      });
+
+      console.log("✅ Clerk user public metadata updated successfully", updatedClerkUser);
+
+    } catch (clerkError) {
+      console.error("⚠️ Error updating Clerk metadata:", clerkError);
+    }
 
     // ✅ FIXED: Make sure to return the user data for your axios call
     return NextResponse.json(
