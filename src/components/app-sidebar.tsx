@@ -45,11 +45,7 @@ const data = {
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
-    // {
-    //   title: "Approval",
-    //   url: "/dashboard/approval",
-    //   icon: Gauge,
-    // },
+
     // {
     //   title: "Reports",
     //   url: "/dashboard/report",
@@ -59,6 +55,11 @@ const data = {
       title: "Appointments",
       url: "/dashboard/appointment",
       icon: Briefcase,
+    },
+    {
+      title: "Approval",
+      url: "/dashboard/approval",
+      icon: Gauge,
     },
     // {
     //   title: "Tickets",

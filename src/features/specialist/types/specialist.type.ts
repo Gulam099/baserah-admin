@@ -9,6 +9,9 @@ export type SpecialistStatusType =
  * Represents a single specialist record.
  */
 export interface SpecialistType {
+  id: string;
+  unsafeMetadata: any;
+  createdAt: any;
   firstName: any;
   _id: string;
   clerkId: string;

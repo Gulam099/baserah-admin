@@ -12,12 +12,25 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query"; // ✅ Import TanStack Query
 import { updateDoctor, createDoctor } from "../utils/specialist.util";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { ApiBaseUrlLocal } from "../../../../const";
+
 
 interface SpecialistCardProps {
   specialist: SpecialistType;
 }
 
 export function SpecialistCard({ specialist }: SpecialistCardProps) {
+
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [createdDoctorId, setCreatedDoctorId] = useState<string | null>(null);
+
+
   const queryClient = useQueryClient();
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -40,29 +53,61 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
       updateDoctor(clerkId, { unsafeMetadata: { approval_status: status } }),
     onSuccess: async (data, variables) => {
       const { status, clerkId } = variables;
-      console.log("✅ Approval status updated successfully!");
-
-      if (status === "final_approved") {
+      if (status === "contract_send") {
         try {
-          console.log("✅ Creating Doctor!", clerkId);
+          const response = await createDoctor(clerkId);
+          console.log("response", response);
 
-          // Assuming you have a createDoctor function that calls your Next.js API
-          await createDoctor(clerkId);
-          console.log("✅ Doctor inserted into DB successfully!");
+
+          setCreatedDoctorId(response?.doctor?._id || null);
         } catch (error) {
           console.error("❌ Error inserting doctor into DB:", error);
         }
       }
+
       console.log("✅ Approval status updated successfully!");
       queryClient.invalidateQueries({ queryKey: ["specialists"] });
     },
+
     onError: (error) => {
       console.error("❌ Error updating approval status:", error);
     },
   });
 
+  console.log("createdoctor id", createdDoctorId);
+
+  const handleUploadAndSubmit = async () => {
+    if (!selectedFile) return;
+
+
+    try {
+      setUploading(true);
+
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      formData.append("doctorId", createdDoctorId ?? "");
+
+      const res = await fetch(`${ApiBaseUrlLocal}/api/doctor/contracts/upload`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error("Upload failed");
+      const data = await res.json();
+
+      // Optional: You can store `data.fileUrl` (s3urlContract) in your backend
+
+      setIsModalOpen(false);
+      setSelectedFile(null);
+    } catch (error) {
+      console.error("❌ Upload error:", error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
-    <Card className="w-full">
+    <><Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <h3 className="font-semibold">
           {specialist?.firstName ?? "No Name Found"}
@@ -76,42 +121,38 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem
-              onClick={() =>
+              onClick={() => {
                 mutation.mutate({
-                  clerkId: specialist?.id,
+                  clerkId: specialist.id,
                   status: "contract_send",
-                })
-              }
+                });
+                setIsModalOpen(true);
+              }}
             >
               Contract Send
             </DropdownMenuItem>
+
             <DropdownMenuItem
-              onClick={() =>
-                mutation.mutate({
-                  clerkId: specialist?.id,
-                  status: "auth_contract",
-                })
-              }
+              onClick={() => mutation.mutate({
+                clerkId: specialist?.id,
+                status: "auth_contract",
+              })}
             >
               Authenticate Contract
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() =>
-                mutation.mutate({
-                  clerkId: specialist?.id,
-                  status: "initial_approved",
-                })
-              }
+              onClick={() => mutation.mutate({
+                clerkId: specialist?.id,
+                status: "initial_approved",
+              })}
             >
               Initial Approval of the contract
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() =>
-                mutation.mutate({
-                  clerkId: specialist?.id,
-                  status: "final_approved",
-                })
-              }
+              onClick={() => mutation.mutate({
+                clerkId: specialist?.id,
+                status: "final_approved",
+              })}
             >
               Final Approval of the contract
             </DropdownMenuItem>
@@ -127,7 +168,7 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
             </span>
             <span className="text-sm text-muted-foreground">Date:</span>
             <span className="text-sm font-medium">
-              {specialist?.createdAt
+              {specialist?.created_at
                 ? format(new Date(specialist?.createdAt), "EEE , dd MMM yyyy")
                 : "NAN"}
             </span>
@@ -135,14 +176,14 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
               Qualification:
             </span>
             {/* <span className="text-sm font-medium">
-              {specialist.education
-                ? specialist.education?.map((edu: string) => (
-                  <span key={edu} className="capitalize">
-                    {edu},
-                  </span>
-                ))
-                : "NAN"}
-            </span> */}
+      {specialist.education
+        ? specialist.education?.map((edu: string) => (
+          <span key={edu} className="capitalize">
+            {edu},
+          </span>
+        ))
+        : "NAN"}
+    </span> */}
           </div>
           <div className="flex items-center justify-between pt-2">
             <span
@@ -168,5 +209,27 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
         </div>
       </CardContent>
     </Card>
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Upload Contract</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              type="file"
+              accept=".pdf"
+              onChange={(e) => setSelectedFile(e.target.files ? e.target.files[0] : null)} />
+          </div>
+          <DialogFooter className="pt-4">
+            <Button
+              disabled={!selectedFile || uploading}
+              onClick={handleUploadAndSubmit}
+            >
+              {uploading ? "Uploading..." : "Submit"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

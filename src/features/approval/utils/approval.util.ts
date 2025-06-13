@@ -1,11 +1,13 @@
 import { ApiResponseType } from "@/features/home/types/type";
 import { approvals } from "../approval.data";
-import { ApiBaseUrl } from "../../../../const";
+import { ApiBaseUrlLocal } from "../../../../const";
 
 export async function fetchApprovalsRecords(page: number, size: number) {
   try {
     // Fetch data from the API endpoint
-    const response = await fetch(`${ApiBaseUrl}/api/admin/library/all`);
+    const response = await fetch(
+      `${ApiBaseUrlLocal}/api/admin/cultural-content/pending`
+    );
 
     // Check if the response is successful
     if (!response.ok) {
@@ -14,12 +16,13 @@ export async function fetchApprovalsRecords(page: number, size: number) {
 
     // Parse the JSON data
     const result = await response.json();
+    console.log("result approval", result);
 
     return {
       success: true,
       status: result.status || 200,
       message: result.message || "Approvals fetched successfully",
-      data: result.data,
+      data: result,
       page: {
         total: result.pagination.total_items,
         page: result.pagination.current_page,
@@ -46,7 +49,9 @@ export async function fetchApprovalContent(
   id: string
 ): Promise<ApiResponseType> {
   try {
-    const response = await fetch(`${ApiBaseUrl}/api/library?content_id=${id}`);
+    const response = await fetch(
+      `${ApiBaseUrlLocal}/api/library?content_id=${id}`
+    );
     const data = await response.json();
 
     if (!response.ok) {
@@ -75,17 +80,18 @@ export async function updateApprovalStatus(
   approvedBy: string
 ): Promise<ApiResponseType> {
   try {
-    const response = await fetch(`${ApiBaseUrl}/api/admin/library/approval`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        content_id: contentId,
-        status,
-        approved_by: approvedBy,
-      }),
-    });
+    const response = await fetch(
+      `${ApiBaseUrlLocal}/api/admin/cultural-content/update-status`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          status,
+        }),
+      }
+    );
 
     const data = await response.json();
 
@@ -108,4 +114,3 @@ export async function updateApprovalStatus(
     };
   }
 }
-
