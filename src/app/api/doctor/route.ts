@@ -9,13 +9,9 @@ const clerkClient = createClerkClient({
 });
 
 export async function POST(req: NextRequest) {
-  console.log("🔥 POST /api/doctor called");
-
   try {
     const body = await req.json();
     const { clerkId } = body;
-
-    console.log("📦 Received clerkId:", clerkId);
 
     if (!clerkId) {
       return NextResponse.json(
@@ -23,9 +19,6 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Fetch user from Clerk
-    console.log("🔍 Fetching user from Clerk...");
     const clerkUser = await clerkClient.users.getUser(clerkId);
 
     if (!clerkUser) {
@@ -35,10 +28,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log("✅ Clerk user found:", clerkUser.id);
-
-    // Connect to MongoDB
-    console.log("🔌 Connecting to MongoDB...");
     await connect();
 
     // Prepare doctor data from Clerk user
@@ -102,8 +91,6 @@ export async function POST(req: NextRequest) {
       })(),
     };
 
-    console.log("💾 Saving doctor to MongoDB...");
-
     // Insert or update doctor in MongoDB
     const doctor = await DoctorModel.findOneAndUpdate(
       { clerkId: clerkUser.id },
@@ -128,7 +115,7 @@ export async function POST(req: NextRequest) {
     } catch (clerkError) {
       console.error("⚠️ Error updating Clerk metadata:", clerkError);
     }
-
+    
     // ✅ FIXED: Make sure to return the user data for your axios call
     return NextResponse.json(
       {
@@ -160,14 +147,10 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    // ✅ Update Clerk User
-    console.log(`🔄 [API] Updating Clerk user: ${clerkId} with data`, updates);
     const updatedUser = await clerkClient.users?.updateUserMetadata(
       clerkId,
       updates
     );
-
-    console.log("✅ [API] Clerk user updated successfully:", updatedUser);
     return NextResponse.json({
       message: "Doctor updated successfully",
       user: updatedUser,

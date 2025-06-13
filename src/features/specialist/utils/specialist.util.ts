@@ -84,7 +84,6 @@ export const createDoctor = async (clerkId: string) => {
       }
     );
 
-    console.log("✅ Axios response:", response.data);
     return response.data;
     // console.log("✅ Doctor created successfully:", data);
   } catch (error) {
