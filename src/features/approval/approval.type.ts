@@ -1,4 +1,7 @@
 export type ApprovalContentItemType = {
+  doctorId: any;
+  createdAt(createdAt: any): string | number | Date;
+  status: any;
   _id: string;
   approval_status: "approved" | "pending" | "cancelled"; // Assuming possible statuses
   approved_at: string; // Date in string format

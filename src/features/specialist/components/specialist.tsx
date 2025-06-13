@@ -186,11 +186,11 @@ export default function SpecialistPage() {
         </Card>
       ),
     },
-    // {
-    //   title: "Contracts",
-    //   id: "contracts",
-    //   content: <Contracts specilaistId={specialist_Id} />,
-    // },
+    {
+      title: "Contracts",
+      id: "contracts",
+      content: <Contracts specilaistId={specialist?._id} />,
+    },
     {
       title: "CV",
       id: "cv",

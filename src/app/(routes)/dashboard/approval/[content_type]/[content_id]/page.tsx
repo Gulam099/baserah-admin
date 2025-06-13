@@ -1,17 +1,16 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ApprovalContentItemType } from "@/features/approval/approval.type";
-import {
-  fetchApprovalContent,
-  updateApprovalStatus,
-} from "@/features/approval/utils/approval.util";
 import { toTitleCase } from "@/features/home/utils/string.utils";
 import { useUser } from "@clerk/nextjs";
 import { Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { ApiBaseUrlLocal } from "../../../../../../../const";
+
 
 export default function ApprovalContentPage({
   params,
@@ -24,38 +23,63 @@ export default function ApprovalContentPage({
   const [content, setContent] = useState<ApprovalContentItemType>();
   const [loading, setLoading] = useState(true);
   const [approvalLoading, setApprovalLoading] = useState(false);
+  const router = useRouter();
 
   const handleApprovalUpdate = async (
     status: "approved" | "pending" | "cancelled"
   ) => {
     setApprovalLoading(true);
     try {
-      const response = await updateApprovalStatus(
-        content_id,
-        status,
-        user?.id!
+      const response = await fetch(
+        `${ApiBaseUrlLocal}/api/admin/cultural-content/update-status/${content_id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status,
+          }),
+        }
       );
-      toast.success(response.message);
-    } catch (error) {
-      toast.error("Failed to update approval status.");
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Update failed");
+      }
+      // Redirect after success
+      router.push(`/dashboard/approval`);
+      toast.success(data.message);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update approval status.");
     } finally {
       setApprovalLoading(false);
     }
   };
 
+
   useEffect(() => {
-    setLoading(true);
-    fetchApprovalContent(content_id)
-      .then((res) => {
-        setContent(res.data!);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch questions:", err);
-      })
-      .finally(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `${ApiBaseUrlLocal}/api/library/getbyid/${content_id}`
+        );
+        const json = await response.json();
+        setContent(json.data); // <<== important
+      } catch (error) {
+        toast.error("Failed to fetch content.");
+      } finally {
         setLoading(false);
-      });
-  }, [content_id, content_type]);
+      }
+    };
+
+    fetchData();
+  }, [content_id]);
+
+  console.log("content?", content);
+
 
   if (loading) {
     return (
@@ -71,13 +95,13 @@ export default function ApprovalContentPage({
 
   const badgeVariant: {
     [key in string]:
-      | "default"
-      | "success"
-      | "warning"
-      | "danger"
-      | "secondary"
-      | "destructive"
-      | "outline";
+    | "default"
+    | "success"
+    | "warning"
+    | "danger"
+    | "secondary"
+    | "destructive"
+    | "outline";
   } = {
     upcoming: "default",
     completed: "success",
@@ -95,13 +119,13 @@ export default function ApprovalContentPage({
           Address :{"  "}
           <Badge
             variant={
-              content.approval_status
-                ? badgeVariant[content.approval_status]
+              content.status
+                ? badgeVariant[content.status]
                 : "outline"
             }
             className={"capitalize"}
           >
-            {content.approval_status ?? "Unknown"}
+            {content?.status ?? "Unknown"}
           </Badge>
         </div>
         <h2 className="text-xl font-semibold">{content.title}</h2>
@@ -125,24 +149,29 @@ export default function ApprovalContentPage({
             </>
           )}
 
+
           <div className="flex flex-row flex-wrap justify-end gap-4 pt-8">
-            <Button
-              variant="secondary"
-              onClick={() => handleApprovalUpdate("cancelled")}
-              disabled={loading}
-            >
-              Approval Rejection
-            </Button>
+            {!["approved"].includes(content.status) && (
+              <Button
+                variant="default"
+                onClick={() => handleApprovalUpdate("approved")}
+                disabled={approvalLoading}
+              >
+                Content Approved
+              </Button>
+            )}
+            {!["cancelled"].includes(content.status) && (
+              <Button
+                variant="secondary"
+                onClick={() => handleApprovalUpdate("cancelled")}
+                disabled={approvalLoading}
+              >
+                Approval Rejection
+              </Button>
+            )}
             {/* <Button variant="secondary" onClick={() => handleApprovalUpdate("pending")} disabled={loading}>
         Alteration Request
       </Button> */}
-            <Button
-              variant="default"
-              onClick={() => handleApprovalUpdate("approved")}
-              disabled={loading}
-            >
-              Content Approved
-            </Button>
           </div>
         </div>
       </div>
@@ -156,18 +185,39 @@ function ResourceRenderer({ content }: any) {
 
   switch (lowerType) {
     case "article":
-      return <p>{resource[0]}</p>;
+      return (
+        <div className="flex flex-col gap-4">
+          {resource.thumbnail && (
+            <img
+              src={resource.thumbnail}
+              alt="Article Thumbnail"
+              className="w-1/2 rounded-xl"
+            />
+          )}
+          {/* {resource.note && (
+            <p className="text-sm text-muted-foreground">{resource.note}</p>
+          )} */}
+        </div>
+      );
 
     case "video":
       return (
-        <video src={resource[0]} controls className="w-1/2 rounded-xl">
+        <video
+          src={resource.mediaUrl}
+          controls
+          className="w-1/2 rounded-xl"
+        >
           Your browser does not support the video tag.
         </video>
       );
 
     case "audio":
       return (
-        <audio src={resource[0]} controls className="w-full">
+        <audio
+          src={resource.mediaUrl}
+          controls
+          className="w-full"
+        >
           Your browser does not support the audio element.
         </audio>
       );
@@ -180,3 +230,4 @@ function ResourceRenderer({ content }: any) {
       );
   }
 }
+
