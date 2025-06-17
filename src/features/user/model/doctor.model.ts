@@ -52,6 +52,7 @@ const DoctorSchema = new Schema<Doctor>(
     education: { type: [String] },
     profile_picture: { type: String },
     cv: { type: String },
+    price: { type: String },
     fees: { type: String },
     address: { type: String },
     available: { type: Boolean },
