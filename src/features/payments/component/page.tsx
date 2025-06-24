@@ -38,7 +38,7 @@ const PaymentList: React.FC<Props> = ({
   // Calculate summary stats
   const totalPayments = total;
   const completedPayments = payments.filter(p => p.status === 'paid').length;
-  const pendingPayments = payments.filter(p => p.status === 'initiated').length;
+  const pendingPayments = payments.filter(p => p.status === 'pending').length;
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">

@@ -105,6 +105,7 @@ export default function EditSpecialistDialog(props: EditSpecialistDialogProps) {
     const payload = {
       firstName: values.fname,
       lastName: values.lname,
+      //  email: values.email,
       unsafeMetadata: {
         specialization: values.specialization,
         sub_specialization: values.sub_specialization,

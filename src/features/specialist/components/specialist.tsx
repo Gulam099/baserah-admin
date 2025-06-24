@@ -36,6 +36,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ApiBaseUrl, ApiBaseUrlLocal } from "../../../../const";
+import { toast } from "sonner";
+import Certificate from "./certificate";
 
 interface SpecialistData {
   _id: string;
@@ -67,6 +69,11 @@ interface SpecialistData {
   updated_at: string;
 }
 
+type UploadedCertificate = {
+  title: string;
+  s3url: string;
+  // add other fields if needed
+};
 
 export default function SpecialistPage() {
   const { specialist_Id } = useParams<{ specialist_Id: string }>();
@@ -74,6 +81,8 @@ export default function SpecialistPage() {
   const [specialist, setSpecialist] = useState<SpecialistData | null>(null);
   // const [loading, setLoading] = useState(false);
   // const [error, setError] = useState<string | null>(null);
+
+
 
   // 1) fetch the specialist on mount
   useEffect(() => {
@@ -140,6 +149,12 @@ export default function SpecialistPage() {
   // approval_status logic. Here's an example:
   const timeline = [
     {
+      status: "Accepted ",
+      key: "accepted",
+      date: "",
+      active: false,
+    },
+    {
       status: "Contract Send",
       key: "contract_send",
       date: "",
@@ -189,7 +204,7 @@ export default function SpecialistPage() {
     {
       title: "Contracts",
       id: "contracts",
-      content: <Contracts specilaistId={specialist?._id} />,
+      content: <Contracts initialApprovalStatus={specialist?.approval_status} specilaistId={specialist?._id} clerkId={specialist?.clerkId} />,
     },
     {
       title: "CV",
@@ -197,9 +212,14 @@ export default function SpecialistPage() {
       content: <CV data={specialist} />,
     },
     {
+      title: "Certificates",
+      id: "certificates",
+      content: <Certificate doctorId={specialist?._id} />,
+    },
+    {
       title: "Content",
       id: "content",
-      content: <Content specilaistId={specialist_Id} />,
+      content: <Content doctorId={specialist?._id} />,
     },
     {
       title: "Ratings",
@@ -218,10 +238,13 @@ export default function SpecialistPage() {
         return "bg-purple-100 text-purple-700";
       case "contract_send":
         return "bg-yellow-100 text-yellow-700";
+      case "accepted":
+        return "bg-blue-100 text-blue-700"; // Add this line
       default:
         return "bg-gray-100 text-gray-700";
     }
   };
+
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -295,7 +318,7 @@ export default function SpecialistPage() {
             </div>
           </div> */}
 
-          <div className="h-full flex flex-col gap-2 border rounded-2xl p-6">
+          <div className="h-96 flex flex-col gap-2 border rounded-2xl p-6">
             <div className="relative flex-1">
               <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-muted" />
               <div className="space-y-8">

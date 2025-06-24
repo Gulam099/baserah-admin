@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClerkClient } from "@clerk/nextjs/server";
 import { connect } from "@/lib/db";
 import DoctorModel from "@/features/user/model/doctor.model"; // Adjust path as needed
+import Doctor from "@/features/user/model/doctor.model";
 
 // ✅ Create Clerk Client
 const clerkClient = createClerkClient({
@@ -93,7 +94,7 @@ export async function POST(req: NextRequest) {
     };
 
     // Insert or update doctor in MongoDB
-    const doctor = await DoctorModel.findOneAndUpdate(
+    const doctor = await Doctor.findOneAndUpdate(
       { clerkId: clerkUser.id },
       doctorData,
       { upsert: true, new: true }
@@ -139,29 +140,79 @@ export async function POST(req: NextRequest) {
 // ✅ API Route to update a doctor's data in Clerk
 export async function PATCH(req: NextRequest) {
   try {
-    // ✅ Parse request JSON
     const body = await req.json();
     const { clerkId, updates } = body;
+
     if (!clerkId || !updates) {
-      console.error("❌ [API] Missing clerkId or updates in request");
       return NextResponse.json(
-        { message: "Missing required fields" },
+        { message: "Missing clerkId or updates" },
         { status: 400 }
       );
     }
 
-    const updatedUser = await clerkClient.users?.updateUserMetadata(
+    // ✅ 1. Update Clerk unsafeMetadata
+    const updatedClerkUser = await clerkClient.users.updateUserMetadata(
       clerkId,
       updates
     );
+
+    // ✅ 2. Update Doctor DB
+    await connect();
+
+    const meta = updates.unsafeMetadata || {};
+    console.log("meta", meta);
+
+    const updateFields: any = {
+      specialization: meta.specialization,
+      sub_specialization: meta.sub_specialization,
+      experience: meta.experience,
+      response_time: meta.response_time,
+      age_categories: meta.age_categories,
+      consultation_method: meta.consultation_method,
+      education: meta.education,
+      language: meta.language,
+      fees: meta.fees,
+      bio: meta.bio,
+      approval_status: meta.approval_status,
+    };
+
+    const full_name =
+      updates.firstName || updates.lastName
+        ? `Dr. ${updates.firstName || ""} ${updates.lastName || ""}`.trim()
+        : undefined;
+
+    if (full_name) {
+      updateFields.full_name = full_name;
+    }
+
+    const updatedDoctor = await Doctor.findOneAndUpdate(
+      { clerkId },
+      // {
+      //   full_name: `${updates.firstName} ${updates.lastName}`,
+      //   specialization: meta.specialization,
+      //   sub_specialization: meta.sub_specialization,
+      //   experience: meta.experience,
+      //   response_time: meta.response_time,
+      //   age_categories: meta.age_categories,
+      //   consultation_method: meta.consultation_method,
+      //   education: meta.education,
+      //   language: meta.language,
+      //   fees: meta.fees,
+      //   bio: meta.bio,
+      //   approval_status: meta.approval_status,
+      // }
+      updateFields
+    );
+
     return NextResponse.json({
-      message: "Doctor updated successfully",
-      user: updatedUser,
+      message: "Doctor updated in Clerk and DB",
+      user: updatedClerkUser,
+      doctor: updatedDoctor,
     });
-  } catch (error) {
-    console.error("❌ [API] Error updating Clerk user:", error);
+  } catch (error: any) {
+    console.error("❌ Error in PATCH /api/doctor:", error);
     return NextResponse.json(
-      { message: "Failed to update doctor", error },
+      { message: "Failed to update doctor", error: error.message },
       { status: 500 }
     );
   }
