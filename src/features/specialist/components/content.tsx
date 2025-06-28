@@ -13,8 +13,8 @@ import UnifiedPagination from "@/features/home/components/UnifiedPagination";
 /**
  * Renders content items for a given specialist
  */
-export default function Content(props: { specilaistId: string }) {
-  const { specilaistId } = props;
+export default function Content(props: { doctorId: string }) {
+  const { doctorId } = props;
 
   // 1) Pagination from URL
   const searchParams = useSearchParams();
@@ -33,7 +33,7 @@ export default function Content(props: { specilaistId: string }) {
     let isMounted = true;
 
     setLoading(true);
-    fetchSpecContentRecords(specilaistId, currentPage, pageSize)
+    fetchSpecContentRecords(doctorId, currentPage, pageSize)
       .then((res) => {
         // If component unmounted in the meantime, skip
         if (!isMounted) return;
@@ -52,7 +52,7 @@ export default function Content(props: { specilaistId: string }) {
     return () => {
       isMounted = false;
     };
-  }, [specilaistId, currentPage, pageSize]);
+  }, [doctorId, currentPage, pageSize]);
 
   // 4) Loading/Empty states
   if (loading) {
@@ -68,16 +68,18 @@ export default function Content(props: { specilaistId: string }) {
     return <div className="p-4">No content found.</div>;
   }
 
+  console.log("setContentList", contentList);
   // 5) Render the content
   return (
     <div className="p-6 flex flex-col gap-4">
       {contentList.map((item, index) => {
         // Safely handle missing fields
-        const approvalStatus = item?.approval_status ?? "N/A";
+        const approvalStatus = item?.status ?? "N/A";
         const contentType = item?.type ?? "unknown";
         const contentTitle = item?.title ?? "No title";
         const note = item?.note ?? "";
-        const resources = Array.isArray(item?.resources) ? item.resources : [];
+        const resources = Array.isArray(item?.file) ? item.file : [];
+
 
         return (
           <div
@@ -143,7 +145,37 @@ function ResourceRenderer({ content }: any) {
 
   switch (lowerType) {
     case "text":
-      return <p>{resourceArr[0]}</p>;
+    case "article": // ✅ added case for Article
+      return (
+        <div className="flex flex-col gap-4">
+          {resourceArr.map((url: string, idx: number) => {
+            if (url.match(/\.(jpeg|jpg|png|gif)$/i)) {
+              return (
+                <img
+                  key={idx}
+                  src={url}
+                  alt={`Article Image ${idx + 1}`}
+                  className="w-full max-w-md rounded-xl"
+                />
+              );
+            } else if (url.match(/\.(pdf|docx)$/i)) {
+              return (
+                <a
+                  key={idx}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline"
+                >
+                  View Document {idx + 1}
+                </a>
+              );
+            } else {
+              return <p key={idx}>{url}</p>;
+            }
+          })}
+        </div>
+      );
 
     case "video":
       return (
@@ -167,3 +199,4 @@ function ResourceRenderer({ content }: any) {
       );
   }
 }
+

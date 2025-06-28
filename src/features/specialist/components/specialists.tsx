@@ -20,6 +20,8 @@ export default function SpecialistsPage() {
   const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 9;
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+
 
   // ✅ Use TanStack Query for fetching specialists
   const { data, isLoading, error } = useQuery({
@@ -36,9 +38,13 @@ export default function SpecialistsPage() {
   const filteredSpecialists = specialists.filter((specialist) => {
     const name = specialist.firstName?.toLowerCase() || "";
     const id = specialist._id?.toLowerCase() || "";
+    const status = specialist?.unsafeMetadata?.approval_status || "";
     const term = searchTerm.toLowerCase();
 
-    return name.includes(term) || id.includes(term);
+    const matchesSearch = name.includes(term) || id.includes(term);
+    const matchesStatus = statusFilter ? status === statusFilter : true;
+
+    return matchesSearch && matchesStatus;
   });
 
 
@@ -47,7 +53,7 @@ export default function SpecialistsPage() {
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center gap-2 pb-6">
-        <div className="relative  w-full max-w-md">
+        <div className="relative flex gap-3  w-full max-w-md">
           <input
             type="text"
             placeholder="Search specialists by name or ID"
@@ -65,6 +71,21 @@ export default function SpecialistsPage() {
               ×
             </button>
           )}
+          <select
+            value={statusFilter ?? ""}
+            onChange={(e) =>
+              setStatusFilter(e.target.value === "" ? null : e.target.value)
+            }
+            className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">All</option>
+            <option value="accepted">Accepte</option>
+            <option value="contract_send">Contract Send</option>
+            <option value="auth_contract">Auth Contract</option>
+            <option value="initial_approved">Initial Approved</option>
+            <option value="final_approved">Final Approved</option>
+
+          </select>
         </div>
         <ExportButton contentRef={contentRef} />
       </div>

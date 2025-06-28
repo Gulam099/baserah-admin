@@ -1,7 +1,7 @@
 import { approvals } from "@/features/approval/approval.data";
 import { ApiResponseType } from "@/features/home/types/type";
 import { mockSpecialist, ratings } from "../data/specialist.data";
-import { ApiBaseUrl, ApiBaseUrlLocal } from "../../../../const";
+import { ApiBaseUrlLocal } from "../../../../const";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -149,7 +149,7 @@ export async function fetchSpecContentRecords(
 ): Promise<ApiResponseType> {
   try {
     const res = await axios.get(
-      `${ApiBaseUrl}/api/admin/library/doctor/${doctorId}`,
+      `${ApiBaseUrlLocal}/api/library/get/${doctorId}`,
       {
         params: { page, size },
       }

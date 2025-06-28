@@ -61,6 +61,11 @@ const data = {
       url: "/dashboard/approval",
       icon: Gauge,
     },
+    {
+      title: "Specialization",
+      url: "/dashboard/specialization",
+      icon: BookOpen,
+    },
     // {
     //   title: "Tickets",
     //   url: "/dashboard/ticket",
