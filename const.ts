@@ -1,3 +1,3 @@
 export const appName = "Baserah";
-export const ApiBaseUrl = "https://api.baserah.sa";
-export const ApiBaseUrlLocal = "http://localhost:4000";
+export const ApiBaseUrl = "https://16.24.148.188";
+export const ApiBaseUrlLocal = "https://16.24.148.188";
