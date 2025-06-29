@@ -38,7 +38,7 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
       default:
         return "bg-gray-100 text-gray-700";
     }
-  };
+  }
 
 
   const mutation = useMutation({
@@ -47,26 +47,27 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
     onSuccess: async (data, variables) => {
       const { status, clerkId } = variables;
 
-      if (status === "contract_send") {
+      if (status === "contract_send" && clerkId) {
         try {
-          const response = await createDoctor(clerkId);
-          const doctorId = response?.doctor?._id;
-          setCreatedDoctorId(doctorId || null);
+          const res = await fetch(`${ApiBaseUrlLocal}/api/doctor/contracts/default-contract`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ clerkId }),
+          });
 
-          if (doctorId) {
-            await fetch(`${ApiBaseUrlLocal}/api/doctor/contracts/default-contract`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ doctorId }),
-            });
-            console.log("✅ Default contract sent for doctor:", doctorId);
+          if (!res.ok) {
+            const error = await res.json();
+            console.error("❌ Failed to send default contract:", error.message);
+          } else {
+            console.log("✅ Default contract sent for doctor:", clerkId);
           }
-        } catch (error) {
-          console.error("❌ Error sending default contract:", error);
+        } catch (err) {
+          console.error("❌ Error sending default contract:", err);
         }
       }
+
 
       queryClient.invalidateQueries({ queryKey: ["specialists"] });
     },

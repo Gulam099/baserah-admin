@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
       }`.trim(),
       email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
       phoneNumber: clerkUser.phoneNumbers?.[0]?.phoneNumber || "",
+      specialist: clerkUser.unsafeMetadata?.specialist || "",
       specialization: clerkUser.unsafeMetadata?.specialization || "",
       sub_specialization: clerkUser.unsafeMetadata?.sub_specialization || "",
       experience: clerkUser.unsafeMetadata?.experience || "",

@@ -81,6 +81,7 @@ export async function POST(req: Request) {
         phoneNumber: phone_numbers[0]?.phone_number,
         email: email_addresses[0]?.email_address || "",
         profile_picture: image_url,
+        specialist: unsafe_metadata.specialist as string,
         specialization: unsafe_metadata.specialization as string,
         sub_specialization: unsafe_metadata.sub_specialization as string,
         experience: unsafe_metadata.experience as string,
