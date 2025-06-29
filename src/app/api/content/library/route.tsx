@@ -19,12 +19,6 @@ interface ApiResponseType<T = any> {
   currentPage?: number;
 }
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 // ---------- S3 Setup ----------
 const s3Client = new S3Client({
   endpoint: process.env.DO_SPACES_ENDPOINT!,
