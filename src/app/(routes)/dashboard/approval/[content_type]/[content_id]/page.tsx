@@ -181,7 +181,16 @@ export default function ApprovalContentPage({
 
 function ResourceRenderer({ content }: any) {
   const { type, resource } = content;
-  const lowerType = type?.toLowerCase() || "";
+
+  const typeMap: Record<string, string> = {
+    "مقال": "article",
+    "فيديو": "video",
+    "صوت": "audio",
+  };
+
+  const lowerType = typeMap[type] || type?.toLowerCase() || "";
+
+  console.log("resource", resource);
 
   switch (lowerType) {
     case "article":
@@ -194,32 +203,58 @@ function ResourceRenderer({ content }: any) {
               className="w-1/2 rounded-xl"
             />
           )}
-          {/* {resource.note && (
-            <p className="text-sm text-muted-foreground">{resource.note}</p>
-          )} */}
         </div>
       );
 
     case "video":
-      return (
-        <video
-          src={resource.mediaUrl}
-          controls
-          className="w-1/2 rounded-xl"
-        >
-          Your browser does not support the video tag.
-        </video>
+      const getYoutubeVideoId = (url: string): string | null => {
+        try {
+          const ytRegex =
+            /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+          const match = url.match(ytRegex);
+          return match && match[1] ? match[1] : null;
+        } catch {
+          return null;
+        }
+      };
+
+      const videoId = getYoutubeVideoId(resource.videoLink);
+      const thumbnail = videoId
+        ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+        : null;
+
+      return videoId ? (
+        <div className="flex flex-col gap-2">
+          <a
+            href={`https://www.youtube.com/watch?v=${videoId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:opacity-80 transition"
+          >
+            <img
+              src={thumbnail}
+              alt="YouTube Video Thumbnail"
+              className="w-full max-w-xl rounded-xl"
+            />
+          </a>
+          <p className="text-sm text-muted-foreground">
+            Click the image to watch the video on YouTube.
+          </p>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">Invalid YouTube link.</p>
       );
 
     case "audio":
-      return (
-        <audio
-          src={resource.mediaUrl}
-          controls
-          className="w-full"
-        >
-          Your browser does not support the audio element.
-        </audio>
+      return resource.mediaUrl ? (
+        <div className="w-full">
+          <audio controls className="w-full">
+            <source src={resource.mediaUrl} type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </audio>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">No audio available.</p>
       );
 
     default:
@@ -230,4 +265,5 @@ function ResourceRenderer({ content }: any) {
       );
   }
 }
+
 

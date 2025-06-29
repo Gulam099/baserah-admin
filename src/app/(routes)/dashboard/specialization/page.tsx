@@ -8,7 +8,20 @@ type SpecializationType = {
   _id: string;
   name: string;
   subSpecializations: { name: string }[];
+  applicableLevels?: string[];
 };
+
+const specialistLevels = [
+  "Assistant Specialist",
+  "Specialist",
+  "First Specialist",
+  "Consultant",
+  "Deputy Specialist Doctor",
+  "First Deputy Specialist Doctor",
+  "Consultant Doctor",
+  "First Consultant Doctor",
+];
+
 
 const SpecializationPage: React.FC = () => {
   const [specialization, setSpecialization] = useState("");
@@ -17,6 +30,8 @@ const SpecializationPage: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formVisible, setFormVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
+
 
   useEffect(() => {
     fetchSpecializations();
@@ -57,6 +72,7 @@ const SpecializationPage: React.FC = () => {
       subSpecializations: subSpecializations
         .filter((s) => s.trim() !== "")
         .map((s) => ({ name: s })),
+      applicableLevels: selectedLevels,
     };
 
     const url = editingId
@@ -122,6 +138,7 @@ const SpecializationPage: React.FC = () => {
     setSpecialization(item.name);
     setSubSpecializations(item.subSpecializations.map((s) => s.name));
     setEditingId(item._id);
+    setSelectedLevels(item.applicableLevels || []);
     setFormVisible(true);
   };
 
@@ -130,7 +147,17 @@ const SpecializationPage: React.FC = () => {
     setSubSpecializations([""]);
     setEditingId(null);
     setFormVisible(false);
+    setSelectedLevels([]);
   };
+
+  const handleLevelToggle = (level: string) => {
+    setSelectedLevels((prev) =>
+      prev.includes(level)
+        ? prev.filter((l) => l !== level)
+        : [...prev, level]
+    );
+  };
+
 
   const filteredList = specializationList
     .slice() // clone array
@@ -210,6 +237,23 @@ const SpecializationPage: React.FC = () => {
             </button>
           </div>
 
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-2">Applicable Specialist Levels</label>
+            <div className="grid grid-cols-2 gap-2">
+              {specialistLevels.map((level) => (
+                <label key={level} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={selectedLevels.includes(level)}
+                    onChange={() => handleLevelToggle(level)}
+                  />
+                  {level}
+                </label>
+              ))}
+            </div>
+          </div>
+
+
           <div className="flex gap-2">
             <button
               onClick={handleSubmit}
@@ -232,40 +276,61 @@ const SpecializationPage: React.FC = () => {
       {filteredList.length === 0 ? (
         <p>No specializations found.</p>
       ) : (
-        <ul className="space-y-4">
-          {filteredList.map((item) => (
-            <li
-              key={item._id}
-              className="border p-4 rounded-md shadow-sm bg-white"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-lg font-semibold">{item.name}</h3>
-                  <ul className="list-disc list-inside text-sm text-gray-700">
-                    {item.subSpecializations.map((s, i) => (
-                      <li key={i}>{s.name}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="space-x-1">
-                  <button
-                    onClick={() => handleEdit(item)}
-                    className="px-2 py-1 text-sm  text-black rounded"
-                  >
-                    <SquarePen />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(item._id)}
-                    className="px-2 py-1 text-sm text-red-500 rounded"
-                  >
-                    <Trash2 />
-                  </button>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div className="overflow-x-auto rounded shadow">
+          <table className="min-w-full border-collapse bg-white">
+            <thead>
+              <tr className="bg-gray-100 text-left text-sm font-medium text-gray-700">
+                <th className="px-4 py-3 border">#</th>
+                <th className="px-4 py-3 border">Specialization</th>
+                <th className="px-4 py-3 border">Sub Specializations</th>
+                <th className="px-4 py-3 border"> Specialist</th>
+                <th className="px-4 py-3 border text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredList.map((item, index) => (
+                <tr key={item._id} className="text-sm text-gray-800">
+                  <td className="px-4 py-3 border">{index + 1}</td>
+                  <td className="px-4 py-3 border font-semibold">{item.name}</td>
+                  <td className="px-4 py-3 border">
+                    <ul className=" list-inside space-y-1">
+                      {item.subSpecializations.map((s, i) => (
+                        <li key={i}>{s.name}</li>
+                      ))}
+                    </ul>
+                  </td>
+                  <td className="px-4 py-3 border">
+                    {item.applicableLevels && item.applicableLevels.length > 0 ? (
+                      <ul className=" list-inside space-y-1">
+                        {item.applicableLevels.map((level, idx) => (
+                          <li key={idx}>{level}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <span className="text-gray-400 italic">None</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 border text-center space-x-2">
+                    <button
+                      onClick={() => handleEdit(item)}
+                      className="inline-flex items-center px-2 py-1 text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      <SquarePen size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item._id)}
+                      className="inline-flex items-center px-2 py-1 text-sm text-red-600 hover:text-red-800"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
+
     </div>
   );
 };

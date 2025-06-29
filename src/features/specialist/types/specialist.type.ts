@@ -32,6 +32,7 @@ export interface SpecialistType {
   phoneNumber: string;
   profile_picture: string;
   response_time: string;
+  specialist: string;
   specialization: string;
   sub_specialization: string;
   updated_at: string;

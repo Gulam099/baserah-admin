@@ -7,6 +7,7 @@ export interface Doctor extends Document {
   full_name: string;
   email: string;
   phoneNumber: string;
+  specialist: String;
   specialization: string;
   sub_specialization?: string;
   experience?: string;
@@ -41,6 +42,7 @@ const DoctorSchema = new Schema<Doctor>(
     full_name: { type: String },
     email: { type: String, default: " ", sparse: true },
     phoneNumber: { type: String, default: " ", sparse: true },
+    specialist: { type: String },
     specialization: { type: String },
     sub_specialization: { type: String },
     experience: { type: String },

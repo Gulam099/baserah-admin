@@ -6,6 +6,7 @@ const DoctorSchema = z.object({
   full_name: z.string().min(1, "Full name is required"),
   email: z.string().email("Invalid email address"),
   phoneNumber: z.string().min(1, "Phone Number is required"),
+  specialist: z.string().min(1, "Specialist is required"),
   specialization: z.string().min(1, "Specialization is required"),
   sub_specialization: z.string().optional(),
   experience: z.string().optional(),

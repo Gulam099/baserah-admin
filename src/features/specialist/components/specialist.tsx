@@ -134,11 +134,11 @@ export default function SpecialistPage() {
       label: "Age Categories",
       value: specialist?.age_categories?.join(", ") || "N/A",
     },
-    {
-      label: "Consultation Method",
-      value: specialist?.consultation_method?.join(" - "),
-    },
-    { label: "Address", value: specialist?.address },
+    // {
+    //   label: "Consultation Method",
+    //   value: specialist?.consultation_method?.join(" - "),
+    // },
+    // { label: "Address", value: specialist?.address },
     {
       label: "Fees",
       value: specialist?.fees ? `${specialist?.fees} SAR` : "N/A",
