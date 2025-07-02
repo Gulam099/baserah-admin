@@ -5,6 +5,8 @@ import { ApiBaseUrlLocal } from "../../../../../const";
 import { Delete, SquarePen, Trash2 } from "lucide-react";
 
 type SpecializationType = {
+  feeBelow10: string;
+  feeAbove10: string;
   _id: string;
   name: string;
   subSpecializations: { name: string }[];
@@ -31,6 +33,9 @@ const SpecializationPage: React.FC = () => {
   const [formVisible, setFormVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
+  const [feeBelow10, setFeeBelow10] = useState<number | "">("");
+  const [feeAbove10, setFeeAbove10] = useState<number | "">("");
+
 
 
   useEffect(() => {
@@ -73,7 +78,10 @@ const SpecializationPage: React.FC = () => {
         .filter((s) => s.trim() !== "")
         .map((s) => ({ name: s })),
       applicableLevels: selectedLevels,
+      feeBelow10: feeBelow10 === "" ? undefined : feeBelow10,
+      feeAbove10: feeAbove10 === "" ? undefined : feeAbove10,
     };
+
 
     const url = editingId
       ? `${ApiBaseUrlLocal}/api/specializations/update/${editingId}`
@@ -139,8 +147,11 @@ const SpecializationPage: React.FC = () => {
     setSubSpecializations(item.subSpecializations.map((s) => s.name));
     setEditingId(item._id);
     setSelectedLevels(item.applicableLevels || []);
+    setFeeBelow10(item.feeBelow10 ?? "");
+    setFeeAbove10(item.feeAbove10 ?? "");
     setFormVisible(true);
   };
+
 
   const resetForm = () => {
     setSpecialization("");
@@ -148,7 +159,10 @@ const SpecializationPage: React.FC = () => {
     setEditingId(null);
     setFormVisible(false);
     setSelectedLevels([]);
+    setFeeBelow10("");
+    setFeeAbove10("");
   };
+
 
   const handleLevelToggle = (level: string) => {
     setSelectedLevels((prev) =>
@@ -253,6 +267,29 @@ const SpecializationPage: React.FC = () => {
             </div>
           </div>
 
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-2">Fee for Less than 10 Years Experience</label>
+            <input
+              type="number"
+              value={feeBelow10}
+              onChange={(e) => setFeeBelow10(e.target.value === "" ? "" : parseFloat(e.target.value))}
+              placeholder="e.g., 500"
+              className="w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+            />
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-2">Fee for More than 10 Years Experience</label>
+            <input
+              type="number"
+              value={feeAbove10}
+              onChange={(e) => setFeeAbove10(e.target.value === "" ? "" : parseFloat(e.target.value))}
+              placeholder="e.g., 1000"
+              className="w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+            />
+          </div>
+
+
 
           <div className="flex gap-2">
             <button
@@ -284,6 +321,9 @@ const SpecializationPage: React.FC = () => {
                 <th className="px-4 py-3 border">Specialization</th>
                 <th className="px-4 py-3 border">Sub Specializations</th>
                 <th className="px-4 py-3 border"> Specialist</th>
+                <th className="px-4 py-3 border">Fee &lt; 10 yrs</th>
+                <th className="px-4 py-3 border">Fee ≥ 10 yrs</th>
+
                 <th className="px-4 py-3 border text-center">Actions</th>
               </tr>
             </thead>
@@ -310,6 +350,8 @@ const SpecializationPage: React.FC = () => {
                       <span className="text-gray-400 italic">None</span>
                     )}
                   </td>
+                  <td className="px-4 py-3 border">{item.feeBelow10 ?? "-"}</td>
+                  <td className="px-4 py-3 border">{item.feeAbove10 ?? "-"}</td>
                   <td className="px-4 py-3 border text-center space-x-2">
                     <button
                       onClick={() => handleEdit(item)}
