@@ -5,23 +5,25 @@ import { ApiBaseUrlLocal } from "../../../../../const";
 import { Delete, SquarePen, Trash2 } from "lucide-react";
 
 type SpecializationType = {
-  feeBelow10: string;
-  feeAbove10: string;
   _id: string;
   name: string;
+  type: "en" | "ar";
   subSpecializations: { name: string }[];
   applicableLevels?: string[];
+  feeBelow10: number;
+  feeAbove10: number;
 };
 
-const specialistLevels = [
-  "Assistant Specialist",
-  "Specialist",
-  "First Specialist",
-  "Consultant",
-  "Deputy Specialist Doctor",
-  "First Deputy Specialist Doctor",
-  "Consultant Doctor",
-  "First Consultant Doctor",
+
+const specialistLevelsMap = [
+  { english: "Assistant Specialist", arabic: "أخصائي مساعد" },
+  { english: "Specialist", arabic: "أخصائي" },
+  { english: "First Specialist", arabic: "أخصائي أول" },
+  { english: "Consultant", arabic: "استشاري" },
+  { english: "Deputy Specialist Doctor", arabic: "طبيب نائب أخصائي" },
+  { english: "First Deputy Specialist Doctor", arabic: "طبيب نائب أول أخصائي" },
+  { english: "Consultant Doctor", arabic: "طبيب استشاري" },
+  { english: "First Consultant Doctor", arabic: "طبيب استشاري أول" },
 ];
 
 
@@ -35,6 +37,8 @@ const SpecializationPage: React.FC = () => {
   const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
   const [feeBelow10, setFeeBelow10] = useState<number | "">("");
   const [feeAbove10, setFeeAbove10] = useState<number | "">("");
+  const [isArabic, setIsArabic] = useState(false);
+
 
 
 
@@ -70,14 +74,15 @@ const SpecializationPage: React.FC = () => {
     const updated = subSpecializations.filter((_, i) => i !== index);
     setSubSpecializations(updated);
   };
-
   const handleSubmit = async () => {
+    const langType = isArabic === true ? "ar" : "en";
     const payload = {
       name: specialization,
       subSpecializations: subSpecializations
         .filter((s) => s.trim() !== "")
         .map((s) => ({ name: s })),
       applicableLevels: selectedLevels,
+      type: langType,
       feeBelow10: feeBelow10 === "" ? undefined : feeBelow10,
       feeAbove10: feeAbove10 === "" ? undefined : feeAbove10,
     };
@@ -150,6 +155,7 @@ const SpecializationPage: React.FC = () => {
     setFeeBelow10(item.feeBelow10 ?? "");
     setFeeAbove10(item.feeAbove10 ?? "");
     setFormVisible(true);
+    setIsArabic(item.type === "ar");
   };
 
 
@@ -252,18 +258,40 @@ const SpecializationPage: React.FC = () => {
           </div>
 
           <div className="mb-6">
+            <div className="mb-4 flex items-center gap-4">
+              <label className="font-medium text-sm">Switch Language:</label>
+              <div className="relative inline-block w-14">
+                <input
+                  type="checkbox"
+                  id="toggleLanguage"
+                  checked={isArabic}
+                  onChange={() => setIsArabic((prev) => !prev)}
+                  className="toggle-checkbox absolute w-6 h-6 rounded-full bg-white border-4 top-1 left-1 appearance-none cursor-pointer transition checked:translate-x-7"
+                />
+                <label
+                  htmlFor="toggleLanguage"
+                  className="block overflow-hidden h-8 rounded-full bg-gray-300 cursor-pointer"
+                ></label>
+              </div>
+              <span className="text-sm font-medium">{isArabic ? "Arabic" : "English"}</span>
+            </div>
+
+            {/* Applicable Levels */}
             <label className="block text-sm font-medium mb-2">Applicable Specialist Levels</label>
             <div className="grid grid-cols-2 gap-2">
-              {specialistLevels.map((level) => (
-                <label key={level} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={selectedLevels.includes(level)}
-                    onChange={() => handleLevelToggle(level)}
-                  />
-                  {level}
-                </label>
-              ))}
+              {specialistLevelsMap.map(({ english, arabic }) => {
+                const label = isArabic ? arabic : english;
+                return (
+                  <label key={label} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={selectedLevels.includes(label)}
+                      onChange={() => handleLevelToggle(label)}
+                    />
+                    {label}
+                  </label>
+                );
+              })}
             </div>
           </div>
 
