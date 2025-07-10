@@ -63,6 +63,8 @@ export default function ApprovalContentsPage() {
     fetchData();
   }, [currentPage, pageSize, statusFilter]);
 
+  console.log("approval", approvals);
+
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedStatus = e.target.value;
     setStatusFilter(selectedStatus);
