@@ -33,12 +33,13 @@ export default function PermissionPage() {
       setError(null);
       try {
         const res = await fetch(
-          `${ApiBaseUrl}/api/admin/teams?page=${currentPage}&pageSize=${pageSize}`
+          `/api/admin/teams?page=${currentPage}&pageSize=${pageSize}`
         ); // Adjust your baseURL if needed
         if (!res.ok) {
           throw new Error(`Failed to fetch. Status: ${res.status}`);
         }
         const data = await res.json();
+
         if (isMounted) {
           setTeams(Array.isArray(data.data) ? data.data : []);
           setTotal(data.total);
@@ -61,6 +62,7 @@ export default function PermissionPage() {
       isMounted = false;
     };
   }, [currentPage, pageSize]);
+  console.log("update teamt", teams);
 
   useEffect(() => {
     let isMounted = true;
@@ -69,23 +71,13 @@ export default function PermissionPage() {
       setError(null);
       try {
         const res = await fetch(
-          `${ApiBaseUrl}/api/admin/employees?page=${currentPage}&pageSize=${pageSize}`
+          `/api/admin/employees?page=${currentPage}&pageSize=${pageSize}`
         ); // Adjust baseURL if needed
         if (!res.ok) {
           throw new Error(`Failed to fetch. Status: ${res.status}`);
         }
         const data = await res.json();
-        /*
-        Example:
-        {
-          "data": [],
-          "has_more": false,
-          "page": 1,
-          "page_size": 10,
-          "success": true,
-          "total": 0
-        }
-        */
+        console.log("employee data", data);
         if (isMounted) {
           setEmployees(Array.isArray(data.data) ? data.data : []);
           setTotal(data.total);
@@ -109,6 +101,9 @@ export default function PermissionPage() {
     };
   }, [currentPage, pageSize]);
 
+  console.log("members", employees);
+  console.log("temas", teams);
+
   return (
     <section>
       <div>
@@ -129,7 +124,7 @@ export default function PermissionPage() {
               </TabsTrigger>
             </TabsList>
             <div className="flex flex-row gap-2">
-              <AddNewTeamDialog employees={employees} teams={teams}  />
+              <AddNewTeamDialog employees={employees} teams={teams} />
               <AddNewEmployeeDialog teams={teams} />
             </div>
           </div>

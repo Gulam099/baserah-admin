@@ -61,7 +61,7 @@ export default function AddNewTeamDialog(props: AddNewTeamDialogProps) {
   async function onSubmit(values: CreateTeamFormType) {
     try {
       // 1) POST to /api/admin/teams
-      const response = await fetch(`${ApiBaseUrl}/api/admin/teams`, {
+      const response = await fetch(`/api/admin/teams`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),

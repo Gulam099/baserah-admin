@@ -73,7 +73,7 @@ export default function AddNewEmployeeDialog({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       // Make the POST request
-      const response = await fetch(`${ApiBaseUrl}/api/admin/employees`, {
+      const response = await fetch(`/api/admin/employees`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -110,12 +110,13 @@ export default function AddNewEmployeeDialog({
   }
 
   return (
-    <Dialog>
+    <Dialog >
       <DialogTrigger asChild>
         <Button>Add new employee</Button>
       </DialogTrigger>
 
-      <DialogContent>
+      <DialogContent className="max-h-screen overflow-y-auto">
+
         <DialogHeader>
           <DialogTitle>Add New Employee</DialogTitle>
           <DialogDescription>
