@@ -107,17 +107,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }
   return (
     <Sidebar variant="inset" {...props} className="bg-blue-100">
+
       <SidebarHeader className="bg-blue-100">
-        {/* <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link href="/">
-                <Logo />
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu> */}
-        <div className="flex flex-col justify-center items-center gap-3 py-6 ">
+        <div className="flex items-center justify-center bg-transparent">
+          <Link href="/">
+            <Logo className="h-32 w-32 object-contain " />
+          </Link>
+        </div>
+        <div className="flex flex-col justify-center items-center gap-3 pb-6 ">
           <Avatar className="size-24 border-2 border-neutral-400">
             <Link href="/">
               <AvatarImage src={user.imageUrl} alt={user.fullName + "_avatar"} />

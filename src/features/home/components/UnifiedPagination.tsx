@@ -106,6 +106,17 @@ export default function UnifiedPagination({ total }: UnifiedPaginationProps) {
     router.push(`?${params.toString()}`);
   }
 
+  const maxVisiblePages = 5;
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let endPage = startPage + maxVisiblePages - 1;
+
+  if (endPage > totalPages) {
+    endPage = totalPages;
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+  }
+
+  const pageRange = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+
   return (
     <div className="mt-8 flex flex-col md:flex-row justify-between items-center gap-4 print:hidden">
       {/* Display "Page X of Y" */}
@@ -121,7 +132,21 @@ export default function UnifiedPagination({ total }: UnifiedPaginationProps) {
           </PaginationItem>
 
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          {startPage > 1 && (
+            <>
+              <PaginationItem>
+                <PaginationLink onClick={() => handleSetPage(1)}>1</PaginationLink>
+              </PaginationItem>
+              {startPage > 2 && (
+                <PaginationItem>
+                  <span className="px-2">...</span>
+                </PaginationItem>
+              )}
+            </>
+          )}
+
+          {/* Visible Page Numbers */}
+          {pageRange.map((page) => (
             <PaginationItem key={page}>
               <PaginationLink
                 onClick={() => handleSetPage(page)}
@@ -131,6 +156,22 @@ export default function UnifiedPagination({ total }: UnifiedPaginationProps) {
               </PaginationLink>
             </PaginationItem>
           ))}
+
+          {/* Right Ellipsis */}
+          {endPage < totalPages && (
+            <>
+              {endPage < totalPages - 1 && (
+                <PaginationItem>
+                  <span className="px-2">...</span>
+                </PaginationItem>
+              )}
+              <PaginationItem>
+                <PaginationLink onClick={() => handleSetPage(totalPages)}>
+                  {totalPages}
+                </PaginationLink>
+              </PaginationItem>
+            </>
+          )}
 
           <PaginationItem>
             <PaginationNext onClick={handleNextPage} />

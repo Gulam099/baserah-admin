@@ -14,10 +14,10 @@ export default function Header() {
         <Separator orientation="vertical" className="mr-2 h-4" />
         {/* <SearchInput /> */}
       </div>
-      <div className="flex px-6 items-center gap-6">
+      <div className="flex px-6  items-center gap-6">
         <NavUser />
         {/* <NotificationButton/> */}
-        {/* <LanguageButton/> */}
+        {/* <LanguageButton /> */}
       </div>
     </header>
   );
