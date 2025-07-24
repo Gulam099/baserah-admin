@@ -86,11 +86,11 @@ const data = {
     //   url: "/dashboard/question",
     //   icon: Setting2,
     // },
-    // {
-    //   title: "Financial",
-    //   url: "/dashboard/finance",
-    //   icon: EmptyWallet,
-    // },
+    {
+      title: "Financial",
+      url: "/dashboard/payments",
+      icon: EmptyWallet,
+    },
     // {
     //   title: "Permissions",
     //   url: "/dashboard/permission",

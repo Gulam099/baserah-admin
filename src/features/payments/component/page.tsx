@@ -23,6 +23,8 @@ type Props = {
   total: number;
   currentPage: number;
   hasNext: boolean;
+  search: string;
+  onSearchChange: (value: string) => void;
   onPageChange: (page: number) => void;
 };
 
@@ -32,6 +34,8 @@ const PaymentList: React.FC<Props> = ({
   currentPage,
   hasNext,
   onPageChange,
+  search,
+  onSearchChange,
 }) => {
 
   console.log("payment >>>", payments);
@@ -40,8 +44,9 @@ const PaymentList: React.FC<Props> = ({
   const completedPayments = payments.filter(p => p.status === 'paid').length;
   const pendingPayments = payments.filter(p => p.status === 'pending').length;
 
+
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
+    <div className="max-w-6xl mx-auto pt-2 pb-6 space-y-6">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="space-y-2">
@@ -51,14 +56,17 @@ const PaymentList: React.FC<Props> = ({
                 go to dashboard
               </Button>
             </Link> */}
-            <Link href='/'>
-              <h1 className="text-3xl hover:underline text-blue-500 font-bold ">Payments</h1>
-            </Link>
+            <h1 className="text-2xl  text-black font-bold ">Financial details</h1>
           </div>
-          <p className="text-gray-500">Manage and review all payment transactions</p>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full md:w-auto">
+        <input
+          type="text"
+          placeholder="Search payments..."
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="border border-gray-300 rounded-md px-4 py-2 text-sm w-full md:w-72 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full md:w-auto">
           <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
@@ -94,18 +102,18 @@ const PaymentList: React.FC<Props> = ({
               <div className="text-2xl font-semibold text-yellow-600">{pendingPayments}</div>
             </CardContent>
           </Card>
-        </div>
+        </div> */}
       </div>
 
       {/* Payment History Section */}
       <Card className="border rounded-xl overflow-hidden shadow-sm">
-        <CardHeader className="bg-gray-50 px-6 py-4 border-b">
+        {/* <CardHeader className="bg-gray-50 px-6 py-4 border-b">
 
           <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
             <CreditCard className="w-5 h-5" />
             Payment History
           </h2>
-        </CardHeader>
+        </CardHeader> */}
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">

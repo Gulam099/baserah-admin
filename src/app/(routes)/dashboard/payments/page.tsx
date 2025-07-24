@@ -1,11 +1,18 @@
-"use client"
+"use client";
+
 import PaymentList from "@/features/payments/component/page";
 import React, { useEffect, useState } from "react";
 
+type Payment = {
+  userId?: { name?: string };
+  doctorId?: { full_name?: string };
+  status?: string | number;
+  amount?: number | string;
+};
 
 const PaymentPage = () => {
   const [paymentsData, setPaymentsData] = useState<{
-    payments: any[];
+    payments: Payment[];
     total: number;
     currentPage: number;
     hasNext: boolean;
@@ -16,9 +23,20 @@ const PaymentPage = () => {
     hasNext: false,
   });
 
-  const fetchPayments = async (page = 1) => {
+  const [search, setSearch] = useState("");
+  const [filteredPayments, setFilteredPayments] = useState<Payment[]>([]);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  const fetchPayments = async (page = 1, query = "") => {
     const limit = 10;
-    const res = await fetch(`/api/payments?page=${page}&limit=${limit}`);
+    const res = await fetch(`/api/payments?page=${page}&limit=${limit}&search=${encodeURIComponent(query)}`);
     const data = await res.json();
     if (data.success) {
       setPaymentsData({
@@ -31,18 +49,33 @@ const PaymentPage = () => {
   };
 
   useEffect(() => {
-    fetchPayments();
-  }, []);
+    fetchPayments(1, debouncedSearch);
+  }, [debouncedSearch]);
 
-  console.log("payments data", paymentsData);
+  const handlePageChange = (page: number) => {
+    fetchPayments(page, debouncedSearch);
+  };
+  useEffect(() => {
+    const term = search.toLowerCase();
+    const filtered = paymentsData.payments.filter(
+      (p) =>
+        p.userId?.name?.toLowerCase().includes(term) ||
+        p.doctorId?.full_name?.toLowerCase().includes(term) ||
+        p.status?.toString().includes(term) ||
+        p.amount?.toString().includes(term)
+    );
+    setFilteredPayments(filtered);
+  }, [search, paymentsData]);
 
   return (
     <PaymentList
-      payments={paymentsData.payments}
+      payments={filteredPayments}
       total={paymentsData.total}
       currentPage={paymentsData.currentPage}
       hasNext={paymentsData.hasNext}
-      onPageChange={(page) => fetchPayments(page)}
+      onPageChange={handlePageChange}
+      search={search}
+      onSearchChange={setSearch}
     />
   );
 };

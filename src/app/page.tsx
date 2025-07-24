@@ -19,11 +19,11 @@ export default function Home() {
             <Link href={"/privacy-policy"}>Privacy policy</Link>
           </Button>
           <Button asChild>
-            <Link
+            {/* <Link
               href={`/payment`}
             >
               Payment
-            </Link>
+            </Link> */}
           </Button>
         </div>
       </div>
