@@ -19,6 +19,7 @@ import {
 import { useSearchParams } from "next/navigation";
 import InformationFormDialog from "./QuestionDialog";
 import EditQuestionDialog from "./EditQuestionDilaog";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   question: z.string().min(10),
@@ -39,12 +40,14 @@ export default function QuestionPage() {
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0); // track total items
 
+  console.log("questions", questions);
   // Whenever page/pageSize changes in the URL, fetch new data
   useEffect(() => {
     setLoading(true);
     fetchQuestions(currentPage, pageSize)
       .then((res) => {
-        setQuestions(res.data!);
+        console.log(res, "response");
+        setQuestions(res.data);
         setTotal(res.page?.total!); // for UnifiedPagination's `total` prop
       })
       .catch((err) => {
@@ -62,6 +65,9 @@ export default function QuestionPage() {
     const response = await updateQuestionStatus(questionId, status);
 
     if (response.success) {
+      toast.success(
+        `Question ${status === "hidden" ? "hidden" : "published"} successfully`
+      );
       console.log("Status updated:", response.data);
     } else {
       console.error("Error:", response.message);

@@ -55,7 +55,7 @@ const InformationFormDialog = () => {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const response = await fetch(`${ApiBaseUrl}/api/admin/questions`, {
+      const response = await fetch(`${ApiBaseUrl}/api/admin/add-question`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
