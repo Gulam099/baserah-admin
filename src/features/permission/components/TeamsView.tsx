@@ -27,8 +27,9 @@ export default function TeamsView(props: { teams: TeamItemType[] }) {
                 Created At: {team.created_at ?? "N/A"}
               </p>
               <p className="text-sm">
-                Members: {team.members?.join(", ") || "None"}
+                Members: {team.members?.map((m) => m.name).join(", ") || "None"}
               </p>
+
             </div>
           </DrawerTrigger>
           <DrawerContent>
@@ -45,8 +46,9 @@ export default function TeamsView(props: { teams: TeamItemType[] }) {
                   Created At: {team.created_at ?? "N/A"}
                 </p>
                 <p className="text-sm">
-                  Members: {team.members?.join(", ") || "None"}
+                  Members: {team.members?.map((m) => m.name).join(", ") || "None"}
                 </p>
+
               </div>
               <DrawerFooter>
                 <Button>Submit</Button>

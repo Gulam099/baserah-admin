@@ -91,11 +91,11 @@ const data = {
       url: "/dashboard/payments",
       icon: EmptyWallet,
     },
-    // {
-    //   title: "Permissions",
-    //   url: "/dashboard/permission",
-    //   icon: Monitor,
-    // },
+    {
+      title: "Permissions",
+      url: "/dashboard/permission",
+      icon: Monitor,
+    },
   ],
 };
 
