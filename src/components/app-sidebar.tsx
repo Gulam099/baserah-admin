@@ -82,11 +82,11 @@ const data = {
       url: "/dashboard/customer",
       icon: Profile2User,
     },
-    // {
-    //   title: "Information Bank",
-    //   url: "/dashboard/question",
-    //   icon: Setting2,
-    // },
+    {
+      title: "Information Bank",
+      url: "/dashboard/question",
+      icon: Setting2,
+    },
     {
       title: "Financial",
       url: "/dashboard/payments",
