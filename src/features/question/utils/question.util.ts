@@ -7,7 +7,7 @@ export async function fetchQuestions(
 ): Promise<ApiResponseType> {
   try {
     const response = await fetch(
-      `${ApiBaseUrl}/api/admin/questions?admin=true&page=${page}&size=${size}`
+      `${ApiBaseUrl}/api/admin/fetch-question?admin=true&page=${page}&size=${size}`
     );
 
     if (!response.ok) {
@@ -15,14 +15,14 @@ export async function fetchQuestions(
     }
 
     const data = await response.json();
-
+console.log(data, 'fetch data')
     return {
       success: true,
       status: response.status,
       message: "Questions Fetched",
-      data: data.questions || [],
+      data: data?.data || [],
       page: {
-        total: data.questions?.length || 0,
+        total: data?.data?.length || 0,
         page,
         size,
       },
@@ -49,9 +49,9 @@ export async function updateQuestionStatus(
 ): Promise<ApiResponseType> {
   try {
     const response = await fetch(
-      `${ApiBaseUrl}/api/admin/questions/${questionId}`,
+      `${ApiBaseUrl}/api/admin/update/${questionId}`,
       {
-        method: "PATCH",
+        method: "put",
         headers: {
           "Content-Type": "application/json",
         },
@@ -92,7 +92,7 @@ export async function editQuestion(
 ): Promise<ApiResponseType> {
   try {
     const response = await fetch(
-      `${ApiBaseUrl}/api/admin/questions/${questionId}`,
+      `${ApiBaseUrl}/api/admin/edit/${questionId}`,
       {
         method: "PUT",
         headers: {

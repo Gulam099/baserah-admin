@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,7 @@ import {
 import { useSearchParams } from "next/navigation";
 import InformationFormDialog from "./QuestionDialog";
 import EditQuestionDialog from "./EditQuestionDilaog";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   question: z.string().min(10),
@@ -39,12 +40,32 @@ export default function QuestionPage() {
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0); // track total items
 
+
+  const refreshQuestions = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetchQuestions(currentPage, pageSize);
+      console.log(res, "response");
+      setQuestions(res.data);
+      setTotal(res.page?.total!);
+    } catch (err) {
+      console.error("Failed to fetch questions:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, pageSize]);
+
+   useEffect(() => {
+    refreshQuestions();
+  }, [refreshQuestions]);
+  console.log("questions", questions);
   // Whenever page/pageSize changes in the URL, fetch new data
   useEffect(() => {
     setLoading(true);
     fetchQuestions(currentPage, pageSize)
       .then((res) => {
-        setQuestions(res.data!);
+        console.log(res, "response");
+        setQuestions(res.data);
         setTotal(res.page?.total!); // for UnifiedPagination's `total` prop
       })
       .catch((err) => {
@@ -62,6 +83,10 @@ export default function QuestionPage() {
     const response = await updateQuestionStatus(questionId, status);
 
     if (response.success) {
+      toast.success(
+        `Question ${status === "hidden" ? "hidden" : "published"} successfully`
+      );
+      refreshQuestions();
       console.log("Status updated:", response.data);
     } else {
       console.error("Error:", response.message);
@@ -73,7 +98,9 @@ export default function QuestionPage() {
       <div className="container mx-auto ">
         <div className="flex justify-end items-center gap-2 pb-6">
           <ExportButton contentRef={contentRef} />
-          <InformationFormDialog />
+          <InformationFormDialog
+          onSuccess={refreshQuestions}
+           />
         </div>
         <div className="min-h-[70vh]">
           <div
@@ -132,7 +159,9 @@ export default function QuestionPage() {
                       >
                         Hide
                       </Button>
-                      <EditQuestionDialog question={question} />
+                      <EditQuestionDialog question={question}
+                      onSuccess={refreshQuestions}
+                       />
                       <Button
                         variant="default"
                         size="sm"
