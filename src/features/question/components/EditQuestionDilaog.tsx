@@ -38,12 +38,18 @@ const formSchema = z.object({
   answer: z.string().min(2).optional(),
 });
 
+interface EditQuestionDialogProps {
+  question: Question;
+  onSuccess?: () => void;
+}
+
 export default function EditQuestionDialog({
   question,
-}: {
-  question: Question;
-}) {
+  onSuccess,
+}: EditQuestionDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,6 +65,12 @@ export default function EditQuestionDialog({
       const response = await editQuestion(question._id, values);
       if (response.success) {
         toast.success("Question updated successfully!");
+        setOpen(false); // Close the dialog
+        
+        // Call the onSuccess callback to refresh parent data
+        if (onSuccess) {
+          onSuccess();
+        }
       } else {
         toast.error(response.message || "Failed to update question.");
       }
@@ -70,7 +82,7 @@ export default function EditQuestionDialog({
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">Edit</Button>
       </DialogTrigger>
@@ -87,7 +99,11 @@ export default function EditQuestionDialog({
                 <FormItem>
                   <FormLabel>Question Title</FormLabel>
                   <FormControl>
-                    <Input type="text" {...field} />
+                    <Input 
+                      type="text" 
+                      {...field} 
+                      disabled={loading}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -103,6 +119,7 @@ export default function EditQuestionDialog({
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
+                    disabled={loading}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -131,7 +148,11 @@ export default function EditQuestionDialog({
                 <FormItem>
                   <FormLabel>Answer</FormLabel>
                   <FormControl>
-                    <Textarea className="resize-none" {...field} />
+                    <Textarea 
+                      className="resize-none" 
+                      {...field} 
+                      disabled={loading}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
