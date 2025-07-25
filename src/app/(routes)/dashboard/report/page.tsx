@@ -5,121 +5,182 @@ import DataPieChartCard from "@/features/home/components/DataPieChartCard";
 import MapComp from "@/features/report/components/MapComp";
 import { SliderPerson } from "@/features/report/components/SliderPerson";
 import { fetchPatientReturnStats } from "@/features/report/util/report.util";
+import { ApiBaseUrl } from "../../../../../const";
+
+
+
+const colorMap = {
+  Completed: "#32CD32",
+  Cancelled: "#9B59B6",
+  Ongoing: "#F4A460",
+  Pending: "#1E3A8A",
+};
 
 export default function page() {
-  const [chartData, setChartData] = useState([
-    { title: "CustomerReturn", number: 0, fill: "var(--color-CustomerReturn)" },
-    { title: "OneTime", number: 0, fill: "var(--color-OneTime)" },
-  ]);
+  const [appointmentStats, setAppointmentStats] = useState<
+    { title: string; number: number }[]
+  >([]);
+  const [appointmentChartData, setAppointmentChartData] = useState<
+    { title: string; number: number; fill: string }[]
+  >([]);
+
+  const [userChartData, setUserChartData] = useState();
+  type DoctorSession = {
+    doctor: any;
+    doctorId: string;
+    total: number;
+    // add other properties if needed
+  };
+
+  const [doctorSessionData, setDoctorSessionData] = useState<DoctorSession[]>([]);
+
+
+  const [appointmentTypeData, setAppointmentTypeData] = useState<
+    { title: string; number: number; fill: string }[]
+  >([]);
+  const [userTypeData, setUserTypeData] = useState<
+    { title: string; number: number; fill: string }[]
+  >([]);
+
+
+  useEffect(() => {
+    async function loadAppointmentType() {
+      const res = await fetch(`${ApiBaseUrl}/api/doctor/appointments-type`);
+      const data = await res.json();
+      if (data.data) {
+        const mappedData = data.data.map((item) => ({
+          title: item.title,
+          number: item.value,
+          fill: item.fill,
+        }));
+        setAppointmentTypeData(mappedData);
+      }
+    }
+    loadAppointmentType();
+  }, []);
+
 
   useEffect(() => {
     async function loadStats() {
-      const response = await fetchPatientReturnStats();
-      if (response.success && response.data) {
-        setChartData([
-          {
-            title: "CustomerReturn",
-            number: response.data.returningPatients,
-            fill: "var(--color-CustomerReturn)",
-          },
-          {
-            title: "OneTime",
-            number: response.data.nonReturningPatients,
-            fill: "var(--color-OneTime)",
-          },
-        ]);
+      const res = await fetch(`${ApiBaseUrl}/api/doctor/appointments/stats`);
+      const data = await res.json();
+      if (data.appointment) {
+        setAppointmentStats(data.appointment);
+        const chartData = data.appointment.map((item: { title: keyof typeof colorMap; number: number }) => ({
+          title: item.title,
+          number: item.number,
+          fill: colorMap[item.title.trim() as keyof typeof colorMap] || "#8884d8",
+
+        }));
+        setAppointmentChartData(chartData);
       }
     }
+
     loadStats();
   }, []);
 
-  const chartConfig = {
+
+
+  const appointmentChartConfig = {
     number: {
       label: "number",
     },
-    CustomerReturn: {
-      label: "Customer return",
-      color: "hsl(var(--chart-1))",
+    Completed: {
+      label: "Completed",
+      color: colorMap["Completed"],
     },
-    OneTime: {
-      label: "One time",
-      color: "hsl(var(--chart-2))",
+    Cancelled: {
+      label: "Cancelled",
+      color: colorMap["Cancelled"],
     },
-  } satisfies ChartConfig;
-
-  const data = {
-    appointment: [
-      { title: "Ongoing Appointment", number: 2039 },
-      { title: "Transferred Appointment", number: 2049 },
-      { title: "Closed Appointment", number: 5465 },
-      { title: "Upcoming Appointment", number: 2039 },
-    ],
-  };
-
-  const chartData2 = [
-    { title: "January", number: 186 },
-    { title: "February", number: 305 },
-    { title: "March", number: 237 },
-    { title: "April", number: 73 },
-    { title: "May", number: 209 },
-    { title: "June", number: 214 },
-  ];
-  const chartConfig2 = {
-    number: {
-      label: "number",
-      color: "hsl(var(--chart-1))",
+    Ongoing: {
+      label: "Ongoing",
+      color: colorMap["Ongoing"],
+    },
+    Pending: {
+      label: "Pending",
+      color: colorMap["Pending"],
     },
   } satisfies ChartConfig;
 
-  // mockData.ts
+  useEffect(() => {
+    async function loadCustomerReturnData() {
+      try {
+        const res = await fetch(`${ApiBaseUrl}/api/users/user-return`);
+        const data = await res.json();
 
-  const mockMapDataPoints: {
-    label: string;
-    coordinates: [number, number];
-    color?: string;
-  }[] = [
-    {
-      label: "New York Office",
-      coordinates: [-73.98249, 40.76313],
-      color: "#0035d7",
-    },
-    {
-      label: "Sydney Office",
-      coordinates: [151.20456, -33.86501],
-      color: "#d76270",
-    },
-    {
-      label: "Calgary Office",
-      coordinates: [-114.00058, 51.05803],
-      color: "#d76270",
-    },
-    {
-      label: "Delhi Office",
-      coordinates: [77.32648, 28.61751],
-      color: "#0035d7",
-    },
-    {
-      label: "London Office",
-      coordinates: [-0.07772, 51.51868],
-      color: "#c0a162",
-    },
-    {
-      label: "Singapore (Coming Soon)",
-      coordinates: [103.83051, 1.27966],
-      color: "#0035d7",
-    },
-    {
-      label: "Saudi Arabia (Coming Soon)",
-      coordinates: [45.10309, 23.69665],
-      color: "#c0a162",
-    },
-  ];
+        if (data?.data) {
+          const mapped = data.data.map((item) => ({
+            title: item.title,
+            number: item.number,
+            fill: item.fill,
+          }));
+          setUserChartData(mapped);
+        }
+      } catch (error) {
+        console.error("Error fetching user return data:", error);
+      }
+    }
 
-  const mockMapLegend = [
-    { label: "Satisfied", color: "#0035d7" },
-    { label: "Average Satisfaction", color: "#c0a162" },
-    { label: "Dissatisfied", color: "#d76270" },
-  ];
+    loadCustomerReturnData();
+  }, []);
+
+
+
+  useEffect(() => {
+    async function loadDoctorSessions() {
+      const res = await fetch(`${ApiBaseUrl}/api/doctors/getdoctorsession`);
+      const data = await res.json();
+      setDoctorSessionData(data.data); // set to state
+    }
+
+    loadDoctorSessions();
+  }, []);
+
+  useEffect(() => {
+    async function loadUserTypeData() {
+      try {
+        const res = await fetch(`${ApiBaseUrl}/api/doctor/user-type`);
+        const data = await res.json();
+        console.log('sfdfdssdsd', data)
+
+        if (data.length) {
+          const flattened = [];
+
+          const colorPalette = [
+            "#FF6B6B", "#6BCB77", "#4D96FF", "#FFC75F", "#845EC2",
+            "#008F7A", "#FF9671", "#2C73D2", "#D65DB1", "#FF6F91",
+          ];
+
+          let colorIndex = 0;
+
+          data.forEach((item) => {
+            const count = Object.values(item.number)[0]; // e.g. 36
+            item.specializations.forEach((spec) => {
+              console.log('item.number[spec]', item.number[spec])
+
+              flattened.push({
+                title: spec,
+                number: item.number[spec],
+                fill: colorPalette[colorIndex % colorPalette.length],
+              });
+              colorIndex++;
+            });
+          });
+
+          setUserTypeData(flattened);
+        }
+      } catch (error) {
+        console.error("Error fetching user type data:", error);
+      }
+    }
+
+    loadUserTypeData();
+  }, []);
+
+
+  console.log("userTypeData", userTypeData);
+
 
   const mockSpecialistsData: {
     name: string;
@@ -127,146 +188,75 @@ export default function page() {
     performance: number;
     image: string;
   }[] = [
-    {
-      name: "John Doe",
-      session: 50,
-      performance: 95,
-      image: "https://via.placeholder.com/80",
-    },
-    {
-      name: "Jane Smith",
-      session: 64,
-      performance: 88,
-      image: "https://via.placeholder.com/80",
-    },
-    {
-      name: "Michael Johnson",
-      session: 72,
-      performance: 92,
-      image: "https://via.placeholder.com/80",
-    },
-    {
-      name: "Emily Davis",
-      session: 58,
-      performance: 90,
-      image: "https://via.placeholder.com/80",
-    },
-    {
-      name: "Daniel Brown",
-      session: 80,
-      performance: 97,
-      image: "https://via.placeholder.com/80",
-    },
-    {
-      name: "Olivia Wilson",
-      session: 45,
-      performance: 85,
-      image: "https://via.placeholder.com/80",
-    },
-    {
-      name: "William Taylor",
-      session: 59,
-      performance: 93,
-      image: "https://via.placeholder.com/80",
-    },
-    {
-      name: "Isabella Martinez",
-      session: 67,
-      performance: 91,
-      image: "https://via.placeholder.com/80",
-    },
-    {
-      name: "Liam Anderson",
-      session: 74,
-      performance: 98,
-      image: "https://via.placeholder.com/80",
-    },
-    {
-      name: "Sophia Thomas",
-      session: 51,
-      performance: 89,
-      image: "https://via.placeholder.com/80",
-    },
-  ];
+      {
+        name: "John Doe",
+        session: 50,
+        performance: 95,
+        image: "https://via.placeholder.com/80",
+      },
+      {
+        name: "Jane Smith",
+        session: 64,
+        performance: 88,
+        image: "https://via.placeholder.com/80",
+      },
+      {
+        name: "Michael Johnson",
+        session: 72,
+        performance: 92,
+        image: "https://via.placeholder.com/80",
+      },
+      {
+        name: "Emily Davis",
+        session: 58,
+        performance: 90,
+        image: "https://via.placeholder.com/80",
+      },
+      {
+        name: "Daniel Brown",
+        session: 80,
+        performance: 97,
+        image: "https://via.placeholder.com/80",
+      },
+      {
+        name: "Olivia Wilson",
+        session: 45,
+        performance: 85,
+        image: "https://via.placeholder.com/80",
+      },
+      {
+        name: "William Taylor",
+        session: 59,
+        performance: 93,
+        image: "https://via.placeholder.com/80",
+      },
+      {
+        name: "Isabella Martinez",
+        session: 67,
+        performance: 91,
+        image: "https://via.placeholder.com/80",
+      },
+      {
+        name: "Liam Anderson",
+        session: 74,
+        performance: 98,
+        image: "https://via.placeholder.com/80",
+      },
+      {
+        name: "Sophia Thomas",
+        session: 51,
+        performance: 89,
+        image: "https://via.placeholder.com/80",
+      },
+    ];
 
-  const chartData3 = [
-    {
-      month: "January",
-      psychiatrist: 186,
-      psychologist: 80,
-      childPsychologist: 162,
-      family: 265,
-      external: 100,
-    },
-    {
-      month: "February",
-      psychiatrist: 305,
-      psychologist: 200,
-      childPsychologist: 78,
-      family: 180,
-      external: 90,
-    },
-    {
-      month: "March",
-      psychiatrist: 237,
-      psychologist: 120,
-      childPsychologist: 34,
-      family: 210,
-      external: 120,
-    },
-    {
-      month: "April",
-      psychiatrist: 73,
-      psychologist: 190,
-      childPsychologist: 65,
-      family: 240,
-      external: 150,
-    },
-    {
-      month: "May",
-      psychiatrist: 209,
-      psychologist: 130,
-      childPsychologist: 178,
-      family: 88,
-      external: 300,
-    },
-    {
-      month: "June",
-      psychiatrist: 214,
-      psychologist: 140,
-      childPsychologist: 238,
-      family: 156,
-      external: 220,
-    },
-  ];
-  const chartConfig3 = {
-    psychiatrist: {
-      label: "Psychiatrist",
-      color: "hsl(var(--chart-1))",
-    },
-    psychologist: {
-      label: "Psychologist",
-      color: "hsl(var(--chart-2))",
-    },
-    childPsychologist: {
-      label: "Child Psychologist",
-      color: "hsl(var(--chart-3))",
-    },
-    family: {
-      label: "Family and Marriage Specialist ",
-      color: "hsl(var(--chart-4))",
-    },
-    external: {
-      label: "External Customer",
-      color: "hsl(var(--chart-5))",
-    },
-  } satisfies ChartConfig;
+
 
   return (
     <div className="flex flex-col gap-4 ">
       <h2 className="text-lg font-semibold text-neutral-800">Appointments</h2>
-      <div className="flex flex-row gap-4 justify-between flex-wrap">
-        {data.appointment.map((item, index) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        {appointmentStats.map((item, index) => (
           <DataPieChartCard
             key={index}
             chartType="number"
@@ -276,6 +266,7 @@ export default function page() {
         ))}
       </div>
       <div className="flex flex-wrap gap-4 justify-between">
+        {/* user return  */}
         <DataPieChartCard
           chartType="pie"
           chartConfig={{
@@ -284,32 +275,50 @@ export default function page() {
             },
             CustomerReturn: {
               label: "Customer return",
-              color: "hsl(var(--chart-1))",
+              color: "#000A80",
             },
             OneTime: {
               label: "One time",
-              color: "hsl(var(--chart-2))",
+              color: "#D2A8FF",
             },
           }}
-          chartData={chartData}
+          chartData={userChartData}
           title={"Customer Return Rate"}
+          dataTypeTile="Total"
           className="basis-1/5"
         />
+
+        {/* appointment typee */}
         <DataPieChartCard
           chartType="pie"
-          chartConfig={chartConfig}
-          chartData={chartData}
+          chartConfig={{
+            number: {
+              label: "number",
+            },
+            Scheduled: {
+              label: "Scheduled",
+              color: "#D2A8FF", // light purple
+            },
+            Immediate: {
+              label: "Immediate",
+              color: "#000A80", // dark blue
+            },
+          }}
+          chartData={appointmentTypeData}
           title={"Appointments Type"}
           dataTypeTile="Total"
           className="basis-1/5"
         />
+
         <DataPieChartCard
           chartType="bar"
-          chartConfig={chartConfig2}
-          chartData={chartData2}
-          title={"General Appointments Status"}
+          chartConfig={appointmentChartConfig}
+          chartData={appointmentChartData}
+          title="General Appointments Status"
           className="basis-2/5"
         />
+
+
       </div>
       {/* <div>
         <MapComp
@@ -321,15 +330,22 @@ export default function page() {
           legend={mockMapLegend}
         />
       </div> */}
-      {/* <div>
+      <div>
         <SliderPerson
-          title={"Performance Indicators for Specialists"}
-          desc={"More than 50 sessions per month, minimum"}
-          data={mockSpecialistsData}
-          viewMoreLink="/dashboard/report/specialist"
+          title="Doctor Sessions"
+          desc="Scheduled and Instant sessions per doctor"
+          data={(doctorSessionData ?? []).map(doc => ({
+            name: doc.doctor?.full_name || "Unknown",
+            session: doc.total,
+            performance: (doc.total / 100) * 100, // adjust if needed
+            image: doc.doctor?.profile_picture || "https://via.placeholder.com/80",
+          }))}
+          viewMoreLink={`/dashboard/report/doctor`}
         />
-      </div> */}
-      <h2 className="text-lg font-semibold text-neutral-800">
+      </div>
+
+
+      {/* <h2 className="text-lg font-semibold text-neutral-800">
         Administrative Statistics
       </h2>
       <div className="flex flex-row gap-4 justify-between flex-wrap">
@@ -341,8 +357,8 @@ export default function page() {
             title={item.title}
           />
         ))}
-      </div>
-      <div className="flex flex-wrap gap-4 justify-between">
+      </div> */}
+      {/* <div className="flex flex-wrap gap-4 justify-between">
         <DataPieChartCard
           chartType="bar"
           chartConfig={chartConfig2}
@@ -357,16 +373,29 @@ export default function page() {
           title={"Ticket Type"}
           className="basis-2/3"
         />
-      </div>
-      {/* <div>
-        <DataPieChartCard
-          chartType="line"
-          chartConfig={chartConfig3}
-          chartData={chartData3}
-          title={"User Type"}
-        />
       </div> */}
-      <div className="flex flex-wrap gap-4 justify-between">
+      <div>
+        {/* <DataPieChartCard
+          chartType="line"
+          chartConfig={{
+            number: {
+              label: "number",
+            },
+            New: {
+              label: "New",
+              color: "#FF6B6B",
+            },
+            Returning: {
+              label: "Returning",
+              color: "#4ECDC4",
+            },
+          }}
+          chartData={userTypeData}
+          title={"User Type"}
+        /> */}
+
+      </div>
+      {/* <div className="flex flex-wrap gap-4 justify-between">
         <DataPieChartCard
           chartType="barV"
           chartConfig={chartConfig2}
@@ -386,7 +415,7 @@ export default function page() {
           title={"Appointments Type"}
           dataTypeTile="Total"
         />
-      </div>
+      </div> */}
       {/* <div className="flex flex-row gap-4 flex-wrap">
         <SliderPerson
           title={"Performance Indicators for Customer Service Employees"}

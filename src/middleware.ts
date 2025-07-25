@@ -11,17 +11,16 @@ const isPublicRoute = createRouteMatcher([
 export default clerkMiddleware(async (auth, request) => {
   const { userId, redirectToSignIn } = await auth();
   // Protect the root `/` route explicitly
-  console.log('dashboard');
+
   if (!userId && !isPublicRoute(request)) {
-    console.log('redirect to signin');
+    console.log("redirect to signin");
 
     await auth.protect();
     return redirectToSignIn();
   }
-
   // If user is logged in and trying to access "/" or "/dashboard", redirect to "/dashboard/approval"
   if (userId && ["/dashboard"].includes(request.nextUrl.pathname)) {
-    console.log('redirect to appointment');
+    console.log("redirect to appointment");
 
     return Response.redirect(
       new URL("/dashboard/appointment", request.nextUrl)

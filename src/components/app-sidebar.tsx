@@ -46,11 +46,7 @@ const data = {
   },
   navMain: [
 
-    // {
-    //   title: "Reports",
-    //   url: "/dashboard/report",
-    //   icon: Folder,
-    // },
+
     {
       title: "Appointments",
       url: "/dashboard/appointment",
@@ -60,6 +56,11 @@ const data = {
       title: "Approval",
       url: "/dashboard/approval",
       icon: Gauge,
+    },
+    {
+      title: "Reports",
+      url: "/dashboard/report",
+      icon: Folder,
     },
     {
       title: "Specialization",
