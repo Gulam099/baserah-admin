@@ -32,6 +32,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ApiBaseUrl } from "../../../../const";
+import { useState } from "react";
 
 const formSchema = z.object({
   question_title: z
@@ -41,9 +42,12 @@ const formSchema = z.object({
   answer: z.string().min(5, "Answer must be at least 5 characters long"),
 });
 
-const InformationFormDialog = () => {
+interface InformationFormDialogProps {
+  onSuccess?: () => void;
+}
+const InformationFormDialog = ({ onSuccess}:InformationFormDialogProps) => {
   const router = useRouter();
-
+ const [open, setOpen] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -67,7 +71,11 @@ const InformationFormDialog = () => {
 
       if (response.ok) {
         toast.success("Question created successfully!");
-        router.refresh(); // Refresh the page to show the updated data
+        router.refresh();
+        setOpen(false);
+         if (onSuccess) {
+          onSuccess();
+        } 
       } else {
         toast.error(result.error || "Failed to create question.");
       }
@@ -78,7 +86,7 @@ const InformationFormDialog = () => {
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>Enter Information</Button>
       </DialogTrigger>
