@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -20,6 +20,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Label,
   LabelList,
   Line,
@@ -59,6 +60,7 @@ export default function DataPieChartCard({
   className,
   link,
 }: DataChartCardProps) {
+
   // Calculate total from chart data (if needed for the pie label)
   const totalVisitors = React.useMemo(() => {
     if (!chartData?.length) return 0;
@@ -125,26 +127,39 @@ export default function DataPieChartCard({
 
       case "bar":
         return (
-          <ChartContainer
-            config={chartConfig!}
-            className="mx-auto max-h-[250px] w-full"
-          >
-            <BarChart data={chartData}>
-              <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="title"
-                tickLine={false}
-                tickMargin={10}
-                axisLine={false}
-                tickFormatter={(value) => value.slice(0, 3)}
-              />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
-              <Bar dataKey="number" fill="var(--color-number)" radius={8} />
-            </BarChart>
-          </ChartContainer>
+          <div className=" p-4  flex flex-col gap-2">
+            {/* <h3 className="text-base font-semibold text-neutral-800">
+              {title}
+            </h3> */}
+            <ChartContainer config={chartConfig!} className="mx-auto max-h-[250px] w-full">
+              <BarChart data={chartData} barCategoryGap={30}>
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="title"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <Bar
+                  dataKey="number"
+                  radius={8}
+                  barSize={24}
+                  fillOpacity={1}
+                  isAnimationActive={false}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ChartContainer>
+
+
+          </div>
         );
 
       case "barV":

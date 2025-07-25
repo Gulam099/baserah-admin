@@ -76,13 +76,13 @@ export default function page({
               let ratingStyle: {
                 title: string;
                 variant:
-                  | "default"
-                  | "destructive"
-                  | "outline"
-                  | "secondary"
-                  | "success"
-                  | "warning"
-                  | "danger";
+                | "default"
+                | "destructive"
+                | "outline"
+                | "secondary"
+                | "success"
+                | "warning"
+                | "danger";
               } = { title: "Poor", variant: "danger" };
               if (s.rating >= 5)
                 ratingStyle = { title: "Excellent", variant: "success" };
