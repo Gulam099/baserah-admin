@@ -7,7 +7,7 @@ export async function fetchQuestions(
 ): Promise<ApiResponseType> {
   try {
     const response = await fetch(
-      `${ApiBaseUrl}/api/admin/fetch-question?admin=true&page=${page}&size=${size}`
+      `${ApiBaseUrl}/api/group/fetch-group?admin=true&page=${page}&size=${size}`
     );
 
     if (!response.ok) {
@@ -19,7 +19,7 @@ console.log(data, 'fetch data')
     return {
       success: true,
       status: response.status,
-      message: "Questions Fetched",
+      message: "group Fetched",
       data: data?.data || [],
       page: {
         total: data?.data?.length || 0,
