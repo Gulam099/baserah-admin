@@ -67,11 +67,11 @@ const data = {
       url: "/dashboard/specialization",
       icon: BookOpen,
     },
-    // {
-    //   title: "Tickets",
-    //   url: "/dashboard/ticket",
-    //   icon: People,
-    // },
+    {
+      title: "Group",
+      url: "/dashboard/group",
+      icon: People,
+    },
     {
       title: "Contracts and Specialists",
       url: "/dashboard/specialist",
