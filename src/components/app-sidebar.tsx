@@ -107,6 +107,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return null;
   }
   return (
+
     <Sidebar variant="inset" {...props} className="bg-blue-100">
 
       <SidebarHeader className="bg-blue-100">
