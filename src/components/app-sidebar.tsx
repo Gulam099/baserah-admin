@@ -38,10 +38,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { EmptyWallet, People, Profile2User, Setting2 } from "iconsax-react";
 import { useUser } from "@clerk/nextjs"; import { useTranslation } from "react-i18next";
 
-
-
-
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUser();
   const { t } = useTranslation();
@@ -58,52 +54,47 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
 
       {
-        title: "Appointments",
+        title: t("sidebar.appointments"),
         url: "/dashboard/appointment",
         icon: Briefcase,
       },
       {
-        title: "Approval",
+        title: t("sidebar.approval"),
         url: "/dashboard/approval",
         icon: Gauge,
       },
       {
-        title: "Reports",
+        title: t("sidebar.reports"),
         url: "/dashboard/report",
         icon: Folder,
       },
       {
-        title: "Specialization",
+        title: t("sidebar.specialization"),
         url: "/dashboard/specialization",
         icon: BookOpen,
       },
       {
-        title: "Group",
-        url: "/dashboard/group",
-        icon: People,
-      },
-      {
-        title: "Contracts and Specialists",
+        title: t("sidebar.contractsSpecialists"),
         url: "/dashboard/specialist",
         icon: Bookmark,
       },
       {
-        title: "Customers",
+        title: t("sidebar.customers"),
         url: "/dashboard/customer",
         icon: Profile2User,
       },
       {
-        title: "Information Bank",
+        title: t("sidebar.infoBank"),
         url: "/dashboard/question",
         icon: Setting2,
       },
       {
-        title: "Financial",
+        title: t("sidebar.financial"),
         url: "/dashboard/payments",
         icon: EmptyWallet,
       },
       {
-        title: "Permissions",
+        title: t("sidebar.permissions"),
         url: "/dashboard/permission",
         icon: Monitor,
       },
