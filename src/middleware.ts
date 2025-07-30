@@ -12,20 +12,20 @@ export default clerkMiddleware(async (auth, request) => {
   const { userId, redirectToSignIn } = await auth();
   // Protect the root `/` route explicitly
 
-  // if (!userId && !isPublicRoute(request)) {
-  //   console.log("redirect to signin");
+  if (!userId && !isPublicRoute(request)) {
+    console.log("redirect to signin");
 
-  //   await auth.protect();
-  //   return redirectToSignIn();
-  // }
+    await auth.protect();
+    return redirectToSignIn();
+  }
   // If user is logged in and trying to access "/" or "/dashboard", redirect to "/dashboard/approval"
-  // if (userId && ["/dashboard"].includes(request.nextUrl.pathname)) {
-  //   console.log("redirect to appointment");
+  if (userId && ["/dashboard"].includes(request.nextUrl.pathname)) {
+    console.log("redirect to appointment");
 
-  //   return Response.redirect(
-  //     new URL("/dashboard/appointment", request.nextUrl)
-  //   );
-  // }
+    return Response.redirect(
+      new URL("/dashboard/appointment", request.nextUrl)
+    );
+  }
 });
 
 export const config = {
