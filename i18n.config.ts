@@ -1,21 +1,32 @@
-// currentFile: ./i18n.config.ts
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
+
+// Manual imports of JSON files
+import enCommon from "@/../public/locales/en/common.json";
+import arCommon from "@/../public/locales/ar/common.json";
 
 import {
   defaultLanguage,
   supportedLanguages,
 } from "@/features/home/utils/languages";
-import i18n from "i18next";
-import { initReactI18next } from "react-i18next";
+
 i18n.use(initReactI18next).init({
   fallbackLng: defaultLanguage,
   supportedLngs: supportedLanguages,
-  load: "currentOnly",
-  lowerCaseLng: true,
-  preload: [defaultLanguage, "ar"],
+  lng: defaultLanguage,
+  ns: ["common"],
+  defaultNS: "common",
   resources: {
-    // 👇 Translations loaded from ./locales/**/*.json
-    // ...translationFiles,
+    en: {
+      common: enCommon,
+    },
+    ar: {
+      common: arCommon,
+    },
   },
-}); // Add a comma here
+  interpolation: {
+    escapeValue: false,
+  },
+});
 
 export default i18n;

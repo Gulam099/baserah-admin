@@ -20,6 +20,8 @@ import { useSearchParams } from "next/navigation";
 import InformationFormDialog from "./QuestionDialog";
 import EditQuestionDialog from "./EditQuestionDilaog";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+
 
 const formSchema = z.object({
   question: z.string().min(10),
@@ -29,6 +31,8 @@ const formSchema = z.object({
 
 export default function QuestionPage() {
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
+
   const contentRef = useRef<HTMLDivElement>(null);
   // Read page/pageSize from the URL, or fallback to 1 / 9
   const pageParam = searchParams.get("page");
@@ -55,7 +59,7 @@ export default function QuestionPage() {
     }
   }, [currentPage, pageSize]);
 
-   useEffect(() => {
+  useEffect(() => {
     refreshQuestions();
   }, [refreshQuestions]);
   console.log("questions", questions);
@@ -84,7 +88,7 @@ export default function QuestionPage() {
 
     if (response.success) {
       toast.success(
-        `Question ${status === "hidden" ? "hidden" : "published"} successfully`
+        status === "hidden" ? t("hiddenSuccess") : t("publishedSuccess")
       );
       refreshQuestions();
       console.log("Status updated:", response.data);
@@ -97,10 +101,10 @@ export default function QuestionPage() {
     <>
       <div className="container mx-auto ">
         <div className="flex justify-end items-center gap-2 pb-6">
-          <ExportButton contentRef={contentRef} />
+          <ExportButton contentRef={contentRef} excelData={questions} />
           <InformationFormDialog
-          onSuccess={refreshQuestions}
-           />
+            onSuccess={refreshQuestions}
+          />
         </div>
         <div className="min-h-[70vh]">
           <div
@@ -109,73 +113,67 @@ export default function QuestionPage() {
           >
             {loading
               ? Array.from({ length: pageSize }).map((_, i) => (
-                  <Card key={`skeleton-${i}`} className="animate-pulse">
-                    <CardHeader className="h-16 bg-gray-200 rounded-t-lg" />
-                    <CardContent className="h-24 bg-gray-100" />
-                    <CardFooter className="h-16 bg-gray-200 rounded-b-lg" />
-                  </Card>
-                ))
+                <Card key={`skeleton-${i}`} className="animate-pulse">
+                  <CardHeader className="h-16 bg-gray-200 rounded-t-lg" />
+                  <CardContent className="h-24 bg-gray-100" />
+                  <CardFooter className="h-16 bg-gray-200 rounded-b-lg" />
+                </Card>
+              ))
               : questions.map((question) => (
-                  <Card key={question._id}>
-                    <CardHeader>
-                      <Badge
-                        variant={
-                          question.question_type === "general"
-                            ? "success"
-                            : question.question_type === "depression_program"
+                <Card key={question._id}>
+                  <CardHeader>
+                    <Badge
+                      variant={
+                        question.question_type === "general"
+                          ? "success"
+                          : question.question_type === "depression_program"
                             ? "warning"
                             : question.question_type === "anxiety_program"
-                            ? "default"
-                            : "outline"
-                        }
-                        className="w-fit"
-                      >
-                        {question.question_type === "general"
-                          ? "General"
-                          : question.question_type === "depression_program"
-                          ? "Depression program"
-                          : question.question_type === "anxiety_program"
-                          ? "Anxiety program"
-                          : question.question_type}
-                      </Badge>
-                      <h3 className="font-semibold mt-2">
-                        {question.question_title}
-                      </h3>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground">
-                        {question.answer}
-                      </p>
-                    </CardContent>
-                    <CardFooter className="flex gap-2 print:hidden">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                        onClick={() =>
-                          handleStatusChange(question._id, "hidden")
-                        }
-                        disabled={question.status === "hidden"}
-                      >
-                        Hide
-                      </Button>
-                      <EditQuestionDialog question={question}
+                              ? "default"
+                              : "outline"
+                      }
+                      className="w-fit"
+                    >
+                      {t(`types.${question.question_type}`)}
+                    </Badge>
+                    <h3 className="font-semibold mt-2">
+                      {question.question_title}
+                    </h3>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                      {question.answer}
+                    </p>
+                  </CardContent>
+                  <CardFooter className="flex gap-2 print:hidden">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() =>
+                        handleStatusChange(question._id, "hidden")
+                      }
+                      disabled={question.status === "hidden"}
+                    >
+                      {t("hide")}
+                    </Button>
+                    <EditQuestionDialog question={question}
                       onSuccess={refreshQuestions}
-                       />
-                      <Button
-                        variant="default"
-                        size="sm"
-                        className="flex-1"
-                        onClick={() =>
-                          handleStatusChange(question._id, "published")
-                        }
-                        disabled={question.status === "published"}
-                      >
-                        Publish
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
+                    />
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() =>
+                        handleStatusChange(question._id, "published")
+                      }
+                      disabled={question.status === "published"}
+                    >
+                      {t("publish")}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
           </div>
         </div>
 

@@ -33,6 +33,8 @@ import {
 } from "@/components/ui/dialog"
 import { EmployeeItemType, TeamItemType } from "../types/permission.type"
 import { ApiBaseUrl } from "../../../../const"
+import { useTranslation } from "react-i18next";
+
 
 const formSchema = z.object({
   name: z.string().min(3, "Team name must be at least 3 characters."),
@@ -48,6 +50,8 @@ interface AddNewTeamDialogProps {
 
 export default function AddNewTeamDialog(props: AddNewTeamDialogProps) {
   const { employees } = props
+
+  const { t } = useTranslation();
 
   const form = useForm<CreateTeamFormType>({
     resolver: zodResolver(formSchema),
@@ -84,30 +88,29 @@ export default function AddNewTeamDialog(props: AddNewTeamDialogProps) {
       //   "team_id": "67d178ab623032180afb17e7"
       // }
 
-      if (data.success) {
-        toast.success(data.message || "Team created successfully!")
-        // Optionally reset the form and/or close dialog
-        form.reset()
-      } else {
-        // e.g. "Missing required fields", "success": false
-        toast.error(data.message || "Failed to create team.")
+      if (!response.ok || !data.success) {
+        toast.error(data?.message || t("teamm.createError"));
+        return;
       }
+
+      toast.success(data.message || t("teamm.createSuccess"));
+      form.reset();
     } catch (error) {
-      console.error("Form submission error", error)
-      toast.error("Failed to submit the form. Please try again.")
+      console.error("Form submission error", error);
+      toast.error(t("teamm.submitError"));
     }
   }
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>Add new team</Button>
+        <Button>{t("teamm.addNew")}</Button>
       </DialogTrigger>
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Team</DialogTitle>
-          <DialogDescription>You can create a new team here.</DialogDescription>
+          <DialogTitle>{t("teamm.dialogTitle")}</DialogTitle>
+          <DialogDescription>{t("teamm.dialogDescription")}</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -118,9 +121,9 @@ export default function AddNewTeamDialog(props: AddNewTeamDialogProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Team Name</FormLabel>
+                  <FormLabel>{t("teamm.nameLabel")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Technical team" type="text" {...field} />
+                    <Input placeholder={t("teamm.namePlaceholder")} type="text" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -133,7 +136,7 @@ export default function AddNewTeamDialog(props: AddNewTeamDialogProps) {
               name="members"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Add members</FormLabel>
+                  <FormLabel>{t("teamm.membersLabel")}</FormLabel>
                   <FormControl>
                     <MultiSelector
                       values={field.value}
@@ -141,7 +144,7 @@ export default function AddNewTeamDialog(props: AddNewTeamDialogProps) {
                       loop
                     >
                       <MultiSelectorTrigger>
-                        <MultiSelectorInput placeholder="Select members" />
+                        <MultiSelectorInput placeholder={t("teamm.membersPlaceholder")} />
                       </MultiSelectorTrigger>
                       <MultiSelectorContent>
                         <MultiSelectorList>
@@ -163,7 +166,7 @@ export default function AddNewTeamDialog(props: AddNewTeamDialogProps) {
             />
 
             {/* Submit Button */}
-            <Button type="submit">Create</Button>
+            <Button type="submit">{t("teamm.createButton")}</Button>
           </form>
         </Form>
       </DialogContent>

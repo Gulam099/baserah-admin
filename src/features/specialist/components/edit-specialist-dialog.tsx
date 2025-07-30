@@ -40,6 +40,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ApiBaseUrl } from "../../../../const";
 import { clerkDoctorClient } from "@/lib/clerkClients";
 import { updateDoctor } from "../utils/specialist.util";
+import { useTranslation } from "next-i18next";
 
 // 1) Define your Zod schema for form fields
 const formSchema = z.object({
@@ -68,6 +69,7 @@ interface EditSpecialistDialogProps {
 
 export default function EditSpecialistDialog(props: EditSpecialistDialogProps) {
   const { data } = props;
+  const { t } = useTranslation();
 
   const [files, setFiles] = useState<File[] | null>(null);
 
@@ -160,31 +162,25 @@ export default function EditSpecialistDialog(props: EditSpecialistDialogProps) {
       //   body: formData,
       // });
       const response = await updateDoctor(data.clerkId, payload);
-      toast.success("Specialist updated successfully!");
-      console.log("Server response", response);
+      toast.success(t("toast.success"));
     } catch (error) {
       console.error("Form submission error", error);
-      toast.error("Failed to submit the form. Please try again.");
+      toast.error(t("toast.error"));
     }
   }
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>Edit Data</Button>
+        <Button>{t("form.editButton")}</Button>
       </DialogTrigger>
-
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Edit Specialist Information</DialogTitle>
+          <DialogTitle>{t("form.editTitle")}</DialogTitle>
         </DialogHeader>
-
         <ScrollArea className="h-[80vh] p-4 border rounded-xl">
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4 max-w-4xl mx-auto py-10"
-            >
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-w-4xl mx-auto py-10">
               <div className="grid grid-cols-12 gap-4">
                 <div className="col-span-4">
                   <FormField
@@ -192,9 +188,9 @@ export default function EditSpecialistDialog(props: EditSpecialistDialogProps) {
                     name="fname"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>First Name</FormLabel>
+                        <FormLabel>{t("form.firstName")}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Jone" type="text" {...field} />
+                          <Input placeholder="" type="text" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -207,43 +203,69 @@ export default function EditSpecialistDialog(props: EditSpecialistDialogProps) {
                     name="lname"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Last Name</FormLabel>
+                        <FormLabel>{t("form.lastName")}</FormLabel>
                         <FormControl>
-                          <Input placeholder="doe" type="text" {...field} />
+                          <Input placeholder="" type="text" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-
                 <div className="col-span-4">
                   <FormField
                     control={form.control}
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel>{t("form.email")}</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="example@email.com"
-                            type="email"
-                            {...field}
-                          />
+                          <Input placeholder="" type="email" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-
+              </div>
+              <div className="grid grid-cols-12 gap-4">
                 <div className="col-span-4">
                   <FormField
                     control={form.control}
                     name="experience"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Number of Years of Experience</FormLabel>
+                        <FormLabel>{t("form.experience")}</FormLabel>
+                        <FormControl>
+                          <Input placeholder="" type="text" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="col-span-4">
+                  <FormField
+                    control={form.control}
+                    name="specialization"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("form.mainSpecialty")}</FormLabel>
+                        <FormControl>
+                          <Input placeholder="" type="text" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="col-span-4">
+                  <FormField
+                    control={form.control}
+                    name="sub_specialization"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("form.subSpecialty")}</FormLabel>
                         <FormControl>
                           <Input placeholder="" type="text" {...field} />
                         </FormControl>
@@ -253,152 +275,81 @@ export default function EditSpecialistDialog(props: EditSpecialistDialogProps) {
                   />
                 </div>
               </div>
-
-              <div className="grid grid-cols-12 gap-4">
-                <div className="col-span-4">
-                  <FormField
-                    control={form.control}
-                    name="specialization"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Main Specialty</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Cardiology"
-                            type="text"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="col-span-4">
-                  <FormField
-                    control={form.control}
-                    name="sub_specialization"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Subspecialty</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Interventional Cardiology"
-                            type="text"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="col-span-4">
-                  <FormField
-                    control={form.control}
-                    name="response_time"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Response time</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="24 hours"
-                            type="text"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
+              <FormField
+                control={form.control}
+                name="response_time"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("form.responseTime")}</FormLabel>
+                    <FormControl>
+                      <Input placeholder="" type="text" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="age_categories"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Age Categories</FormLabel>
+                    <FormLabel>{t("form.ageCategories")}</FormLabel>
                     <FormControl>
-                      <TagsInput
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        placeholder="Enter your tags"
-                      />
+                      <TagsInput value={field.value} onValueChange={field.onChange} placeholder="" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="consultation_method"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Consultation methods</FormLabel>
+                    <FormLabel>{t("form.consultationMethod")}</FormLabel>
                     <FormControl>
-                      <TagsInput
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        placeholder="Enter your tags"
-                      />
+                      <TagsInput value={field.value} onValueChange={field.onChange} placeholder="" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="education"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Academic qualification</FormLabel>
+                    <FormLabel>{t("form.education")}</FormLabel>
                     <FormControl>
-                      <TagsInput
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        placeholder="Enter your tags"
-                      />
+                      <TagsInput value={field.value} onValueChange={field.onChange} placeholder="" />
                     </FormControl>
-                    <FormDescription>
-                      Add multiple qualification
-                    </FormDescription>
+                    <FormDescription>{t("form.educationHint")}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="language"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Languages</FormLabel>
+                    <FormLabel>{t("form.languages")}</FormLabel>
                     <FormControl>
-                      <TagsInput
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        placeholder="Enter your tags"
-                      />
+                      <TagsInput value={field.value} onValueChange={field.onChange} placeholder="" />
                     </FormControl>
-                    <FormDescription>Select multiple options.</FormDescription>
+                    <FormDescription>{t("form.languagesHint")}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="fees"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Fees ( SAR )</FormLabel>
+                    <FormLabel>{t("form.fees")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="200 SAR" type="text" {...field} />
+                      <Input placeholder="" type="text" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -409,60 +360,46 @@ export default function EditSpecialistDialog(props: EditSpecialistDialogProps) {
                 name="bio"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Bio</FormLabel>
+                    <FormLabel>{t("form.bio")}</FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder=""
-                        className="resize-none"
-                        {...field}
-                      />
+                      <Textarea className="resize-none" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
-              {/* File Uploader for Profile Picture */}
               <div className="col-span-4">
                 <FormField
                   control={form.control}
                   name="profile_picture"
-                  render={({ field }) => (
+                  render={() => (
                     <FormItem>
-                      <FormLabel>Profile Image</FormLabel>
+                      <FormLabel>{t("form.profileImage")}</FormLabel>
                       <FormControl>
                         <FileUploader
                           value={files}
                           onValueChange={setFiles}
-                          dropzoneOptions={dropZoneConfig}
+                          dropzoneOptions={{ maxFiles: 1, maxSize: 10 * 1024 * 1024, multiple: false }}
                           className="relative bg-background rounded-lg p-2"
                         >
-                          <FileInput
-                            id="fileInput"
-                            className="outline-dashed outline-1 outline-slate-500"
-                          >
+                          <FileInput id="fileInput" className="outline-dashed outline-1 outline-slate-500">
                             <div className="flex items-center justify-center flex-col p-8 w-full">
                               <CloudUpload className="text-gray-500 w-10 h-10" />
                               <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
-                                <span className="font-semibold">
-                                  Click to upload
-                                </span>
-                                &nbsp; or drag and drop
+                                <span className="font-semibold">{t("form.uploadInstructions")}</span>
                               </p>
                               <p className="text-xs text-gray-500 dark:text-gray-400">
-                                SVG, PNG, JPG or GIF
+                                {t("form.uploadNote")}
                               </p>
                             </div>
                           </FileInput>
                           <FileUploaderContent>
-                            {files &&
-                              files.length > 0 &&
-                              files.map((file, i) => (
-                                <FileUploaderItem key={i} index={i}>
-                                  <Paperclip className="h-4 w-4 stroke-current" />
-                                  <span>{file.name}</span>
-                                </FileUploaderItem>
-                              ))}
+                            {files && files.map((file, i) => (
+                              <FileUploaderItem key={i} index={i}>
+                                <Paperclip className="h-4 w-4 stroke-current" />
+                                <span>{file.name}</span>
+                              </FileUploaderItem>
+                            ))}
                           </FileUploaderContent>
                         </FileUploader>
                       </FormControl>
@@ -471,8 +408,7 @@ export default function EditSpecialistDialog(props: EditSpecialistDialogProps) {
                   )}
                 />
               </div>
-
-              <Button type="submit">Submit</Button>
+              <Button type="submit">{t("form.submit")}</Button>
             </form>
           </Form>
         </ScrollArea>

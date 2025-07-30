@@ -3,15 +3,19 @@
 import { Card, CardContent } from "@/components/ui/card";
 import EditSpecialistDialog from "./edit-specialist-dialog";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
+
 
 export default function CV({ data }: any) {
+
+  const { t } = useTranslation();
   // If no data at all, show a fallback
   if (!data) {
     return (
       <div className="p-6">
         <Card className="mt-6">
           <CardContent className="p-6">
-            <p className="text-sm text-muted-foreground">No CV data found.</p>
+            <p className="text-sm text-muted-foreground">{t("cv.noData")}</p>
           </CardContent>
         </Card>
       </div>
@@ -31,25 +35,23 @@ export default function CV({ data }: any) {
   const briefBiography = data.bio || "No biography provided.";
 
   const info = [
-    { label: "Full Name", value: fullName },
-    { label: "Main Specialty", value: mainSpecialty },
-    { label: "Subspecialty", value: subSpecialty },
+    { label: t("cv.fullName"), value: fullName },
+    { label: t("cv.mainSpecialty"), value: mainSpecialty },
+    { label: t("cv.subSpecialty"), value: subSpecialty },
+    { label: t("cv.education"), value: educationString },
     {
-      label: "File of the latest academic qualification",
-      value: educationString,
-    },
-    {
-      label: "CV file",
+      label: t("cv.cvFile"),
       value: cvFile ? (
         <Link className="text-primary-200 underline" href={cvFile}>
-          CV File
+          {t("cv.cvFileLink")}
         </Link>
       ) : (
         "N/A"
       ),
     },
-    { label: "Number of Years of Experience", value: experience },
+    { label: t("cv.experience"), value: experience },
   ];
+
 
   return (
     <div className="p-6">
@@ -65,10 +67,10 @@ export default function CV({ data }: any) {
           {/* Brief Biography (span the whole row) */}
           <div className="col-span-3">
             <div className="text-sm text-muted-foreground mb-1">
-              Brief biography
+              {t("cv.bioLabel")}
             </div>
             <p className="font-medium text-sm leading-relaxed whitespace-pre-line">
-              {briefBiography}
+              {briefBiography || t("cv.noBio")}
             </p>
           </div>
 

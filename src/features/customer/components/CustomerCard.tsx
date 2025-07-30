@@ -3,6 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Customer } from "../types/customer.type";
+import { useTranslation } from "react-i18next";
+
 
 interface CustomerCardProps {
   customer: Customer;
@@ -11,6 +13,8 @@ interface CustomerCardProps {
 export function CustomerCard({ customer }: CustomerCardProps) {
   const nameInitial = customer.name?.charAt(0).toUpperCase() || "?";
   const hasContactInfo = customer.phoneNumber || customer.email;
+  const { t } = useTranslation();
+
 
   return (
     <Card className="w-full rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border-border/50 hover:border-border h-40"> {/* Increased height */}
@@ -26,7 +30,7 @@ export function CustomerCard({ customer }: CustomerCardProps) {
           {/* Info */}
           <div className="flex flex-col flex-grow min-w-0">
             <h3 className="font-medium text-base text-foreground truncate">
-              {customer.name || "No name provided"}
+              {customer.name || t("customers.noName")}
             </h3>
 
             {hasContactInfo ? (
@@ -45,7 +49,8 @@ export function CustomerCard({ customer }: CustomerCardProps) {
                 )}
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground mt-2">No contact info</p>
+              <p className="text-xs text-muted-foreground mt-2">   {t("customers.noContact")}
+              </p>
             )}
           </div>
         </div>
@@ -58,7 +63,7 @@ export function CustomerCard({ customer }: CustomerCardProps) {
               size="sm"
               className="text-primary hover:text-primary/80 hover:bg-primary/5 flex items-center"
             >
-              Show More
+              {t("customers.noContact")}
               <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </Link>

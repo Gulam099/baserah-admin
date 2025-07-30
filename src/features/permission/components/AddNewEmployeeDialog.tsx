@@ -34,6 +34,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ApiBaseUrl } from "../../../../const";
+import { useTranslation } from "react-i18next";
+
 
 // A team item has at least an _id and a name
 interface TeamItemType {
@@ -69,6 +71,7 @@ export default function AddNewEmployeeDialog({
       team_id: "",
     },
   });
+  const { t } = useTranslation();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -81,47 +84,33 @@ export default function AddNewEmployeeDialog({
         body: JSON.stringify(values),
       });
 
-      if (!response.ok) {
-        // e.g. 400 or 500
-        const errorData = await response.json();
-        toast.error(errorData?.message || "Failed to create employee.");
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        toast.error(data?.message || t("employee.createError"));
         return;
       }
 
-      const data = await response.json();
-      // Example success:
-      // {
-      //   "employee_id": "67d16e81cc99d18ce55fca6e",
-      //   "message": "Employee created",
-      //   "success": true
-      // }
-
-      if (data.success) {
-        toast.success(data.message || "Employee created successfully!");
-        form.reset();
-        // Optionally close dialog or re-fetch employees
-      } else {
-        toast.error(data.message || "Failed to create employee.");
-      }
+      toast.success(data.message || t("employee.createSuccess"));
+      form.reset();
     } catch (error) {
       console.error("AddEmployeeDialog error:", error);
-      toast.error("Failed to submit the form. Please try again.");
+      toast.error(t("employee.submitError"));
     }
   }
 
   return (
     <Dialog >
       <DialogTrigger asChild>
-        <Button>Add new employee</Button>
+        <Button>{t("employee.addNew")}</Button>
       </DialogTrigger>
 
       <DialogContent className="max-h-screen overflow-y-auto">
 
         <DialogHeader>
-          <DialogTitle>Add New Employee</DialogTitle>
-          <DialogDescription>
-            Use this form to create a new employee record.
-          </DialogDescription>
+          <DialogTitle>{t("employee.dialogTitle")}</DialogTitle>
+          <DialogDescription>{t("employee.dialogDescription")}</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -135,9 +124,9 @@ export default function AddNewEmployeeDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>{t("employee.nameLabel")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Alice Johnson" type="text" {...field} />
+                    <Input placeholder={t("employee.namePlaceholder")} type="text" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -150,13 +139,9 @@ export default function AddNewEmployeeDialog({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("employee.emailLabel")}</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="alice@example.com"
-                      type="email"
-                      {...field}
-                    />
+                    <Input placeholder={t("employee.emailPlaceholder")} type="email" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -169,9 +154,13 @@ export default function AddNewEmployeeDialog({
               name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Role</FormLabel>
+                  <FormLabel>{t("employee.departmentLabel")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="QA Engineer" type="text" {...field} />
+                    <Input
+                      placeholder={t("employee.departmentPlaceholder")}
+                      type="text"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -184,10 +173,10 @@ export default function AddNewEmployeeDialog({
               name="department"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Department</FormLabel>
+                  <FormLabel>{t("employee.departmentLabel")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Quality Assurance"
+                      placeholder={t("employee.departmentPlaceholder")}
                       type="text"
                       {...field}
                     />
@@ -203,18 +192,15 @@ export default function AddNewEmployeeDialog({
               name="team_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Teams</FormLabel>
+                  <FormLabel>{t("employee.teamLabel")}</FormLabel>
                   <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a team" />
+                        <SelectValue placeholder={t("employee.teamPlaceholder")} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          <SelectLabel>Team</SelectLabel>
+                          <SelectLabel>{t("employee.teamGroupLabel")}</SelectLabel>
                           {teams.map((team) => (
                             <SelectItem key={team._id} value={team._id}>
                               {team.name} - {team._id}
@@ -230,7 +216,7 @@ export default function AddNewEmployeeDialog({
             />
 
             {/* Submit Button */}
-            <Button type="submit">Create</Button>
+            <Button type="submit">{t("employee.createButton")}</Button>
           </form>
         </Form>
       </DialogContent>

@@ -38,6 +38,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { ApiBaseUrl, ApiBaseUrlLocal } from "../../../../const";
 import { toast } from "sonner";
 import Certificate from "./certificate";
+import { useTranslation } from "react-i18next";
+
 
 interface SpecialistData {
   _id: string;
@@ -77,6 +79,7 @@ type UploadedCertificate = {
 
 export default function SpecialistPage() {
   const { specialist_Id } = useParams<{ specialist_Id: string }>();
+  const { t } = useTranslation();
 
   const [specialist, setSpecialist] = useState<SpecialistData | null>(null);
   // const [loading, setLoading] = useState(false);
@@ -117,74 +120,51 @@ export default function SpecialistPage() {
   if (!specialist) {
     return (
       <div className="container mx-auto py-6">
-        <p>No specialist data found.</p>
+        <p>{t("no_specialist_data")}</p>
       </div>
     );
   }
 
   const info = [
-    // { label: "ID", value: specialist?._id },
-    { label: "Mobile Number", value: specialist?.phoneNumber },
-    { label: "Email", value: specialist?.email || "N/A" },
+    { label: t("mobile_number"), value: specialist?.phoneNumber },
+    { label: t("email"), value: specialist?.email || t("not_available") },
     {
-      label: "Language Selection",
-      value: specialist?.language?.join(", ") || "N/A",
+      label: t("language_selection"),
+      value: specialist?.language?.join(", ") || t("not_available"),
     },
     {
-      label: "Age Categories",
-      value: specialist?.age_categories?.join(", ") || "N/A",
+      label: t("age_categories"),
+      value: specialist?.age_categories?.join(", ") || t("not_available"),
     },
-    // {
-    //   label: "Consultation Method",
-    //   value: specialist?.consultation_method?.join(" - "),
-    // },
-    // { label: "Address", value: specialist?.address },
     {
-      label: "Fees",
-      value: specialist?.fees ? `${specialist?.fees} SAR` : "N/A",
+      label: t("fees"),
+      value: specialist?.fees ? `${specialist?.fees} SAR` : t("not_available"),
     },
   ];
 
   // 2) timeline could be partly dynamic if you want to reflect
   // approval_status logic. Here's an example:
   const timeline = [
+    { status: t("accepted"), key: "accepted", date: "", active: false },
+    { status: t("contract_send"), key: "contract_send", date: "", active: false },
+    { status: t("auth_contract"), key: "auth_contract", date: "", active: false },
     {
-      status: "Accepted ",
-      key: "accepted",
-      date: "",
-      active: false,
-    },
-    {
-      status: "Contract Send",
-      key: "contract_send",
-      date: "",
-      active: false,
-    },
-    {
-      status: "Authenticate Contract",
-      key: "auth_contract",
-      date: "",
-      active: false,
-    },
-    {
-      status: "Initial Approval",
+      status: t("initial_approved"),
       key: "initial_approved",
-      date:
-        specialist.approval_status === "Initial Approved" ? "Date here" : "",
+      date: specialist.approval_status === "Initial Approved" ? "Date here" : "",
       active: specialist.approval_status === "Initial Approved",
     },
     {
-      status: "Final Approval",
+      status: t("final_approved"),
       key: "final_approved",
       date: specialist.approval_status === "Final Approved" ? "some date" : "",
       active: specialist.approval_status === "Final Approved",
     },
-
   ];
 
   const tabData = [
     {
-      title: "General Information",
+      title: t("general_information"),
       id: "general",
       content: (
         <Card className="mt-6">
@@ -202,27 +182,27 @@ export default function SpecialistPage() {
       ),
     },
     {
-      title: "Contracts",
+      title: t("contract"),
       id: "contracts",
       content: <Contracts initialApprovalStatus={specialist?.approval_status} specilaistId={specialist?._id} clerkId={specialist?.clerkId} />,
     },
     {
-      title: "CV",
+      title: t("cvv"),
       id: "cv",
       content: <CV data={specialist} />,
     },
     {
-      title: "Certificates",
+      title: t("certificatess"),
       id: "certificates",
       content: <Certificate doctorId={specialist?._id} />,
     },
     {
-      title: "Content",
+      title: t("contentt"),
       id: "content",
       content: <Content doctorId={specialist?._id} />,
     },
     {
-      title: "Ratings",
+      title: t("ratings"),
       id: "rating",
       content: <Rating specilaistId={specialist_Id} />,
     },
@@ -260,7 +240,7 @@ export default function SpecialistPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-semibold">
-                  {specialist?.full_name || "Unknown Specialist"}
+                  {specialist?.full_name || t("unknown_specialist")}
                 </h1>
 
                 <span
@@ -268,8 +248,7 @@ export default function SpecialistPage() {
                     specialist?.approval_status
                   )}`}
                 >
-                  {specialist?.approval_status?.split("_").join(" ") ??
-                    "No Status Found"}
+                  {t(specialist?.approval_status?.toLowerCase() || "no_status")}
                 </span>
               </div>
 

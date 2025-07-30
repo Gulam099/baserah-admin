@@ -22,8 +22,11 @@ import { fetchCustomers } from "@/features/customer/data/customer.data";
 import { CustomerCard } from "@/features/customer/components/CustomerCard";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
 import { useSearchParams } from "next/navigation";
+import { useTranslation } from "react-i18next";
+
 
 export default function CustomersPage() {
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   // Read page/pageSize from the URL, or fallback to 1 / 9
   const pageParam = searchParams.get("page");
@@ -68,7 +71,6 @@ export default function CustomersPage() {
   });
 
 
-  console.log("patients", customers);
 
   //   useEffect(() => {
   //     currentPage = 1;
@@ -95,7 +97,7 @@ export default function CustomersPage() {
       <div className="relative w-full max-w-md pb-5">
         <Input
           type="text"
-          placeholder="Search by name or ID"
+          placeholder={t("customers.searchPlaceholder")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="pr-10"

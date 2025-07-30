@@ -31,6 +31,8 @@ import {
 } from "@/components/ui/dialog";
 import { Question } from "../types/question.type";
 import { editQuestion } from "../utils/question.util";
+import { useTranslation } from "react-i18next";
+
 
 const formSchema = z.object({
   question_title: z.string().min(5).optional(),
@@ -49,7 +51,9 @@ export default function EditQuestionDialog({
 }: EditQuestionDialogProps) {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  
+  const { t } = useTranslation();
+
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -66,16 +70,16 @@ export default function EditQuestionDialog({
       if (response.success) {
         toast.success("Question updated successfully!");
         setOpen(false); // Close the dialog
-        
+
         // Call the onSuccess callback to refresh parent data
         if (onSuccess) {
           onSuccess();
         }
       } else {
-        toast.error(response.message || "Failed to update question.");
+        toast.error(response.message || t("editQuestion.error"));
       }
     } catch (error) {
-      toast.error("Something went wrong. Please try again.");
+      toast.error(t("editQuestion.tryAgain"));
     } finally {
       setLoading(false);
     }
@@ -84,11 +88,11 @@ export default function EditQuestionDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Edit</Button>
+        <Button variant="outline">{t("editQuestion.edit")}</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Question</DialogTitle>
+          <DialogTitle>{t("editQuestion.title")}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -97,11 +101,11 @@ export default function EditQuestionDialog({
               name="question_title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Question Title</FormLabel>
+                  <FormLabel>{t("editQuestion.questionTitle")}</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="text" 
-                      {...field} 
+                    <Input
+                      type="text"
+                      {...field}
                       disabled={loading}
                     />
                   </FormControl>
@@ -115,7 +119,7 @@ export default function EditQuestionDialog({
               name="question_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Question Type</FormLabel>
+                  <FormLabel>{t("editQuestion.questionType")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -123,16 +127,16 @@ export default function EditQuestionDialog({
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
+                        <SelectValue placeholder={t("editQuestion.selectCategory")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="general">General</SelectItem>
+                      <SelectItem value="general">{t("editQuestion.general")}</SelectItem>
                       <SelectItem value="depression_program">
-                        Depression Program
+                        {t("editQuestion.depressionProgram")}
                       </SelectItem>
                       <SelectItem value="anxiety_program">
-                        Anxiety Program
+                        {t("editQuestion.anxietyProgram")}
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -146,11 +150,11 @@ export default function EditQuestionDialog({
               name="answer"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Answer</FormLabel>
+                  <FormLabel>{t("editQuestion.answer")}</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      className="resize-none" 
-                      {...field} 
+                    <Textarea
+                      className="resize-none"
+                      {...field}
                       disabled={loading}
                     />
                   </FormControl>
@@ -160,7 +164,7 @@ export default function EditQuestionDialog({
             />
 
             <Button type="submit" disabled={loading}>
-              {loading ? "Updating..." : "Submit"}
+              {loading ? t("editQuestion.updating") : t("editQuestion.submit")}
             </Button>
           </form>
         </Form>
