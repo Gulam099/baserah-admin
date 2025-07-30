@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ApiBaseUrlLocal } from "../../../../../const";
 import { Delete, SquarePen, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+
 
 type SpecializationType = {
   _id: string;
@@ -28,6 +30,7 @@ const specialistLevelsMap = [
 
 
 const SpecializationPage: React.FC = () => {
+  const { t } = useTranslation();
   const [specialization, setSpecialization] = useState("");
   const [subSpecializations, setSubSpecializations] = useState<string[]>([""]);
   const [specializationList, setSpecializationList] = useState<SpecializationType[]>([]);
@@ -50,13 +53,10 @@ const SpecializationPage: React.FC = () => {
     try {
       const res = await fetch(`${ApiBaseUrlLocal}/api/specializations/all`);
       const data = await res.json();
-      if (data.success) {
-        setSpecializationList(data.data);
-      } else {
-        toast.error("Failed to fetch specializations");
-      }
-    } catch (err) {
-      toast.error("Error fetching data");
+      if (data.success) setSpecializationList(data.data);
+      else toast.error(t("toastt.fetchError"));
+    } catch {
+      toast.error(t("toastt.fetchError"));
     }
   };
 
@@ -122,11 +122,9 @@ const SpecializationPage: React.FC = () => {
         }
 
         resetForm();
-      } else {
-        toast.error(result.message || "Error occurred");
-      }
-    } catch (error) {
-      toast.error("Server error");
+      } else toast.error(result.message || t("toastt.serverError"));
+    } catch {
+      toast.error(t("toastt.serverError"));
     }
   };
 
@@ -139,11 +137,9 @@ const SpecializationPage: React.FC = () => {
       if (res.ok) {
         toast.success("Deleted successfully");
         setSpecializationList((prev) => prev.filter((item) => item._id !== id));
-      } else {
-        toast.error(data.message || "Delete failed");
-      }
-    } catch (error) {
-      toast.error("Server error");
+      } else toast.error(data.message || t("toastt.deleteFailed"));
+    } catch {
+      toast.error(t("toastt.serverError"));
     }
   };
 
@@ -191,13 +187,14 @@ const SpecializationPage: React.FC = () => {
 
   return (
     <div className="p-4 ">
-      <h1 className="text-2xl font-bold mb-4">Specialization </h1>
+      <h1 className="text-2xl font-bold mb-4">{t("titlee.specialization")}</h1>
+
 
       {/* Top bar: Create and Search */}
       <div className="flex justify-between items-center mb-6">
         <input
           type="text"
-          placeholder="Search specialization..."
+          placeholder={t("placeholder.search")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-blue-300"
@@ -207,7 +204,7 @@ const SpecializationPage: React.FC = () => {
             onClick={() => setFormVisible(true)}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            Create Specialization
+            {t("button.create")}
           </button>
         )}
 
@@ -217,25 +214,25 @@ const SpecializationPage: React.FC = () => {
       {formVisible && (
         <div className="bg-white p-6 border rounded-lg shadow mb-10">
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">Specialization</label>
+            <label className="block mb-2 text-sm font-medium">{t("label.specialization")}</label>
             <input
               type="text"
               value={specialization}
               onChange={(e) => setSpecialization(e.target.value)}
-              placeholder="Enter specialization"
+              placeholder={t("placeholder.specialization")}
               className="w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">Sub Specializations</label>
+            <label className="block mb-2 text-sm font-medium">{t("label.subSpecializations")}</label>
             {subSpecializations.map((sub, index) => (
               <div key={index} className="flex items-center gap-2 mb-2">
                 <input
                   type="text"
                   value={sub}
                   onChange={(e) => handleSubChange(index, e.target.value)}
-                  placeholder={`Subspecialization ${index + 1}`}
+                  placeholder={`${t("placeholder.subSpecialization")} ${index + 1}`}
                   className="flex-1 px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
                 />
                 {subSpecializations.length > 1 && (
@@ -243,7 +240,7 @@ const SpecializationPage: React.FC = () => {
                     onClick={() => removeSubSpecialization(index)}
                     className="px-3 py-1 text-sm text-red-500  rounded"
                   >
-                    Remove
+                    {t("button.remove")}
                   </button>
                 )}
               </div>
@@ -253,13 +250,13 @@ const SpecializationPage: React.FC = () => {
               onClick={addSubSpecialization}
               className="mt-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded"
             >
-              Add Subspecialization
+              {t("button.addSub")}
             </button>
           </div>
 
           <div className="mb-6">
             <div className="mb-4 flex items-center gap-4">
-              <label className="font-medium text-sm">Switch Language:</label>
+              <label className="text-sm font-medium">{t("label.language")}</label>
               <div className="relative inline-block w-14">
                 <input
                   type="checkbox"
@@ -277,7 +274,7 @@ const SpecializationPage: React.FC = () => {
             </div>
 
             {/* Applicable Levels */}
-            <label className="block text-sm font-medium mb-2">Applicable Specialist Levels</label>
+            <label className="block mb-2 text-sm font-medium">{t("label.levels")}</label>
             <div className="grid grid-cols-2 gap-2">
               {specialistLevelsMap.map(({ english, arabic }) => {
                 const label = isArabic ? arabic : english;
@@ -296,7 +293,7 @@ const SpecializationPage: React.FC = () => {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">Fee for Less than 10 Years Experience</label>
+            <label className="block text-sm mb-2">{t("label.feeBelow10")}</label>
             <input
               type="number"
               value={feeBelow10}
@@ -307,7 +304,7 @@ const SpecializationPage: React.FC = () => {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">Fee for More than 10 Years Experience</label>
+            <label className="block text-sm mb-2">{t("label.feeAbove10")}</label>
             <input
               type="number"
               value={feeAbove10}
@@ -324,35 +321,34 @@ const SpecializationPage: React.FC = () => {
               onClick={handleSubmit}
               className="py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded"
             >
-              {editingId ? "Update" : "Submit"}
+              {editingId ? t("button.update") : t("button.submit")}
             </button>
             <button
               onClick={resetForm}
               className="py-2 px-4 bg-gray-400 hover:bg-gray-500 text-white rounded"
             >
-              Cancel
+              {t("button.cancel")}
             </button>
           </div>
         </div>
       )}
 
       {/* List */}
-      <h2 className="text-xl font-semibold mb-4">Specialization List</h2>
+      <h2 className="text-xl font-semibold mb-4">{t("titlee.specializationList")}</h2>
       {filteredList.length === 0 ? (
-        <p>No specializations found.</p>
+        <p>{t("message.noData")}</p>
       ) : (
         <div className="overflow-x-auto rounded shadow">
           <table className="min-w-full border-collapse bg-white">
             <thead>
               <tr className="bg-gray-100 text-left text-sm font-medium text-gray-700">
-                <th className="px-4 py-3 border">#</th>
-                <th className="px-4 py-3 border">Specialization</th>
-                <th className="px-4 py-3 border">Sub Specializations</th>
-                <th className="px-4 py-3 border"> Specialist</th>
-                <th className="px-4 py-3 border">Fee &lt; 10 yrs</th>
-                <th className="px-4 py-3 border">Fee ≥ 10 yrs</th>
-
-                <th className="px-4 py-3 border text-center">Actions</th>
+                <th className="px-4 py-3">{t("table.index")}</th>
+                <th className="px-4 py-3">{t("table.specialization")}</th>
+                <th className="px-4 py-3">{t("table.subSpecializations")}</th>
+                <th className="px-4 py-3">{t("table.levels")}</th>
+                <th className="px-4 py-3">{t("table.feeBelow10")}</th>
+                <th className="px-4 py-3">{t("table.feeAbove10")}</th>
+                <th className="px-4 py-3 text-center">{t("table.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -375,7 +371,7 @@ const SpecializationPage: React.FC = () => {
                         ))}
                       </ul>
                     ) : (
-                      <span className="text-gray-400 italic">None</span>
+                      <span className="text-gray-400 italic">{t("label.none")}</span>
                     )}
                   </td>
                   <td className="px-4 py-3 border">{item.feeBelow10 ?? "-"}</td>

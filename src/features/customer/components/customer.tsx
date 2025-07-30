@@ -17,6 +17,8 @@ import CustomerTicketRecord from "@/features/customer/components/CustomerTicketR
 import CustomerCommentRecord from "@/features/customer/components/CustomerCommentRecord";
 import { ApiBaseUrl } from "../../../../const";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
+
 
 interface ApiResponse {
   message: string;
@@ -29,6 +31,8 @@ export default function CustomerPage() {
   const [customer, setCustomer] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
+
 
   // 1) Fetch the customer data on mount
   useEffect(() => {
@@ -42,7 +46,7 @@ export default function CustomerPage() {
         setCustomer(res.data?.data);
       } catch (err: any) {
         console.error("Failed to fetch customer:", err);
-        setError("Failed to load customer data.");
+        setError(t("customerPage.error"));
       } finally {
         setLoading(false);
       }
@@ -54,43 +58,30 @@ export default function CustomerPage() {
 
   // 2) Loading and error states
   if (loading) {
-    return (
-      <div className="container mx-auto py-8">
-        <p>Loading...</p>
-      </div>
-    );
+    return <div className="container mx-auto py-8"><p>{t("customerPage.loading")}</p></div>;
   }
 
   if (error) {
-    return (
-      <div className="container mx-auto py-8">
-        <p className="text-red-500">{error}</p>
-      </div>
-    );
+    return <div className="container mx-auto py-8"><p className="text-red-500">{error}</p></div>;
   }
 
-  // 3) If no data, show a fallback
   if (!customer) {
-    return (
-      <div className="container mx-auto py-8">
-        <p>No customer data found.</p>
-      </div>
-    );
+    return <div className="container mx-auto py-8"><p>{t("customerPage.noData")}</p></div>;
   }
 
   const info = [
-    { label: "Gender", value: customer.gender ?? "N/A" },
-    { label: "Mobile Number", value: customer.phoneNumber ?? "N/A" },
-    { label: "Email", value: customer.email ?? "N/A" },
+    { label: t("customerPage.info.gender"), value: customer.gender ?? t("customerPage.na") },
+    { label: t("customerPage.info.mobile"), value: customer.phoneNumber ?? t("customerPage.na") },
+    { label: t("customerPage.info.email"), value: customer.email ?? t("customerPage.na") },
     {
-      label: "Date of Birth",
-      value: customer.dob ? format(new Date(customer.dob), "dd-MMM-yyyy") : "N/A",
+      label: t("customerPage.info.dob"),
+      value: customer.dob ? format(new Date(customer.dob), "dd-MMM-yyyy") : t("customerPage.na"),
     },
     {
-      label: "Address",
+      label: t("customerPage.info.address"),
       value:
         `${customer.address?.line1 ?? ""} \n , ${customer.address?.line2 ?? ""}`.trim() ||
-        "N/A",
+        t("customerPage.na"),
     },
   ];
 
@@ -99,7 +90,7 @@ export default function CustomerPage() {
   // 5) Prepare tab data
   const tabData = [
     {
-      title: "General Information",
+      title: t("customerPage.tabs.general"),
       id: "general",
       content: (
         <Card className="mt-6">
@@ -122,12 +113,12 @@ export default function CustomerPage() {
     //   content: <CustomerMedicalRecord customerId={customer_Id} />,
     // },
     {
-      title: "Metrics",
+      title: t("customerPage.tabs.metrics"),
       id: "metrics",
       content: <CustomerMetricRecord customerId={customer_Id} />,
     },
     {
-      title: "Family",
+      title: t("customerPage.tabs.family"),
       id: "family",
       content: (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 py-6 ">
@@ -165,7 +156,7 @@ export default function CustomerPage() {
                 </CardContent>
               </Card>
             ))
-            : "No Member added"}
+            : t("customerPage.family.none")}
         </div>
       ),
     },
@@ -214,12 +205,12 @@ export default function CustomerPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-2xl font-semibold">
-                    {customer.name || "Unknown Name"}
+                    {customer.name || t("customerPage.unknownName")}
                   </h1>
                   {/* <Badge>Master</Badge> */}
                 </div>
                 <p className="text-muted-foreground">
-                  {customer.phoneNumber || "No phone"}
+                  {customer.phoneNumber || t("customerPage.noPhone")}
                 </p>
               </div>
             </div>

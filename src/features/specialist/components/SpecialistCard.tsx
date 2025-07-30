@@ -14,6 +14,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateDoctor, createDoctor } from "../utils/specialist.util";
 import { useState } from "react";
 import { ApiBaseUrlLocal } from "../../../../const";
+import { useTranslation } from "react-i18next";
+
 
 interface SpecialistCardProps {
   specialist: SpecialistType;
@@ -21,6 +23,7 @@ interface SpecialistCardProps {
 
 export function SpecialistCard({ specialist }: SpecialistCardProps) {
   const queryClient = useQueryClient();
+  const { t } = useTranslation("common");
   const [createdDoctorId, setCreatedDoctorId] = useState<string | null>(null);
 
   const getStatusColor = (status: string) => {
@@ -80,19 +83,19 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
     try {
       return format(new Date(timestamp), "EEE, dd MMM yyyy");
     } catch {
-      return "Invalid Date";
+      return t("invalid_date");
     }
   };
 
   return (
     <Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <h3 className="font-semibold">{specialist?.firstName ?? "No Name Found"}</h3>
+        <h3 className="font-semibold">{specialist?.firstName ?? t("no_name")}</h3>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
               <MoreVertical className="h-4 w-4" />
-              <span className="sr-only">Open menu</span>
+              <span className="sr-only">{t("open_menu")}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -104,7 +107,7 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
                 })
               }
             >
-              Accept Doctor
+              {t("accepted")}
             </DropdownMenuItem>
 
             <DropdownMenuItem
@@ -115,7 +118,7 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
                 })
               }
             >
-              Contract Send
+              {t("contract_send")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() =>
@@ -125,7 +128,7 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
                 })
               }
             >
-              Authenticate Contract
+              {t("auth_contract")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() =>
@@ -135,7 +138,7 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
                 })
               }
             >
-              Initial Approval of the contract
+              {t("initial_approved")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() =>
@@ -145,7 +148,7 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
                 })
               }
             >
-              Final Approval of the contract
+              {t("final_approved")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -153,16 +156,15 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
       <CardContent>
         <div className="grid gap-2">
           <div className="grid grid-cols-[auto,1fr] gap-2">
-            <span className="text-sm text-muted-foreground">Job Title:</span>
+            <span className="text-sm text-muted-foreground">{t("job_title")}:</span>
             <span className="text-sm font-medium">
-              {specialist?.unsafeMetadata?.specialization ?? "NAN"}
+              {specialist?.unsafeMetadata?.specialization ?? "N/A"}
             </span>
-            <span className="text-sm text-muted-foreground">Date:</span>
+            <span className="text-sm text-muted-foreground">{t("date")}:</span>
             <span className="text-sm font-medium">
               {specialist?.createdAt ? formatDate(specialist.createdAt) : "N/A"}
             </span>
-            <span className="text-sm text-muted-foreground">Qualification:</span>
-            {/* If needed, show education here */}
+            <span className="text-sm text-muted-foreground">{t("qualification")}:</span>
           </div>
           <div className="flex items-center justify-between pt-2">
             <span
@@ -170,12 +172,11 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
                 specialist?.unsafeMetadata?.approval_status
               )}`}
             >
-              {specialist.unsafeMetadata?.approval_status?.split("_")?.join(" ") ??
-                "No Status Found"}
+              {t(specialist.unsafeMetadata?.approval_status ?? "no_status")}
             </span>
             <Button variant="ghost" size="sm" className="flex items-center gap-1" asChild>
               <Link href={`/dashboard/specialist/${specialist.id}`}>
-                Show More
+                {t("show_more")}
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </Button>

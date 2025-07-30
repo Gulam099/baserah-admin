@@ -8,8 +8,12 @@ import { format } from "date-fns";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useSearchParams } from "next/navigation";
 import { MetricType } from "../types/customer.type";
+import { useTranslation } from "react-i18next";
+
 
 export default function CustomerMetricRecord(props: { customerId: string }) {
+  const { t } = useTranslation()
+
   const { customerId } = props;
   const searchParams = useSearchParams();
   // Read page/pageSize from the URL, or fallback to 1 / 9
@@ -65,46 +69,46 @@ export default function CustomerMetricRecord(props: { customerId: string }) {
     //   ),
     // },
     {
-      title: "Generalized Anxiety Disorders",
+      title: t("gad"),
       id: "gad-scales",
       content: (
         <>
           {loading
             ? Array.from({ length: pageSize }).map((_, i) => (
-                <div
-                  key={`skeleton-${i}`}
-                  className="h-[180px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
-                />
-              ))
+              <div
+                key={`skeleton-${i}`}
+                className="h-[180px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
+              />
+            ))
             : records.map((record, i) => (
-                <CustomerScaleCard
-                  key={`scale-gad-${i}`}
-                  customer={record}
-                  scaleType="gad-scales"
-                />
-              ))}
+              <CustomerScaleCard
+                key={`scale-gad-${i}`}
+                customer={record}
+                scaleType="gad-scales"
+              />
+            ))}
         </>
       ),
     },
     {
-      title: "Mood",
+      title: t("mood"),
       id: "mood-scales",
       content: (
         <>
           {loading
             ? Array.from({ length: pageSize }).map((_, i) => (
-                <div
-                  key={`skeleton-${i}`}
-                  className="h-[180px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
-                />
-              ))
+              <div
+                key={`skeleton-${i}`}
+                className="h-[180px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
+              />
+            ))
             : records.map((record, i) => (
-                <CustomerScaleCard
-                  key={`scale-mood-${i}`}
-                  customer={record}
-                  scaleType="mood-scales"
-                />
-              ))}
+              <CustomerScaleCard
+                key={`scale-mood-${i}`}
+                customer={record}
+                scaleType="mood-scales"
+              />
+            ))}
         </>
       ),
     },
@@ -130,24 +134,24 @@ export default function CustomerMetricRecord(props: { customerId: string }) {
     //   ),
     // },
     {
-      title: "Depressive Disorders",
+      title: t("depressive"),
       id: "depressive-scales",
       content: (
         <>
           {loading
             ? Array.from({ length: pageSize }).map((_, i) => (
-                <div
-                  key={`skeleton-${i}`}
-                  className="h-[180px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
-                />
-              ))
+              <div
+                key={`skeleton-${i}`}
+                className="h-[180px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
+              />
+            ))
             : records.map((record, i) => (
-                <CustomerScaleCard
-                  scaleType="depressive-scales"
-                  key={`scale-depressive-${i}`}
-                  customer={record}
-                />
-              ))}
+              <CustomerScaleCard
+                scaleType="depressive-scales"
+                key={`scale-depressive-${i}`}
+                customer={record}
+              />
+            ))}
         </>
       ),
     },
@@ -189,6 +193,12 @@ export default function CustomerMetricRecord(props: { customerId: string }) {
 }
 
 const CustomerScaleCard = (props: { customer: any; scaleType: MetricType }) => {
+  const { t } = useTranslation();
+  const getRiskLabel = (score: number) => {
+    if (score <= 30) return t("highRisk");
+    if (score <= 60) return t("moderateRisk");
+    return t("noRisk");
+  };
   return (
     <Card className="h-full">
       <CardContent>
@@ -207,11 +217,7 @@ const CustomerScaleCard = (props: { customer: any; scaleType: MetricType }) => {
                 </p>
               ) : (
                 <p className="text-base font-semibold">
-                  {props.customer.score <= 30
-                    ? "High Risk"
-                    : props.customer.score <= 60
-                    ? "Moderate Risk"
-                    : "No Risk"}
+                  <p className="text-base font-semibold">{getRiskLabel(props.customer.score)}</p>
                 </p>
               )}
               {props.customer.createdAt && (

@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
@@ -8,6 +9,7 @@ import { fetchSpecContentRecords } from "../utils/specialist.util";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toTitleCase } from "@/features/home/utils/string.utils";
+import { useTranslation } from "react-i18next";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
 
 /**
@@ -15,30 +17,25 @@ import UnifiedPagination from "@/features/home/components/UnifiedPagination";
  */
 export default function Content(props: { doctorId: string }) {
   const { doctorId } = props;
+  const { t } = useTranslation();
 
-  // 1) Pagination from URL
   const searchParams = useSearchParams();
   const pageParam = searchParams.get("page");
   const pageSizeParam = searchParams.get("pageSize");
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
   const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 10;
 
-  // 2) State for fetched data
   const [contentList, setContentList] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
 
-  // 3) Fetch data on mount or page/pageSize change
   useEffect(() => {
     let isMounted = true;
 
     setLoading(true);
     fetchSpecContentRecords(doctorId, currentPage, pageSize)
       .then((res) => {
-        // If component unmounted in the meantime, skip
         if (!isMounted) return;
-
-        // Set the data array & total for pagination
         setContentList(Array.isArray(res.data) ? res.data : []);
         setTotal(res.page?.total || 0);
       })
@@ -54,46 +51,39 @@ export default function Content(props: { doctorId: string }) {
     };
   }, [doctorId, currentPage, pageSize]);
 
-  // 4) Loading/Empty states
   if (loading) {
     return (
       <div className="flex flex-row w-full h-full min-h-[80svh] justify-center items-center">
         <Loader2 className="animate-spin mx-2" />
-        <span>Loading...</span>
+        <span>{t("content.loading")}</span>
       </div>
     );
   }
 
   if (!contentList || contentList.length === 0) {
-    return <div className="p-4">No content found.</div>;
+    return <div className="p-4">{t("content.noContent")}</div>;
   }
 
-  console.log("setContentList", contentList);
-  // 5) Render the content
   return (
     <div className="p-6 flex flex-col gap-4">
       {contentList.map((item, index) => {
-        // Safely handle missing fields
         const approvalStatus = item?.status ?? "N/A";
         const contentType = item?.type ?? "unknown";
-        const contentTitle = item?.title ?? "No title";
+        const contentTitle = item?.title ?? t("content.noTitle");
         const note = item?.note ?? "";
         const resources = Array.isArray(item?.file) ? item.file : [];
-
 
         return (
           <div
             className="w-full h-full border p-6 rounded-2xl flex flex-col gap-2"
             key={(contentTitle || "untitled") + index}
           >
-            {/* Example: We used "contentType" as "type" in your code. 
-                If your server uses "contentType" or "category", adjust accordingly. */}
             <h1 className="text-2xl font-semibold">
               {toTitleCase(contentType)}
             </h1>
 
             <div className="text-sm pb-3">
-              Approval:{" "}
+              {t("content.approval")}{" "}
               <Badge className="capitalize">
                 {toTitleCase(approvalStatus)}
               </Badge>
@@ -103,10 +93,10 @@ export default function Content(props: { doctorId: string }) {
             <Separator />
 
             <div className="flex flex-col gap-2">
-              <p className="text-sm font-medium">Content Type</p>
+              <p className="text-sm font-medium">{t("content.contentType")}</p>
               <p className="text-lg font-semibold capitalize">{contentType}</p>
 
-              <p className="text-sm font-medium">Preview</p>
+              <p className="text-sm font-medium">{t("content.preview")}</p>
               <div id="content" className="w-full py-6">
                 <ResourceRenderer
                   content={{
@@ -118,7 +108,7 @@ export default function Content(props: { doctorId: string }) {
 
               {note && (
                 <>
-                  <p className="text-sm font-medium">Note</p>
+                  <p className="text-sm font-medium">{t("content.note")}</p>
                   <p className="text-sm">{note}</p>
                 </>
               )}
@@ -132,20 +122,18 @@ export default function Content(props: { doctorId: string }) {
   );
 }
 
-/**
- * Renders resource based on type: text, video, audio, etc.
- */
 function ResourceRenderer({ content }: any) {
+  const { t } = useTranslation();
   const lowerType = content.type?.toLowerCase() || "";
   const resourceArr = Array.isArray(content.resource) ? content.resource : [];
 
   if (resourceArr.length === 0) {
-    return <p className="text-sm text-muted-foreground">No resources found.</p>;
+    return <p className="text-sm text-muted-foreground">{t("content.noResources")}</p>;
   }
 
   switch (lowerType) {
     case "text":
-    case "article": // ✅ added case for Article
+    case "article":
       return (
         <div className="flex flex-col gap-4">
           {resourceArr.map((url: string, idx: number) => {
@@ -154,7 +142,7 @@ function ResourceRenderer({ content }: any) {
                 <img
                   key={idx}
                   src={url}
-                  alt={`Article Image ${idx + 1}`}
+                  alt={t("content.imageAlt", { number: idx + 1 })}
                   className="w-full max-w-md rounded-xl"
                 />
               );
@@ -167,7 +155,7 @@ function ResourceRenderer({ content }: any) {
                   rel="noopener noreferrer"
                   className="text-blue-600 underline"
                 >
-                  View Document {idx + 1}
+                  {t("content.viewDocument", { number: idx + 1 })}
                 </a>
               );
             } else {
@@ -180,23 +168,22 @@ function ResourceRenderer({ content }: any) {
     case "video":
       return (
         <video src={resourceArr[0]} controls className="w-1/2 rounded-xl">
-          Your browser does not support the video tag.
+          {t("content.noVideoSupport")}
         </video>
       );
 
     case "audio":
       return (
         <audio src={resourceArr[0]} controls className="w-full">
-          Your browser does not support the audio element.
+          {t("content.noAudioSupport")}
         </audio>
       );
 
     default:
       return (
         <p className="text-sm text-muted-foreground">
-          Unsupported content type: {content.type}
+          {t("content.unsupportedType", { type: content.type })}
         </p>
       );
   }
 }
-

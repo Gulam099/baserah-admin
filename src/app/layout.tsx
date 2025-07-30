@@ -5,6 +5,10 @@ import { Toaster } from "@/components/ui/sonner";
 import { ClerkLoaded, ClerkLoading, ClerkProvider } from "@clerk/nextjs";
 import PageLoading from "@/components/page-loading";
 import { TanstackProvider } from "@/components/providers/tanstack-provider";
+import { I18nClientProvider } from "@/components/i18n-client-provider";
+import LanguageDirProvider from "@/components/LanguageDirProvider";
+
+
 
 const notoKufiArabic = Noto_Kufi_Arabic({
   variable: "--font-geist-mono",
@@ -22,6 +26,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
@@ -33,7 +38,11 @@ export default function RootLayout({
             <PageLoading />
           </ClerkLoading>
           <ClerkLoaded>
-            <TanstackProvider>{children}</TanstackProvider>
+            <I18nClientProvider>
+              <TanstackProvider>
+                <LanguageDirProvider>{children}</LanguageDirProvider>
+              </TanstackProvider>
+            </I18nClientProvider>
           </ClerkLoaded>
           <Toaster position={"top-right"} />
         </body>

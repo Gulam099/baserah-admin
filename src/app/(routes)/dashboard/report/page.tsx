@@ -6,6 +6,8 @@ import MapComp from "@/features/report/components/MapComp";
 import { SliderPerson } from "@/features/report/components/SliderPerson";
 import { fetchPatientReturnStats } from "@/features/report/util/report.util";
 import { ApiBaseUrl } from "../../../../../const";
+import { useTranslation } from "react-i18next";
+
 
 
 
@@ -23,6 +25,8 @@ export default function page() {
   const [appointmentChartData, setAppointmentChartData] = useState<
     { title: string; number: number; fill: string }[]
   >([]);
+  const { t } = useTranslation();
+
 
   const [userChartData, setUserChartData] = useState();
   type DoctorSession = {
@@ -254,7 +258,7 @@ export default function page() {
 
   return (
     <div className="flex flex-col gap-4 ">
-      <h2 className="text-lg font-semibold text-neutral-800">Appointments</h2>
+      <h2 className="text-lg font-semibold text-neutral-800">	{t("report.appointmentsTitle")}</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
         {appointmentStats.map((item, index) => (
           <DataPieChartCard
@@ -283,7 +287,7 @@ export default function page() {
             },
           }}
           chartData={userChartData}
-          title={"Customer Return Rate"}
+          title={t("report.customerReturnRate")}
           dataTypeTile="Total"
           className="basis-1/5"
         />
@@ -305,7 +309,7 @@ export default function page() {
             },
           }}
           chartData={appointmentTypeData}
-          title={"Appointments Type"}
+          title={t("report.appointmentType")}
           dataTypeTile="Total"
           className="basis-1/5"
         />
@@ -314,7 +318,7 @@ export default function page() {
           chartType="bar"
           chartConfig={appointmentChartConfig}
           chartData={appointmentChartData}
-          title="General Appointments Status"
+          title={t("report.appointmentStatus")}
           className="basis-2/5"
         />
 
@@ -332,8 +336,8 @@ export default function page() {
       </div> */}
       <div>
         <SliderPerson
-          title="Doctor Sessions"
-          desc="Scheduled and Instant sessions per doctor"
+          title={t("report.doctorSessions")}
+          desc={t("report.doctorSessionsDesc")}
           data={(doctorSessionData ?? []).map(doc => ({
             name: doc.doctor?.full_name || "Unknown",
             session: doc.total,

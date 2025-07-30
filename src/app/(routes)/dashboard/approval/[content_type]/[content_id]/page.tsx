@@ -10,6 +10,7 @@ import { Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ApiBaseUrlLocal } from "../../../../../../../const";
+import { useTranslation } from "react-i18next";
 
 
 export default function ApprovalContentPage({
@@ -17,6 +18,7 @@ export default function ApprovalContentPage({
 }: {
   params: { content_type: string; content_id: string };
 }) {
+  const { t } = useTranslation();
   const { content_id } = params;
   const { user } = useUser();
   const content_type = decodeURIComponent(params.content_type);
@@ -45,14 +47,12 @@ export default function ApprovalContentPage({
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || "Update failed");
-      }
-      // Redirect after success
+      if (!response.ok) throw new Error(data.message || t("error.updateFailed"));
+
       router.push(`/dashboard/approval`);
-      toast.success(data.message);
+      toast.success(t("toast.updateSuccess"));
     } catch (error: any) {
-      toast.error(error.message || "Failed to update approval status.");
+      toast.error(error.message || t("error.updateFailed"));
     } finally {
       setApprovalLoading(false);
     }
@@ -69,7 +69,7 @@ export default function ApprovalContentPage({
         const json = await response.json();
         setContent(json.data); // <<== important
       } catch (error) {
-        toast.error("Failed to fetch content.");
+        toast.error(t("error.fetchContent"));
       } finally {
         setLoading(false);
       }
@@ -84,14 +84,13 @@ export default function ApprovalContentPage({
   if (loading) {
     return (
       <div className="flex flex-row  w-full h-full min-h-[80svh] justify-center items-center">
-        <Loader2 className="animate-spin mx-2" /> Loading...
+        <Loader2 className="animate-spin mx-2" /> {t("loading")}
       </div>
     );
   }
 
-  if (!content) {
-    return <div>No content found.</div>;
-  }
+  if (!content) return <div>{t("error.noContent")}</div>;
+
 
   const badgeVariant: {
     [key in string]:
@@ -112,28 +111,24 @@ export default function ApprovalContentPage({
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-semibold">
-        {content.type ? toTitleCase(content.type) : "Unknown"}
+        {content.type ? toTitleCase(content.type) : t("unknown")}
       </h1>
       <div className="w-full h-full border p-10 rounded-2xl flex flex-col gap-2">
         <div className="text-sm pb-3">
-          Address :{"  "}
+          {t("status")} :
           <Badge
-            variant={
-              content.status
-                ? badgeVariant[content.status]
-                : "outline"
-            }
-            className={"capitalize"}
+            variant={badgeVariant[content.status] ?? "outline"}
+            className="capitalize ml-2"
           >
-            {content?.status ?? "Unknown"}
+            {t(`status.${content.status}`)}
           </Badge>
         </div>
         <h2 className="text-xl font-semibold">{content.title}</h2>
         <Separator />
         <div className="flex flex-col gap-2">
-          <p className="text-sm">Content Type</p>
+          <p className="text-sm">{t("contentType")}</p>
           <p className="text-lg font-semibold capitalize">{content.type}</p>
-          <p className="text-sm">Content separator</p>
+          <p className="text-sm">{t("contentSeparator")}</p>
           <div id="content" className="w-full py-6">
             <ResourceRenderer
               content={{
@@ -144,7 +139,7 @@ export default function ApprovalContentPage({
           </div>
           {content.note && (
             <>
-              <p className="text-sm">Note : </p>
+              <p className="text-sm">{t("note")}:</p>
               <p className="text-sm">{content.note}</p>
             </>
           )}
@@ -157,7 +152,7 @@ export default function ApprovalContentPage({
                 onClick={() => handleApprovalUpdate("approved")}
                 disabled={approvalLoading}
               >
-                Content Approved
+                {t("actions.approve")}
               </Button>
             )}
             {!["cancelled"].includes(content.status) && (
@@ -166,7 +161,7 @@ export default function ApprovalContentPage({
                 onClick={() => handleApprovalUpdate("cancelled")}
                 disabled={approvalLoading}
               >
-                Approval Rejection
+                {t("actions.reject")}
               </Button>
             )}
             {/* <Button variant="secondary" onClick={() => handleApprovalUpdate("pending")} disabled={loading}>
@@ -181,6 +176,7 @@ export default function ApprovalContentPage({
 
 function ResourceRenderer({ content }: any) {
   const { type, resource } = content;
+  const { t } = useTranslation();
 
   const typeMap: Record<string, string> = {
     "مقال": "article",
@@ -238,11 +234,10 @@ function ResourceRenderer({ content }: any) {
             />
           </a>
           <p className="text-sm text-muted-foreground">
-            Click the image to watch the video on YouTube.
-          </p>
+            {t("clickToWatch")}          </p>
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">Invalid YouTube link.</p>
+        <p className="text-sm text-muted-foreground">{t("error.invalidYouTube")}</p>
       );
 
     case "audio":
@@ -250,17 +245,17 @@ function ResourceRenderer({ content }: any) {
         <div className="w-full">
           <audio controls className="w-full">
             <source src={resource.mediaUrl} type="audio/mpeg" />
-            Your browser does not support the audio element.
+            {t("audioNotSupported")}
           </audio>
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">No audio available.</p>
+        <p className="text-sm text-muted-foreground">{t("noAudio")}</p>
       );
 
     default:
       return (
         <p className="text-sm text-muted-foreground">
-          Unsupported content type: {type}
+          {t("error.unsupportedType", { type })}
         </p>
       );
   }

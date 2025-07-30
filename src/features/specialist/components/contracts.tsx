@@ -8,6 +8,9 @@ import { updateDoctor } from "../utils/specialist.util";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Outline } from "react-pdf";
+import { useTranslation } from "react-i18next";
+
+
 
 interface ContractItem {
   _id: string;
@@ -32,7 +35,7 @@ export default function Contracts({
   initialApprovalStatus: string;
 }) {
   const [approvalStatus, setApprovalStatus] = useState(initialApprovalStatus);
-
+  const { t } = useTranslation();
   const [contracts, setContracts] = useState<ContractItem[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +51,7 @@ export default function Contracts({
         if (isMounted) setContracts(data.contracts);
       } catch (err) {
         console.error("Fetch error:", err);
-        if (isMounted) setError("Failed to load contracts.");
+        if (isMounted) setError(t("contracts.error"));
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -64,11 +67,11 @@ export default function Contracts({
     onSuccess: (_data, variables) => {
       setApprovalStatus(variables.status); // <- update local state
       queryClient.invalidateQueries({ queryKey: ["specialists"] });
-      toast.success("✅ Approval status updated");
+      toast.success(t("contracts.approvalUpdated"));
     },
     onError: (error) => {
       console.error("❌ Error updating approval status:", error);
-      toast.error("❌ Error updating approval status");
+      toast.error(t("contracts.approvalError"));
     },
   });
 
@@ -87,7 +90,7 @@ export default function Contracts({
     return (
       <div className="p-6 border rounded-2xl flex justify-center items-center min-h-[200px]">
         <Loader2 className="animate-spin mx-2" />
-        <span>Loading contracts...</span>
+        <span>{t("contracts.loading")}</span>
       </div>
     );
   }
@@ -97,7 +100,8 @@ export default function Contracts({
   }
 
   if (!contracts || contracts.length === 0) {
-    return <div className="p-6 border rounded-2xl text-muted-foreground">No contract found.</div>;
+    return <div className="p-6 border rounded-2xl text-muted-foreground">        {t("contracts.noContracts")}
+    </div>;
   }
 
   return (
@@ -109,10 +113,9 @@ export default function Contracts({
           <div key={contract._id} className="space-y-4 border p-4 rounded-xl shadow-sm">
             <div className=" flex justify-between ">
               <div>
-                <p><strong>Status:</strong> {contract.status}</p>
-                <p className="text-sm mt-2 text-gray-500">
-                  <strong>Last Updated:</strong> {formattedDate}
-                </p>
+                <p><strong>{t("contracts.status")}:</strong> {contract.status}</p>
+                <p><strong>{t("contracts.lastUpdated")}:</strong> {formattedDate}</p>
+
               </div>
               {contract.status === "signed" && (
                 <div className="grid  justify-end">
@@ -127,8 +130,7 @@ export default function Contracts({
                       }
                       className="mb-2"
                     >
-                      Initial Approval of the contract
-                    </Button>
+                      {t("contracts.initialApproval")}                    </Button>
                   )}
                   {approvalStatus !== "final_approved" && (
                     <Button
@@ -139,7 +141,7 @@ export default function Contracts({
                         })
                       }
                     >
-                      Final Approval of the contract
+                      {t("contracts.finalApproval")}
                     </Button>
                   )}
                 </div>

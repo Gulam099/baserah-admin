@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { ApiBaseUrlLocal } from '../../../../const';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
+
 
 interface CertificateFile {
   title: string;
@@ -21,6 +23,8 @@ interface CertificateProps {
 }
 
 const Certificate: React.FC<CertificateProps> = ({ doctorId }) => {
+  const { t } = useTranslation();
+
   const [uploadedCertificates, setUploadedCertificates] = useState<CertificateFile[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -35,7 +39,7 @@ const Certificate: React.FC<CertificateProps> = ({ doctorId }) => {
       setUploadedCertificates(certList);
     } catch (err) {
       console.error('Error fetching certificates:', err);
-      toast.error('Failed to load certificates.');
+      toast.error(t('certificates.loadError'));
     } finally {
       setLoading(false);
     }
@@ -50,11 +54,11 @@ const Certificate: React.FC<CertificateProps> = ({ doctorId }) => {
   return (
     <div className="w-full p-4">
       {loading ? (
-        <p className="text-center text-gray-500">Loading...</p>
+        <p className="text-center text-gray-500">{t('certificates.loading')}</p>
       ) : uploadedCertificates.length > 0 ? (
         uploadedCertificates.map((cert, index) => (
           <div key={index} className="mb-6">
-            <p className="font-semibold text-center mb-2">Title: {cert.title}</p>
+            {t('certificates.title')}: {cert.title}
             <img
               src={cert.s3url}
               alt={cert.title}
@@ -63,7 +67,7 @@ const Certificate: React.FC<CertificateProps> = ({ doctorId }) => {
           </div>
         ))
       ) : (
-        <p className="text-gray-500 text-center">No certificates uploaded yet.</p>
+        <p className="text-gray-500 text-center">{t('certificates.empty')}</p>
       )}
     </div>
   );

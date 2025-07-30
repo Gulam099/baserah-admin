@@ -9,10 +9,13 @@ import { ApiBaseUrl } from "../../../../const";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
 import AddNewTeamDialog from "./AddNewTeamDialog";
 import { EmployeeItemType, TeamItemType } from "../types/permission.type";
+import { useTranslation } from "react-i18next";
+
+
 
 export default function PermissionPage() {
   const searchParams = useSearchParams();
-
+  const { t } = useTranslation();
   const [teams, setTeams] = useState<TeamItemType[]>([]);
   const [employees, setEmployees] = useState<EmployeeItemType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,7 +50,7 @@ export default function PermissionPage() {
       } catch (err: any) {
         console.error("Failed to fetch teams:", err);
         if (isMounted) {
-          setError("Error fetching teams.");
+          setError(t("permissions.errorFetchingTeams"));
         }
       } finally {
         if (isMounted) {
@@ -114,18 +117,20 @@ export default function PermissionPage() {
                 value="team"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
               >
-                Teams
+                {t("permissions.teams")}
               </TabsTrigger>
               <TabsTrigger
                 value="employee"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
               >
-                Employees
+                {t("permissions.employees")}
+
               </TabsTrigger>
             </TabsList>
             <div className="flex flex-row gap-2">
               <AddNewTeamDialog employees={employees} teams={teams} />
               <AddNewEmployeeDialog teams={teams} />
+
             </div>
           </div>
 

@@ -16,10 +16,12 @@ import { ApprovalContentItemType } from "@/features/approval/approval.type";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ApiBaseUrlLocal } from "../../../../const";
+import { useTranslation } from "react-i18next";
 
 export default function ApprovalContentsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const pageParam = searchParams.get("page");
   const pageSizeParam = searchParams.get("pageSize");
@@ -101,16 +103,16 @@ export default function ApprovalContentsPage() {
   return (
     <div className="container mx-auto px-2">
       <div className="flex justify-between items-center my-4">
-        <h1 className="text-xl font-semibold">Cultural Content Approvals</h1>
+        <h1 className="text-xl font-semibold">{t("cultural_content_approvals")}</h1>
         <select
           value={statusFilter}
           onChange={handleStatusChange}
           className="border px-3 py-1 rounded-md shadow-sm"
         >
-          <option value="all">All</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="cancelled">Cancelled</option>
+          <option value="all">{t("all")}</option>
+          <option value="pending">{t("pending")}</option>
+          <option value="approved">{t("approved")}</option>
+          <option value="cancelled">{t("cancelled")}</option>
         </select>
       </div>
 
@@ -118,12 +120,12 @@ export default function ApprovalContentsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Content Type</TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead>Specialist</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead>{t("content_type")}</TableHead>
+              <TableHead>{t("title")}</TableHead>
+              <TableHead>{t("specialist")}</TableHead>
+              <TableHead>{t("created_at")}</TableHead>
+              <TableHead>{t("status")}</TableHead>
+              <TableHead>{t("actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -144,11 +146,11 @@ export default function ApprovalContentsPage() {
                 return (
                   <TableRow key={content._id}>
                     <TableCell className="capitalize font-medium">
-                      {content.type || "Unknown"}
+                      {content.type || t("unknown")}
                     </TableCell>
-                    <TableCell>{content.title || "Untitled"}</TableCell>
+                    <TableCell>{content.title || t("untitled")}</TableCell>
                     <TableCell>
-                      {content?.doctorId?.full_name || "Unknown"}
+                      {content?.doctorId?.full_name || t("unknown")}
                     </TableCell>
                     <TableCell>
                       {content.createdAt
@@ -156,7 +158,7 @@ export default function ApprovalContentsPage() {
                           parseISO(content?.createdAt),
                           "dd MMM yyyy HH:mm"
                         )
-                        : "Unknown"}
+                        : t("unknown")}
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -172,7 +174,7 @@ export default function ApprovalContentsPage() {
                     </TableCell>
                     <TableCell>
                       <Link href={url} className="text-blue-500 underline">
-                        Edit
+                        {t("edit")}
                       </Link>
                     </TableCell>
                   </TableRow>

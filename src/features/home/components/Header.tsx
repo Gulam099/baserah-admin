@@ -17,7 +17,7 @@ export default function Header() {
       <div className="flex px-6  items-center gap-6">
         <NavUser />
         {/* <NotificationButton/> */}
-        {/* <LanguageButton /> */}
+        <LanguageButton />
       </div>
     </header>
   );

@@ -6,6 +6,8 @@ import { CreditCard, Clock, CheckCircle, XCircle, User, Stethoscope } from "luci
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
+
 
 type Payment = {
   _id: string;
@@ -38,7 +40,7 @@ const PaymentList: React.FC<Props> = ({
   onSearchChange,
 }) => {
 
-  console.log("payment >>>", payments);
+  const { t } = useTranslation();
   // Calculate summary stats
   const totalPayments = total;
   const completedPayments = payments.filter(p => p.status === 'paid').length;
@@ -56,12 +58,12 @@ const PaymentList: React.FC<Props> = ({
                 go to dashboard
               </Button>
             </Link> */}
-            <h1 className="text-2xl  text-black font-bold ">Financial details</h1>
+            <h1 className="text-2xl text-black font-bold">{t("payments.title")}</h1>
           </div>
         </div>
         <input
           type="text"
-          placeholder="Search payments..."
+          placeholder={t("payments.searchPlaceholder")}
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           className="border border-gray-300 rounded-md px-4 py-2 text-sm w-full md:w-72 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -107,35 +109,29 @@ const PaymentList: React.FC<Props> = ({
 
       {/* Payment History Section */}
       <Card className="border rounded-xl overflow-hidden shadow-sm">
-        {/* <CardHeader className="bg-gray-50 px-6 py-4 border-b">
 
-          <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <CreditCard className="w-5 h-5" />
-            Payment History
-          </h2>
-        </CardHeader> */}
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Patient
+                    {t("payments.patient")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Doctor
+                    {t("payments.doctor")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Description
+                    {t("payments.description")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Amount
+                    {t("payments.amount")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    {t("payments.status")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
+                    {t("payments.date")}
                   </th>
                 </tr>
               </thead>
@@ -143,13 +139,13 @@ const PaymentList: React.FC<Props> = ({
                 {payments.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                      No payments found
+                      {t("payments.noPayments")}
                     </td>
                   </tr>
                 ) : (
                   payments.map((payment) => (
                     <tr key={payment._id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 max-w-[150px] whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <User className="w-4 h-4 text-gray-400" />
                           <span>{payment.userId?.name || "N/A"}</span>

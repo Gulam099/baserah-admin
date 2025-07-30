@@ -36,72 +36,72 @@ import Link from "next/link";
 import Logo from "./custom/logo";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { EmptyWallet, People, Profile2User, Setting2 } from "iconsax-react";
-import { useUser } from "@clerk/nextjs";
-
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: [
-
-
-    {
-      title: "Appointments",
-      url: "/dashboard/appointment",
-      icon: Briefcase,
-    },
-    {
-      title: "Approval",
-      url: "/dashboard/approval",
-      icon: Gauge,
-    },
-    {
-      title: "Reports",
-      url: "/dashboard/report",
-      icon: Folder,
-    },
-    {
-      title: "Specialization",
-      url: "/dashboard/specialization",
-      icon: BookOpen,
-    },
-    {
-      title: "Group",
-      url: "/dashboard/group",
-      icon: People,
-    },
-    {
-      title: "Contracts and Specialists",
-      url: "/dashboard/specialist",
-      icon: Bookmark,
-    },
-    {
-      title: "Customers",
-      url: "/dashboard/customer",
-      icon: Profile2User,
-    },
-    {
-      title: "Information Bank",
-      url: "/dashboard/question",
-      icon: Setting2,
-    },
-    {
-      title: "Financial",
-      url: "/dashboard/payments",
-      icon: EmptyWallet,
-    },
-    {
-      title: "Permissions",
-      url: "/dashboard/permission",
-      icon: Monitor,
-    },
-  ],
-};
+import { useUser } from "@clerk/nextjs"; import { useTranslation } from "react-i18next";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUser();
+  const { t } = useTranslation();
+
+
+
+  const data = {
+    user: {
+      name: "shadcn",
+      email: "m@example.com",
+      avatar: "/avatars/shadcn.jpg",
+    },
+    navMain: [
+
+
+      {
+        title: t("sidebar.appointments"),
+        url: "/dashboard/appointment",
+        icon: Briefcase,
+      },
+      {
+        title: t("sidebar.approval"),
+        url: "/dashboard/approval",
+        icon: Gauge,
+      },
+      {
+        title: t("sidebar.reports"),
+        url: "/dashboard/report",
+        icon: Folder,
+      },
+      {
+        title: t("sidebar.specialization"),
+        url: "/dashboard/specialization",
+        icon: BookOpen,
+      },
+      {
+        title: t("sidebar.contractsSpecialists"),
+        url: "/dashboard/specialist",
+        icon: Bookmark,
+      },
+      {
+        title: t("sidebar.customers"),
+        url: "/dashboard/customer",
+        icon: Profile2User,
+      },
+      {
+        title: t("sidebar.infoBank"),
+        url: "/dashboard/question",
+        icon: Setting2,
+      },
+      {
+        title: t("sidebar.financial"),
+        url: "/dashboard/payments",
+        icon: EmptyWallet,
+      },
+      {
+        title: t("sidebar.permissions"),
+        url: "/dashboard/permission",
+        icon: Monitor,
+      },
+    ],
+  };
+
+
   const userId = user?.publicMetadata?.dbUserId as string;
   if (!user) {
     return null;

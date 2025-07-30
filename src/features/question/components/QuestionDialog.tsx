@@ -33,6 +33,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ApiBaseUrl } from "../../../../const";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+
 
 const formSchema = z.object({
   question_title: z
@@ -45,9 +47,12 @@ const formSchema = z.object({
 interface InformationFormDialogProps {
   onSuccess?: () => void;
 }
-const InformationFormDialog = ({ onSuccess}:InformationFormDialogProps) => {
+
+const InformationFormDialog = ({ onSuccess }: InformationFormDialogProps) => {
   const router = useRouter();
- const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
+
+  const [open, setOpen] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -73,27 +78,27 @@ const InformationFormDialog = ({ onSuccess}:InformationFormDialogProps) => {
         toast.success("Question created successfully!");
         router.refresh();
         setOpen(false);
-         if (onSuccess) {
+        if (onSuccess) {
           onSuccess();
-        } 
+        }
       } else {
-        toast.error(result.error || "Failed to create question.");
+        toast.error(result.error || t("formm.error"));
       }
     } catch (error) {
       console.error("Form submission error", error);
-      toast.error("Something went wrong. Please try again.");
+      toast.error(t("formm.error"));
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Enter Information</Button>
+        <Button>{t("formm.enterInformation")}</Button>
       </DialogTrigger>
       <DialogContent className="max-w-5xl">
         <DialogHeader>
-          <DialogTitle>Enter A Question In The Information Bank</DialogTitle>
-          <DialogDescription>* fields are required</DialogDescription>
+          <DialogTitle>{t("formm.title")}</DialogTitle>
+          <DialogDescription>{t("formm.required")}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -107,12 +112,9 @@ const InformationFormDialog = ({ onSuccess}:InformationFormDialogProps) => {
                   name="question_title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Question Title</FormLabel>
+                      <FormLabel>{t("formm.questionTitle")}</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="Type your question here"
-                          {...field}
-                        />
+                        <Input placeholder={t("formm.questionPlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -126,24 +128,26 @@ const InformationFormDialog = ({ onSuccess}:InformationFormDialogProps) => {
                   name="question_type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Question Type</FormLabel>
+                      <FormLabel>{t("formm.questionType")}</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Type of the question" />
+                            <SelectValue placeholder={t("formm.typePlaceholder")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="anxiety_program">
-                            Anxiety Program
+                            {t("formm.anxietyProgram")}
                           </SelectItem>
                           <SelectItem value="depression_program">
-                            Depression Program
+                            {t("formm.depressionProgram")}
                           </SelectItem>
-                          <SelectItem value="general">General</SelectItem>
+                          <SelectItem value="general">
+                            {t("formm.general")}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -158,10 +162,10 @@ const InformationFormDialog = ({ onSuccess}:InformationFormDialogProps) => {
               name="answer"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Enter the Answer</FormLabel>
+                  <FormLabel>{t("formm.answerLabel")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter the text of the answer to the question"
+                      placeholder={t("formm.answerPlaceholder")}
                       className="resize-none"
                       {...field}
                     />
@@ -171,7 +175,7 @@ const InformationFormDialog = ({ onSuccess}:InformationFormDialogProps) => {
               )}
             />
             <Button type="submit" className="justify-self-end self-end">
-              Add Content
+              {t("formm.submit")}
             </Button>
           </form>
         </Form>

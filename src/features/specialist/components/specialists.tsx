@@ -8,8 +8,10 @@ import { fetchSpecialist } from "@/features/specialist/utils/specialist.util";
 import ExportButton from "@/features/home/components/ExportButton";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query"; // ✅ Import TanStack Query
+import { useTranslation } from "react-i18next";
 
 export default function SpecialistsPage() {
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -48,7 +50,6 @@ export default function SpecialistsPage() {
   });
 
 
-  console.log("doctor", specialists);
 
   return (
     <div className="container mx-auto py-8">
@@ -56,7 +57,7 @@ export default function SpecialistsPage() {
         <div className="relative flex gap-3  w-full max-w-md">
           <input
             type="text"
-            placeholder="Search specialists by name or ID"
+            placeholder={t("search_specialist_placeholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full border border-gray-300 rounded-md px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -78,16 +79,25 @@ export default function SpecialistsPage() {
             }
             className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">All</option>
-            <option value="accepted">Accepte</option>
-            <option value="contract_send">Contract Send</option>
-            <option value="auth_contract">Auth Contract</option>
-            <option value="initial_approved">Initial Approved</option>
-            <option value="final_approved">Final Approved</option>
-
+            <option value="">{t("all")}</option>
+            <option value="accepted">{t("accepted")}</option>
+            <option value="contract_send">{t("contract_send")}</option>
+            <option value="auth_contract">{t("auth_contract")}</option>
+            <option value="initial_approved">{t("initial_approved")}</option>
+            <option value="final_approved">{t("final_approved")}</option>
           </select>
         </div>
-        <ExportButton contentRef={contentRef} />
+        <ExportButton
+          contentRef={contentRef}
+          excelData={filteredSpecialists.map((s) => ({
+
+            ID: s._id,
+            Name: s.firstName + " " + (s.lastName ?? ""),
+            Phone: s.phoneNumbers?.[0]?.phoneNumber ?? "N/A",
+            Specialization: s.unsafeMetadata?.specialization ?? "N/A",
+            Status: s?.unsafeMetadata?.approval_status ?? "N/A",
+          }))}
+        />
       </div>
       <div className="min-h-[70vh]">
         <div
@@ -110,7 +120,7 @@ export default function SpecialistsPage() {
         </div>
 
         {error && (
-          <p className="text-red-500 mt-4">Failed to load specialists.</p>
+          <p className="text-red-500 mt-4">{t("error_loading_specialists")}</p>
         )}
       </div>
 

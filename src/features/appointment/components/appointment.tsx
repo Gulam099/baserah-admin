@@ -48,8 +48,10 @@ import { toTitleCase } from "@/features/home/utils/string.utils";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import ChangeSessionDialog from "./ChangeSessionDialog";
+import { useTranslation } from "react-i18next";
 
 export default function AppointmentPage() {
+  const { t } = useTranslation("common");
   const searchParams = useSearchParams();
   const contentRef = useRef<HTMLDivElement>(null);
   const badgeVariant: Record<
@@ -110,15 +112,13 @@ export default function AppointmentPage() {
   });
 
 
-  console.log("appoinments", appointments);
-
   return (
     <div className="container mx-auto ">
       <div className="flex justify-between items-center gap-2 py-4">
         <div className="relative w-full max-w-md">
           <input
             type="text"
-            placeholder="Search by patient name or appointment ID"
+            placeholder={t("search_placeholder")}
             className="w-full border rounded px-4 py-2 pr-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -127,19 +127,19 @@ export default function AppointmentPage() {
             <button
               onClick={() => setSearchTerm("")}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-red-400 hover:text-red-600"
-              aria-label="Clear search"
+              aria-label={t("clear_search")}
             >
-              &#x2715; {/* Unicode ✕ */}
+              &#x2715;
             </button>
           )}
         </div>
-        <ExportButton contentRef={contentRef} />
+        <ExportButton contentRef={contentRef} label={t("export")} excelData={filteredAppointments} />
       </div>
+
       <Alert className="mb-6 border-yellow-500 bg-yellow-50">
         <AlertTriangle className="h-4 w-4 text-yellow-600" />
         <AlertDescription className="text-yellow-600">
-          The presence of this symbol means that there is a psychological
-          emergency in the case, for example the presence of suicidal thoughts
+          {t("emergency_notice")}
         </AlertDescription>
       </Alert>
 
@@ -147,13 +147,13 @@ export default function AppointmentPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Appointment Number</TableHead>
-              <TableHead>Patient</TableHead>
+              <TableHead>{t("appointment_number")}</TableHead>
+              <TableHead>{t("patient")}</TableHead>
+              <TableHead>{t("booking_date")}</TableHead>
+              <TableHead>{t("program")}</TableHead>
               {/* <TableHead>Doctor</TableHead> */}
-              <TableHead>Booking Date</TableHead>
-              <TableHead>Program</TableHead>
-              <TableHead>Time Slot</TableHead>
-              <TableHead>Date</TableHead>
+              <TableHead>{t("time_slot")}</TableHead>
+              <TableHead>{t("date")}</TableHead>
               {/* <TableHead>Status</TableHead> */}
               {/* <TableHead className="text-right print:hidden">Actions</TableHead> */}
             </TableRow>

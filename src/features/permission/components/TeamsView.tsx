@@ -12,9 +12,13 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { useTranslation } from "react-i18next";
+
 
 export default function TeamsView(props: { teams: TeamItemType[] }) {
   const { teams } = props;
+  const { t } = useTranslation();
+
 
   return (
     <div className="p-4 space-y-4">
@@ -24,10 +28,10 @@ export default function TeamsView(props: { teams: TeamItemType[] }) {
             <div className="p-4 border border-gray-200 rounded-lg">
               <h2 className="text-lg font-semibold">{team.name}</h2>
               <p className="text-sm text-muted-foreground">
-                Created At: {team.created_at ?? "N/A"}
+                {t("teams.createdAt")}: {team.created_at ? new Date(team.created_at).toISOString().split('T')[0] : "N/A"}
               </p>
               <p className="text-sm">
-                Members: {team.members?.map((m) => m.name).join(", ") || "None"}
+                {t("teams.members")}: {team.members?.map((m) => m.name).join(", ") || t("teams.none")}
               </p>
 
             </div>
@@ -35,25 +39,23 @@ export default function TeamsView(props: { teams: TeamItemType[] }) {
           <DrawerContent>
             <div className="mx-auto w-full max-w-sm">
               <DrawerHeader>
-                <DrawerTitle>Move Goal</DrawerTitle>
-                <DrawerDescription>
-                  Set your daily activity goal.
-                </DrawerDescription>
+                <DrawerTitle>{t("teams.drawerTitle")}</DrawerTitle>
+                <DrawerDescription>{t("teams.drawerDescription")}</DrawerDescription>
               </DrawerHeader>
               <div className="p-4 border border-gray-200 rounded-lg">
                 <h2 className="text-lg font-semibold">{team.name}</h2>
                 <p className="text-sm text-muted-foreground">
-                  Created At: {team.created_at ?? "N/A"}
+                  {t("teams.createdAt")}: {team.created_at ? new Date(team.created_at).toISOString().split('T')[0] : "N/A"}
                 </p>
                 <p className="text-sm">
-                  Members: {team.members?.map((m) => m.name).join(", ") || "None"}
+                  {t("teams.members")}: {team.members?.map((m) => m.name).join(", ") || t("teams.none")}
                 </p>
 
               </div>
               <DrawerFooter>
-                <Button>Submit</Button>
+                <Button>{t("teams.submit")}</Button>
                 <DrawerClose asChild>
-                  <Button variant="outline">Cancel</Button>
+                  <Button variant="outline">{t("teams.cancel")}</Button>
                 </DrawerClose>
               </DrawerFooter>
             </div>

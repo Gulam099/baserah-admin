@@ -19,6 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslation } from "react-i18next";
+
 
 interface UnifiedPaginationProps {
   total: number;
@@ -27,6 +29,8 @@ interface UnifiedPaginationProps {
 export default function UnifiedPagination({ total }: UnifiedPaginationProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
+
   let propTotalPages = 0;
 
   // 1) On mount, if the URL is missing page or pageSize, set them
@@ -121,7 +125,7 @@ export default function UnifiedPagination({ total }: UnifiedPaginationProps) {
     <div className="mt-8 flex flex-col md:flex-row justify-between items-center gap-4 print:hidden">
       {/* Display "Page X of Y" */}
       <div className="flex gap-2 text-sm font-medium text-neutral-700">
-        <p>Page </p> <p>{currentPage + "/" + totalPages}</p>
+        <p>{t("pagination.page")} </p> <p>{currentPage + "/" + totalPages}</p>
       </div>
 
       {/* Pagination UI */}
