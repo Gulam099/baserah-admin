@@ -228,7 +228,7 @@ function ResourceRenderer({ content }: any) {
             className="hover:opacity-80 transition"
           >
             <img
-              src={thumbnail}
+              src={thumbnail ?? undefined}
               alt="YouTube Video Thumbnail"
               className="w-full max-w-xl rounded-xl"
             />
