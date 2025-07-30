@@ -58,47 +58,52 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
 
       {
-        title: t("sidebar.appointments"),
+        title: "Appointments",
         url: "/dashboard/appointment",
         icon: Briefcase,
       },
       {
-        title: t("sidebar.approval"),
+        title: "Approval",
         url: "/dashboard/approval",
         icon: Gauge,
       },
       {
-        title: t("sidebar.reports"),
+        title: "Reports",
         url: "/dashboard/report",
         icon: Folder,
       },
       {
-        title: t("sidebar.specialization"),
+        title: "Specialization",
         url: "/dashboard/specialization",
         icon: BookOpen,
       },
       {
-        title: t("sidebar.contractsSpecialists"),
+        title: "Group",
+        url: "/dashboard/group",
+        icon: People,
+      },
+      {
+        title: "Contracts and Specialists",
         url: "/dashboard/specialist",
         icon: Bookmark,
       },
       {
-        title: t("sidebar.customers"),
+        title: "Customers",
         url: "/dashboard/customer",
         icon: Profile2User,
       },
       {
-        title: t("sidebar.infoBank"),
+        title: "Information Bank",
         url: "/dashboard/question",
         icon: Setting2,
       },
       {
-        title: t("sidebar.financial"),
+        title: "Financial",
         url: "/dashboard/payments",
         icon: EmptyWallet,
       },
       {
-        title: t("sidebar.permissions"),
+        title: "Permissions",
         url: "/dashboard/permission",
         icon: Monitor,
       },
