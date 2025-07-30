@@ -1,46 +1,41 @@
 /** @type {import('next').NextConfig} */
-
 const nextConfig = {
   i18n: {
-    locales: ["en", "ar"],
-    defaultLocale: "en",
     localeDetection: false,
+    locales: ["ar", "en"],
+    defaultLocale: "en",
+  },
+  typescript: {
+    // ✅ Ignore TypeScript build errors
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    // ✅ Ignore ESLint errors during builds
+    ignoreDuringBuilds: true,
+  },
+  webpack(config, { nextRuntime }) {
+    // Prevent canvas module from being resolved in Node.js runtime
+    if (nextRuntime === "nodejs") {
+      config.resolve.alias.canvas = false;
+    }
+
+    // Load PDF.js worker files using file-loader
+    config.module.rules.unshift({
+      test: /pdf\.worker\.(min\.)?js/,
+      use: [
+        {
+          loader: "file-loader",
+          options: {
+            name: "[contenthash].[ext]",
+            publicPath: "_next/static/worker",
+            outputPath: "static/worker",
+          },
+        },
+      ],
+    });
+
+    return config;
   },
 };
 
 export default nextConfig;
-
-export const i18n = {
-  localeDetection: false, // 👈
-  locales: ["ar", "en"], // 👈
-  defaultLocale: "en", // 👈
-};
-export const typescript = {
-  // ✅ Ignore TypeScript build errors
-  ignoreBuildErrors: true,
-};
-export const eslint = {
-  // ✅ Ignore ESLint errors during builds
-  ignoreDuringBuilds: true,
-};
-export function webpack(config, { nextRuntime }) {
-  // load worker files as a urls with `file-loader`
-  if (nextRuntime === "nodejs") {
-    config.resolve.alias.canvas = false;
-  }
-  config.module.rules.unshift({
-    test: /pdf\.worker\.(min\.)?js/,
-    use: [
-      {
-        loader: "file-loader",
-        options: {
-          name: "[contenthash].[ext]",
-          publicPath: "_next/static/worker",
-          outputPath: "static/worker",
-        },
-      },
-    ],
-  });
-
-  return config;
-}
