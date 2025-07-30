@@ -15,9 +15,9 @@ export default function Header() {
         {/* <SearchInput /> */}
       </div>
       <div className="flex px-6  items-center gap-6">
+        <LanguageButton />
         <NavUser />
         {/* <NotificationButton/> */}
-        <LanguageButton />
       </div>
     </header>
   );

@@ -111,7 +111,7 @@ export default function PermissionPage() {
     <section>
       <div>
         <Tabs defaultValue="team" className="w-full">
-          <div className="flex justify-between w-full">
+          <div className="flex justify-between w-full rtl:flex-row-reverse">
             <TabsList className="justify-start h-auto p-0 bg-background flex flex-row flex-wrap">
               <TabsTrigger
                 value="team"

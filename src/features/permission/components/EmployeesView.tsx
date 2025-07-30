@@ -3,13 +3,17 @@
 import { EmployeeItemType } from "../types/permission.type";
 import { useTranslation } from "react-i18next";
 
-
 export default function EmployeesView(props: { employees: EmployeeItemType[] }) {
   const { employees } = props;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const isRTL = i18n.dir() === "rtl";
 
   return (
-    <div className="p-4 space-y-4">
+    <div
+      className="p-4 space-y-4"
+      dir={isRTL ? "rtl" : "ltr"}
+    >
       {employees.map((emp) => (
         <div key={emp._id} className="p-4 border border-gray-200 rounded-lg">
           <h2 className="text-lg font-semibold">
