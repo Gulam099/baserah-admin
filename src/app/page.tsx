@@ -1,3 +1,5 @@
+"use client"
+
 import Logo from "@/components/custom/logo";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
