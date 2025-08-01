@@ -1,21 +1,33 @@
+"use client";
+
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import Header from "@/features/home/components/Header";
-import { dir } from "i18next";
-import { getLocale } from "@/lib/get-locale"; // We'll define this helper
+import { useEffect, useState } from "react";
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const locale = await getLocale(); // returns 'en' or 'ar'
-  const direction = dir(locale); // returns 'ltr' or 'rtl'
+  const [isRTL, setIsRTL] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const lang = localStorage.getItem("language") || "en";
+    setIsRTL(lang === "ar");
+    setMounted(true);
+  }, []);
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <SidebarProvider>
-      <div className={`flex w-full gap-2 ${direction === "rtl" ? "flex-row-reverse" : "flex-row"}`}>
-        <AppSidebar />
+      <div className={`flex w-full gap-2}`}>
+        <AppSidebar side={isRTL ? "right" : "left"} />
         <div className="flex flex-col w-full gap-2">
           <Header />
           <SidebarInset>

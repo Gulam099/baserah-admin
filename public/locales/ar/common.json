@@ -372,7 +372,16 @@
     "cancelled": "ملغاة",
     "ongoing": "جارية",
     "customerReturn": "عودة العملاء",
-    "oneTime": "مرة واحدة"
+    "oneTime": "مرة واحدة",
+    "CustomerReturn": "عميل عائد",
+    "OneTime": "عميل لمرة واحدة",
+    "Immediate": "فوري",
+    "visitors": "الزوار",
+    "One-time": "مرة واحدة",
+    "Returning": "عائد",
+    "Scheduled": "مجدولة",
+    "Instant": "فورية",
+    "number": "العدد"
   },
   "home": {
     "dashboard": "لوحة التحكم",
@@ -406,5 +415,12 @@
   "exportExcel": "تصدير Excel",
   "noDataToExport": "لا توجد بيانات للتصدير.",
   "excelDownloadSuccess": "تم تنزيل ملف Excel بنجاح.",
-  "excelDownloadError": "فشل في تنزيل ملف Excel."
+  "excelDownloadError": "فشل في تنزيل ملف Excel.",
+  "One-time": "مرة واحدة",
+  "Returning": "عائد",
+  "Scheduled": "مجدولة",
+  "Instant": "فورية",
+  "January": "يناير",
+  "February": "فبراير",
+  "March": "مارس"
 }

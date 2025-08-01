@@ -34,6 +34,8 @@ import { ExportCurve } from "iconsax-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
+
 
 // Props for the chart card
 interface DataChartCardProps {
@@ -61,11 +63,15 @@ export default function DataPieChartCard({
   link,
 }: DataChartCardProps) {
 
+  console.log("title ", title);
+  console.log("numdata", NumberData);
   // Calculate total from chart data (if needed for the pie label)
   const totalVisitors = React.useMemo(() => {
     if (!chartData?.length) return 0;
     return chartData.reduce((acc, curr) => acc + (curr.number ?? 0), 0);
   }, [chartData]);
+
+  const { t } = useTranslation();
 
   // Function that returns the appropriate chart based on `chartType`
   function renderChart() {
@@ -111,7 +117,7 @@ export default function DataPieChartCard({
                               y={(viewBox.cy || 0) + 24}
                               className="fill-muted-foreground"
                             >
-                              Visitors
+                              {t("report.visitors")}
                             </tspan>
                           </text>
                         );
@@ -292,6 +298,7 @@ export default function DataPieChartCard({
     console.log("Button clicked");
   }
 
+
   return (
     <Card
       className={cn(className, "flex flex-col grow")}
@@ -300,16 +307,16 @@ export default function DataPieChartCard({
       <CardHeader className="items-center pb-0">
         <div className="flex flex-row justify-between items-center w-full">
           <CardTitle className="text-sm font-semibold text-neutral-600">
-            {title}
-            {desc && <p className="text-xs font-medium mt-2">{desc}</p>}
+            {t(title)}
+            {desc && <p>{t(desc)}</p>}
           </CardTitle>
-          <Button
+          {/* <Button
             className="aspect-square z-10  "
             variant="ghost"
             onClick={handleButtonClick}
           >
             <ExportCurve size="32" color="#0a0a0a" />
-          </Button>
+          </Button> */}
         </div>
       </CardHeader>
 

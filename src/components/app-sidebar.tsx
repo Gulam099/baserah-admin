@@ -36,13 +36,16 @@ import Link from "next/link";
 import Logo from "./custom/logo";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { EmptyWallet, People, Profile2User, Setting2 } from "iconsax-react";
-import { useUser } from "@clerk/nextjs"; import { useTranslation } from "react-i18next";
+import { useUser } from "@clerk/nextjs";
+import { useTranslation } from "react-i18next";
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  side?: "left" | "right";
+}
+
+export function AppSidebar({ side, ...props }: AppSidebarProps) {
   const { user } = useUser();
   const { t } = useTranslation();
-
-
 
   const data = {
     user: {
@@ -51,8 +54,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       avatar: "/avatars/shadcn.jpg",
     },
     navMain: [
-
-
       {
         title: t("sidebar.appointments"),
         url: "/dashboard/appointment",
@@ -101,22 +102,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ],
   };
 
-
   const userId = user?.publicMetadata?.dbUserId as string;
   if (!user) {
     return null;
   }
+  console.log("sideeee>>", side);
+
   return (
-
-    <Sidebar variant="inset" {...props} className="bg-blue-100">
-
+    <Sidebar variant="inset" side={side} {...props} className="bg-blue-100">
       <SidebarHeader className="bg-blue-100">
         <div className="flex items-center justify-center bg-transparent">
           <Link href="/">
-            <Logo className="h-32 w-32 object-contain " />
+            <Logo className="h-32 w-32 object-contain" />
           </Link>
         </div>
-        <div className="flex flex-col justify-center items-center gap-3 pb-6 ">
+        <div className="flex flex-col justify-center items-center gap-3 pb-6">
           <Avatar className="size-24 border-2 border-neutral-400">
             <Link href="/">
               <AvatarImage src={user.imageUrl} alt={user.fullName + "_avatar"} />
@@ -127,18 +127,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </Avatar>
           <div className="flex flex-col gap-1 justify-center items-center">
             <h3 className="text-base font-semibold">{user.fullName}</h3>
-            {/* <p className="text-xs font-medium bg-primary-50/30 px-2 py-1 rounded-xl">
-              {userId}
-            </p> */}
           </div>
         </div>
       </SidebarHeader>
       <SidebarContent className="bg-blue-100">
         <NavMain items={data.navMain} />
       </SidebarContent>
-      {/* <SidebarFooter>
-        <NavUser />
-      </SidebarFooter> */}
     </Sidebar>
   );
 }
