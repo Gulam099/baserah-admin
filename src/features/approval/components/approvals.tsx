@@ -169,7 +169,7 @@ export default function ApprovalContentsPage() {
                         }
                         className="capitalize"
                       >
-                        {content.status || "pending"}
+                        {t(content.status)}
                       </Badge>
                     </TableCell>
                     <TableCell>

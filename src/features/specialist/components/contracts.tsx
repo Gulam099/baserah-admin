@@ -45,7 +45,7 @@ export default function Contracts({
     let isMounted = true;
     async function fetchContracts() {
       try {
-        const res = await fetch(`${ApiBaseUrlLocal}/api/doctor/contracts/${specilaistId}`);
+        const res = await fetch(`${ApiBaseUrlLocal}/api/doctor/contracts/${clerkId}`);
         if (!res.ok) throw new Error(`Failed with status: ${res.status}`);
         const data: ContractsResponse = await res.json();
         if (isMounted) setContracts(data.contracts);
