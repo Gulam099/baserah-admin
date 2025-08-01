@@ -87,22 +87,22 @@ export default function page() {
 
   const appointmentChartConfig = {
     number: {
-      label: "number",
+      label: t("report.number"),
     },
     Completed: {
-      label: "Completed",
+      label: t("report.completed"),
       color: colorMap["Completed"],
     },
     Cancelled: {
-      label: "Cancelled",
+      label: t("report.cancelled"),
       color: colorMap["Cancelled"],
     },
     Ongoing: {
-      label: "Ongoing",
+      label: t("report.ongoing"),
       color: colorMap["Ongoing"],
     },
     Pending: {
-      label: "Pending",
+      label: t("report.pending"),
       color: colorMap["Pending"],
     },
   } satisfies ChartConfig;
@@ -112,6 +112,7 @@ export default function page() {
       try {
         const res = await fetch(`${ApiBaseUrl}/api/users/user-return`);
         const data = await res.json();
+        console.log("this is dta", data?.data)
 
         if (data?.data) {
           const mapped = data.data.map((item) => ({
@@ -254,7 +255,7 @@ export default function page() {
       },
     ];
 
-
+  console.log("appointment stats", appointmentStats);
 
   return (
     <div className="flex flex-col gap-4 ">
@@ -265,7 +266,7 @@ export default function page() {
             key={index}
             chartType="number"
             NumberData={item.number}
-            title={item.title}
+            title={t(item.title.replace(' ', ''))}
           />
         ))}
       </div>
@@ -278,13 +279,14 @@ export default function page() {
               label: "number",
             },
             CustomerReturn: {
-              label: "Customer return",
+              label: t("report.CustomerReturn"),
               color: "#000A80",
             },
             OneTime: {
-              label: "One time",
+              label: t("report.OneTime"),
               color: "#D2A8FF",
             },
+
           }}
           chartData={userChartData}
           title={t("report.customerReturnRate")}
@@ -300,12 +302,12 @@ export default function page() {
               label: "number",
             },
             Scheduled: {
-              label: "Scheduled",
-              color: "#D2A8FF", // light purple
+              label: t("report.Scheduled"),
+              color: "#D2A8FF",
             },
             Immediate: {
-              label: "Immediate",
-              color: "#000A80", // dark blue
+              label: t("report.Immediate"),
+              color: "#000A80",
             },
           }}
           chartData={appointmentTypeData}
@@ -344,7 +346,7 @@ export default function page() {
             performance: (doc.total / 100) * 100, // adjust if needed
             image: doc.doctor?.profile_picture || "https://via.placeholder.com/80",
           }))}
-          viewMoreLink={`/dashboard/report/doctor`}
+        // viewMoreLink={`/dashboard/report/doctor`}
         />
       </div>
 

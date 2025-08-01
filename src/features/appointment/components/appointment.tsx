@@ -113,7 +113,7 @@ export default function AppointmentPage() {
 
 
   return (
-    <div className="container mx-auto ">
+    <div className="container mx-auto  rtl:flex-row-reverse">
       <div className="flex justify-between items-center gap-2 py-4">
         <div className="relative w-full max-w-md">
           <input

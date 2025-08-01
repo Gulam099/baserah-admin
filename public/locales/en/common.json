@@ -372,8 +372,19 @@
     "cancelled": "Cancelled",
     "ongoing": "Ongoing",
     "customerReturn": "Customer return",
-    "oneTime": "One time"
+    "oneTime": "One time",
+    "CustomerReturn": "Customer Return",
+    "OneTime": "One Time",
+    "Immediate": "Immediate",
+    "Scheduled": "Scheduled",
+    "visitors": "Visitors",
+    "One-time": "One-time",
+    "Returning": "Returning",
+    "Instant": "Instant",
+    "number": "Number"
   },
+  "completed": "Completed",
+  "ongoing": "Ongoing",
   "home": {
     "dashboard": "Dashboard",
     "terms": "Terms of Service",
@@ -406,5 +417,12 @@
   "exportExcel": "Export Excel",
   "noDataToExport": "No data to export.",
   "excelDownloadSuccess": "Excel downloaded successfully.",
-  "excelDownloadError": "Failed to download Excel."
+  "excelDownloadError": "Failed to download Excel.",
+  "One-time": "One-time",
+  "Returning": "Returning",
+  "Scheduled": "Scheduled",
+  "Instant": "Instant",
+  "January": "January",
+  "February": "February",
+  "March": "March"
 }
