@@ -10,6 +10,8 @@ import UnifiedPagination from "@/features/home/components/UnifiedPagination";
 import AddNewTeamDialog from "./AddNewTeamDialog";
 import { EmployeeItemType, TeamItemType } from "../types/permission.type";
 import { useTranslation } from "react-i18next";
+import AddNewPermissionGroupModal from "./AddPermission";
+import PermissionGroupDisplay from "./AddPermission";
 
 
 
@@ -104,8 +106,6 @@ export default function PermissionPage() {
     };
   }, [currentPage, pageSize]);
 
-  console.log("members", employees);
-  console.log("temas", teams);
 
   return (
     <section>
@@ -128,6 +128,19 @@ export default function PermissionPage() {
               </TabsTrigger>
             </TabsList>
             <div className="flex flex-row gap-2">
+              <PermissionGroupDisplay
+                title="Permissions System Administrator"
+                permissions={[
+                  { label: "Manage the supervisor's group", checked: true },
+                  { label: "Take action on tickets", checked: true },
+                  { label: "Manage comments, publish and edit them", checked: false },
+                  { label: "Workflow and priority matrix management", checked: true },
+                  { label: "-", checked: false },
+                  { label: "Manage users", checked: false },
+                  { label: "Delete tickets", checked: true },
+                  { label: "Export reports", checked: false },
+                ]}
+              />
               <AddNewTeamDialog employees={employees} teams={teams} />
               <AddNewEmployeeDialog teams={teams} />
 
