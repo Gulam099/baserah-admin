@@ -192,22 +192,26 @@ export async function fetchSpecRatingRecords(
   doctorId: string,
   page: number,
   size: number
-): Promise<ApiResponseType> {
+): Promise<ApiResponseType & { averageRating?: string }> {
   try {
-    const res = await axios.get(`${ApiBaseUrl}/api/doctor/rating`, {
-      params: {
-        doctor_id: doctorId,
-        page,
-        pageSize: size,
-      },
-    });
+    const res = await axios.get(
+      `${ApiBaseUrlLocal}/api/ratings/doctor/${doctorId}`,
+      {
+        params: {
+          doctor_id: doctorId,
+          page,
+          pageSize: size,
+        },
+      }
+    );
     const result = res.data;
 
     return {
       success: result.success,
       status: result.status,
       message: result.message,
-      data: result.data, // array of rating objects
+      data: result.data.ratings ?? [], // ensure you're accessing the ratings array
+      averageRating: result.data.averageRating, // include this line
       page: {
         total: result.total,
         page: result.page,
@@ -215,8 +219,6 @@ export async function fetchSpecRatingRecords(
       },
     };
   } catch (error: any) {
-    console.error("Failed to fetch ratings:", error);
-
     return {
       success: false,
       status: error?.response?.status || 500,

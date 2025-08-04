@@ -13,17 +13,18 @@ interface CertificateFile {
 
 interface CertificateApiResponse {
   files: {
-    doctorId: string;
+    doctorNumber: string;
     files: CertificateFile[];
   }[];
 }
 
 interface CertificateProps {
-  doctorId: string;
+  doctorNumber: string;
 }
 
-const Certificate: React.FC<CertificateProps> = ({ doctorId }) => {
+const Certificate: React.FC<CertificateProps> = ({ doctorNumber }) => {
   const { t } = useTranslation();
+
 
   const [uploadedCertificates, setUploadedCertificates] = useState<CertificateFile[]>([]);
   const [loading, setLoading] = useState(false);
@@ -31,7 +32,7 @@ const Certificate: React.FC<CertificateProps> = ({ doctorId }) => {
   const fetchCertificates = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${ApiBaseUrlLocal}/api/doctor/certificate/${doctorId}`);
+      const response = await fetch(`${ApiBaseUrlLocal}/api/doctor/certificate/${doctorNumber}`);
       const data: CertificateApiResponse = await response.json();
 
       // ✅ Get the first entry in "files", then access its "files" array
@@ -46,10 +47,10 @@ const Certificate: React.FC<CertificateProps> = ({ doctorId }) => {
   };
 
   useEffect(() => {
-    if (doctorId) {
+    if (doctorNumber) {
       fetchCertificates();
     }
-  }, [doctorId]);
+  }, [doctorNumber]);
 
   return (
     <div className="w-full p-4">

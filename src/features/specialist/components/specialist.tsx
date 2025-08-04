@@ -125,6 +125,8 @@ export default function SpecialistPage() {
     );
   }
 
+  console.log("special??", specialist);
+
   const info = [
     { label: t("mobile_number"), value: specialist?.phoneNumber },
     { label: t("email"), value: specialist?.email || t("not_available") },
@@ -194,7 +196,7 @@ export default function SpecialistPage() {
     {
       title: t("certificatess"),
       id: "certificates",
-      content: <Certificate doctorId={specialist?._id} />,
+      content: <Certificate doctorNumber={specialist?.phoneNumber} />,
     },
     {
       title: t("contentt"),
@@ -204,7 +206,7 @@ export default function SpecialistPage() {
     {
       title: t("ratings"),
       id: "rating",
-      content: <Rating specilaistId={specialist_Id} />,
+      content: <Rating doctorId={specialist?._id} />,
     },
   ];
 

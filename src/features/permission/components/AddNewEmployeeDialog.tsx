@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
@@ -33,34 +33,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ApiBaseUrl } from "../../../../const";
 import { useTranslation } from "react-i18next";
-
 
 // A team item has at least an _id and a name
 interface TeamItemType {
   _id: string;
   name: string;
-  // Add other fields if needed
 }
 
-// The data needed to create an employee
+// Schema for employee creation form
 const formSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters."),
   email: z.string().email("Invalid email address."),
   role: z.string().min(2, "Role must be at least 2 characters."),
   department: z.string().min(2, "Department must be at least 2 characters."),
   team_id: z.string().nonempty("Please select at least one team."),
+  permissions: z.array(z.string()).min(1, "Select at least one permission"),
 });
 
-// We accept an array of `teams` so the user can pick from them.
+const sidebarItems = [
+  { key: "appointments", title: "Appointments" },
+  { key: "approval", title: "Approval" },
+  { key: "reports", title: "Reports" },
+  { key: "specialization", title: "Specialization" },
+  { key: "contractsSpecialists", title: "Specialists" },
+  { key: "customers", title: "Customers" },
+  { key: "infoBank", title: "Information Bank" },
+  { key: "financial", title: "Financial" },
+  { key: "permissions", title: "Permissions" },
+];
+
 interface AddNewEmployeeDialogProps {
   teams: TeamItemType[];
 }
 
-export default function AddNewEmployeeDialog({
-  teams,
-}: AddNewEmployeeDialogProps) {
+export default function AddNewEmployeeDialog({ teams }: AddNewEmployeeDialogProps) {
+  const { t } = useTranslation();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -69,23 +78,20 @@ export default function AddNewEmployeeDialog({
       role: "",
       department: "",
       team_id: "",
+      permissions: [],
     },
   });
-  const { t } = useTranslation();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      // Make the POST request
       const response = await fetch(`/api/admin/employees`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
 
-
       const data = await response.json();
+      console.log("epmlyee submit ", data);
 
       if (!response.ok || !data.success) {
         toast.error(data?.message || t("employee.createError"));
@@ -101,23 +107,20 @@ export default function AddNewEmployeeDialog({
   }
 
   return (
-    <Dialog >
+    <Dialog>
       <DialogTrigger asChild>
         <Button>{t("employee.addNew")}</Button>
       </DialogTrigger>
 
       <DialogContent className="max-h-screen overflow-y-auto">
-
         <DialogHeader>
           <DialogTitle>{t("employee.dialogTitle")}</DialogTitle>
           <DialogDescription>{t("employee.dialogDescription")}</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-6 py-6"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-6">
+
             {/* Name */}
             <FormField
               control={form.control}
@@ -154,13 +157,9 @@ export default function AddNewEmployeeDialog({
               name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("employee.departmentLabel")}</FormLabel>
+                  <FormLabel>{t("employee.roleLabel")}</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder={t("employee.departmentPlaceholder")}
-                      type="text"
-                      {...field}
-                    />
+                    <Input placeholder={t("employee.rolePlaceholder")} type="text" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -186,7 +185,7 @@ export default function AddNewEmployeeDialog({
               )}
             />
 
-            {/* Teams - Select for team_ids */}
+            {/* Team ID */}
             <FormField
               control={form.control}
               name="team_id"
@@ -215,7 +214,44 @@ export default function AddNewEmployeeDialog({
               )}
             />
 
-            {/* Submit Button */}
+            {/* Permissions checkboxes */}
+            <FormItem>
+              <FormLabel>{t("employee.permissionsLabel")}</FormLabel>
+              <FormControl>
+                <div className="grid grid-cols-2 gap-2">
+                  {sidebarItems.map((item) => (
+                    <Controller
+                      key={item.key}
+                      name="permissions"
+                      control={form.control}
+                      render={({ field }) => {
+                        const isChecked = field.value?.includes(item.key) || false;
+                        return (
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  field.onChange([...field.value, item.key]);
+                                } else {
+                                  field.onChange(
+                                    field.value.filter((v: string) => v !== item.key)
+                                  );
+                                }
+                              }}
+                            />
+                            <label className="text-sm font-normal">{item.title}</label>
+                          </div>
+                        );
+                      }}
+                    />
+                  ))}
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+
             <Button type="submit">{t("employee.createButton")}</Button>
           </form>
         </Form>
