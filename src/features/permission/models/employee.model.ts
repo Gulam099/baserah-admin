@@ -1,16 +1,36 @@
-// models/employee.model.ts
-
 import mongoose from "mongoose";
 
 const employeeSchema = new mongoose.Schema(
   {
-    name: String,
-    email: String,
-    role: String,
-    department: String,
-    clerk_id: String, // Optional
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    role: {
+      type: String,
+      required: true,
+    },
+    department: {
+      type: String,
+      required: true,
+    },
+    clerk_id: {
+      type: String,
+      required: true,
+    },
+    permissions: {
+      type: [String],
+      default: [],
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 export const EmployeeModel =

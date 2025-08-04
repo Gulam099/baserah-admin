@@ -11,10 +11,16 @@ const CLERK_API_URL = "https://api.clerk.com/v1/users";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, email, role, department, team_id } = body;
-    console.log("req0", body);
+    const { name, email, role, department, team_id, permissions } = body;
+    console.log("persmission>>", permissions);
 
-    if (!name || !role || !department || !team_id) {
+    if (
+      !name ||
+      !role ||
+      !department ||
+      !team_id ||
+      !Array.isArray(permissions)
+    ) {
       return NextResponse.json(
         { success: false, message: "Missing fields" },
         { status: 400 }
@@ -23,10 +29,10 @@ export async function POST(req: Request) {
 
     await connect();
 
-    // 1. Create user in Clerk using Admin key (not @clerk/nextjs/server)
     const [firstName, ...lastNameParts] = name.split(" ");
     const lastName = lastNameParts.join(" ");
 
+    // 1. Create Clerk user
     const clerkRes = await fetch(CLERK_API_URL, {
       method: "POST",
       headers: {
@@ -42,13 +48,15 @@ export async function POST(req: Request) {
         unsafe_metadata: {
           role,
           department,
+          permissions,
         },
       }),
     });
 
+    console.log("clerk update", clerkRes);
+
     if (!clerkRes.ok) {
       const errorData = await clerkRes.json();
-      console.error("Clerk error:", errorData);
       return NextResponse.json(
         {
           success: false,
@@ -61,16 +69,21 @@ export async function POST(req: Request) {
 
     const clerkUser = await clerkRes.json();
 
-    // 2. Save to DB
+    // 2. Save employee to MongoDB
     const newEmployee = await EmployeeModel.create({
       name,
       email,
       role,
       department,
       clerk_id: clerkUser.id,
+      permissions,
     });
 
-    // 3. Add employee to team
+    console.log("clerk >>", newEmployee.permissions);
+
+    console.log("newemployee", newEmployee);
+
+    // 3. Add to team
     await TeamModel.findByIdAndUpdate(
       team_id,
       { $addToSet: { members: newEmployee._id } },
