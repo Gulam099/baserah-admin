@@ -88,6 +88,12 @@ const NAV_ITEMS = [
     url: "/dashboard/permission",
     icon: Monitor,
   },
+  {
+    key: "group",
+    titleKey: "sidebar.group",
+    url: "/dashboard/group",
+    icon: Monitor,
+  },
 ];
 
 export function AppSidebar({ side, ...props }: AppSidebarProps) {

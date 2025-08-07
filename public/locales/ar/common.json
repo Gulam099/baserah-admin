@@ -173,7 +173,8 @@
     "customers": "العملاء",
     "infoBank": "بنك المعلومات",
     "financial": "المالية",
-    "permissions": "الصلاحيات"
+    "permissions": "الصلاحيات",
+    "group": "المجموعات"
   },
   "titlee": {
     "specialization": "التخصص",
@@ -423,5 +424,57 @@
   "Instant": "فورية",
   "January": "يناير",
   "February": "فبراير",
-  "March": "مارس"
+  "March": "مارس",
+  "groupPage": {
+    "title": "جميع مجموعات الدعم",
+    "table": {
+      "title": "العنوان",
+      "type": "النوع",
+      "module": "الوحدة",
+      "cost": "التكلفة",
+      "createdAt": "تاريخ الإنشاء",
+      "action": "الإجراء",
+      "edit": "تعديل",
+      "noGroups": "لم يتم العثور على مجموعات"
+    }
+  },
+  "supportGroup": {
+    "detailsTitle": "تفاصيل مجموعة الدعم",
+    "detailsDescription": "إدارة ومراجعة معلومات مجموعة الدعم",
+    "approved": "تمت الموافقة",
+    "pendingApproval": "في انتظار الموافقة",
+    "basicInfo": "المعلومات الأساسية",
+    "title": "العنوان",
+    "type": "النوع",
+    "status": "الحالة",
+    "module": "الوحدة",
+    "cost": "التكلفة",
+    "createdAt": "تاريخ الإنشاء",
+    "doctorInfo": "معلومات الطبيب",
+    "email": "البريد الإلكتروني",
+    "detailedInfo": "معلومات تفصيلية",
+    "goals": "الأهداف",
+    "components": "المكونات",
+    "faq": "الأسئلة الشائعة",
+    "groupImage": "صورة المجموعة",
+    "actions": "الإجراءات",
+    "approveGroup": "الموافقة على المجموعة",
+    "updating": "جارٍ التحديث...",
+    "loading": "جارٍ تحميل تفاصيل مجموعة الدعم...",
+    "errorTitle": "خطأ في تحميل البيانات",
+    "errorMsg": "فشل تحميل مجموعة الدعم",
+    "missingId": "المعرّف مفقود"
+  },
+  "Permissions System Administrator": "أذونات مسؤول النظام",
+  "Manage the supervisor's group": "إدارة مجموعة المشرف",
+  "Take action on tickets": "اتخاذ إجراء على التذاكر",
+  "Manage comments, publish and edit them": "إدارة التعليقات، نشرها وتحريرها",
+  "Workflow and priority matrix management": "إدارة سير العمل ومصفوفة الأولويات",
+  "Manage users": "إدارة المستخدمين",
+  "Delete tickets": "حذف التذاكر",
+  "Export reports": "تصدير التقارير",
+  "noPermission": "لا توجد صلاحية",
+  "showPermissions": "عرض الأذونات",
+  "assignedPermissionsForRole": "الأذونات المعينة لهذا الدور",
+  "saveChanges": "حفظ التغييرات"
 }

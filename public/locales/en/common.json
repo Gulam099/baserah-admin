@@ -173,7 +173,8 @@
     "customers": "Customers",
     "infoBank": "Information Bank",
     "financial": "Financial",
-    "permissions": "Permissions"
+    "permissions": "Permissions",
+    "group": "Groups"
   },
   "titlee": {
     "specialization": "Specialization",
@@ -425,5 +426,57 @@
   "January": "January",
   "February": "February",
   "March": "March",
-  "averageRating": "Average Rating"
+  "averageRating": "Average Rating",
+  "groupPage": {
+    "title": "All Support Groups",
+    "table": {
+      "title": "Title",
+      "type": "Type",
+      "module": "Module",
+      "cost": "Cost",
+      "createdAt": "Created At",
+      "action": "Action",
+      "edit": "Edit",
+      "noGroups": "No groups found"
+    }
+  },
+  "supportGroup": {
+    "detailsTitle": "Support Group Details",
+    "detailsDescription": "Manage and review support group information",
+    "approved": "Approved",
+    "pendingApproval": "Pending Approval",
+    "basicInfo": "Basic Information",
+    "title": "Title",
+    "type": "Type",
+    "status": "Status",
+    "module": "Module",
+    "cost": "Cost",
+    "createdAt": "Created At",
+    "doctorInfo": "Doctor Information",
+    "email": "Email",
+    "detailedInfo": "Detailed Information",
+    "goals": "Goals",
+    "components": "Components",
+    "faq": "FAQ",
+    "groupImage": "Group Image",
+    "actions": "Actions",
+    "approveGroup": "Approve Group",
+    "updating": "Updating...",
+    "loading": "Loading support group details...",
+    "errorTitle": "Error Loading Data",
+    "errorMsg": "Failed to load support group",
+    "missingId": "Missing ID"
+  },
+  "Permissions System Administrator": "Permissions System Administrator",
+  "Manage the supervisor's group": "Manage the supervisor's group",
+  "Take action on tickets": "Take action on tickets",
+  "Manage comments, publish and edit them": "Manage comments, publish and edit them",
+  "Workflow and priority matrix management": "Workflow and priority matrix management",
+  "Manage users": "Manage users",
+  "Delete tickets": "Delete tickets",
+  "Export reports": "Export reports",
+  "noPermission": "No Permission",
+  "showPermissions": "Show Permissions",
+  "assignedPermissionsForRole": "Assigned permissions for this role",
+  "saveChanges": "Save Changes"
 }
