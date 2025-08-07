@@ -464,5 +464,17 @@
     "errorTitle": "خطأ في تحميل البيانات",
     "errorMsg": "فشل تحميل مجموعة الدعم",
     "missingId": "المعرّف مفقود"
-  }
+  },
+  "Permissions System Administrator": "أذونات مسؤول النظام",
+  "Manage the supervisor's group": "إدارة مجموعة المشرف",
+  "Take action on tickets": "اتخاذ إجراء على التذاكر",
+  "Manage comments, publish and edit them": "إدارة التعليقات، نشرها وتحريرها",
+  "Workflow and priority matrix management": "إدارة سير العمل ومصفوفة الأولويات",
+  "Manage users": "إدارة المستخدمين",
+  "Delete tickets": "حذف التذاكر",
+  "Export reports": "تصدير التقارير",
+  "noPermission": "لا توجد صلاحية",
+  "showPermissions": "عرض الأذونات",
+  "assignedPermissionsForRole": "الأذونات المعينة لهذا الدور",
+  "saveChanges": "حفظ التغييرات"
 }

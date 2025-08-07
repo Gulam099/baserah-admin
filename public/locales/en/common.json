@@ -466,5 +466,17 @@
     "errorTitle": "Error Loading Data",
     "errorMsg": "Failed to load support group",
     "missingId": "Missing ID"
-  }
+  },
+  "Permissions System Administrator": "Permissions System Administrator",
+  "Manage the supervisor's group": "Manage the supervisor's group",
+  "Take action on tickets": "Take action on tickets",
+  "Manage comments, publish and edit them": "Manage comments, publish and edit them",
+  "Workflow and priority matrix management": "Workflow and priority matrix management",
+  "Manage users": "Manage users",
+  "Delete tickets": "Delete tickets",
+  "Export reports": "Export reports",
+  "noPermission": "No Permission",
+  "showPermissions": "Show Permissions",
+  "assignedPermissionsForRole": "Assigned permissions for this role",
+  "saveChanges": "Save Changes"
 }
