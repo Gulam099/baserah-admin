@@ -173,7 +173,8 @@
     "customers": "العملاء",
     "infoBank": "بنك المعلومات",
     "financial": "المالية",
-    "permissions": "الصلاحيات"
+    "permissions": "الصلاحيات",
+    "group": "المجموعات"
   },
   "titlee": {
     "specialization": "التخصص",
@@ -423,5 +424,45 @@
   "Instant": "فورية",
   "January": "يناير",
   "February": "فبراير",
-  "March": "مارس"
+  "March": "مارس",
+  "groupPage": {
+    "title": "جميع مجموعات الدعم",
+    "table": {
+      "title": "العنوان",
+      "type": "النوع",
+      "module": "الوحدة",
+      "cost": "التكلفة",
+      "createdAt": "تاريخ الإنشاء",
+      "action": "الإجراء",
+      "edit": "تعديل",
+      "noGroups": "لم يتم العثور على مجموعات"
+    }
+  },
+  "supportGroup": {
+    "detailsTitle": "تفاصيل مجموعة الدعم",
+    "detailsDescription": "إدارة ومراجعة معلومات مجموعة الدعم",
+    "approved": "تمت الموافقة",
+    "pendingApproval": "في انتظار الموافقة",
+    "basicInfo": "المعلومات الأساسية",
+    "title": "العنوان",
+    "type": "النوع",
+    "status": "الحالة",
+    "module": "الوحدة",
+    "cost": "التكلفة",
+    "createdAt": "تاريخ الإنشاء",
+    "doctorInfo": "معلومات الطبيب",
+    "email": "البريد الإلكتروني",
+    "detailedInfo": "معلومات تفصيلية",
+    "goals": "الأهداف",
+    "components": "المكونات",
+    "faq": "الأسئلة الشائعة",
+    "groupImage": "صورة المجموعة",
+    "actions": "الإجراءات",
+    "approveGroup": "الموافقة على المجموعة",
+    "updating": "جارٍ التحديث...",
+    "loading": "جارٍ تحميل تفاصيل مجموعة الدعم...",
+    "errorTitle": "خطأ في تحميل البيانات",
+    "errorMsg": "فشل تحميل مجموعة الدعم",
+    "missingId": "المعرّف مفقود"
+  }
 }

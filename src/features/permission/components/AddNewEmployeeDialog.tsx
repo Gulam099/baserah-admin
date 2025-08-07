@@ -34,6 +34,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useTranslation } from "react-i18next";
+import { title } from "process";
+import { Group } from "lucide-react";
 
 // A team item has at least an _id and a name
 interface TeamItemType {
@@ -61,6 +63,7 @@ const sidebarItems = [
   { key: "infoBank", title: "Information Bank" },
   { key: "financial", title: "Financial" },
   { key: "permissions", title: "Permissions" },
+  { key: "group", title: "Groups" },
 ];
 
 interface AddNewEmployeeDialogProps {
