@@ -1,18 +1,21 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import axios from "axios";
 import { ApiBaseUrlLocal } from "../../../../const";
-import { useTranslation } from "react-i18next";
 
 type SupportGroup = {
   _id: string;
   title: string;
   approval_status: boolean;
-  doctor: {
-    _id: string;
-    email: string;
-  };
+  doctor: { _id: string; email: string };
   type: string;
   goals: string;
   components: string;
@@ -26,237 +29,174 @@ type SupportGroup = {
 
 export default function EditSupportGroupClient({ id }: { id: string }) {
   const { t } = useTranslation();
-  const [group, setGroup] = useState<SupportGroup | null>(null);
+  const [group, setGroup] = useState<SupportGroup>();
   const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-  const [error, setError] = useState("");
+  const [approvalLoading, setApprovalLoading] = useState(false);
+  const router = useRouter();
+
+  const badgeVariant: Record<string, "default" | "success" | "warning" | "danger" | "outline"> = {
+    approved: "success",
+    pending: "warning",
+    cancelled: "danger",
+  };
 
   useEffect(() => {
-    if (!id) {
-      setError(t("supportGroup.missingId"));
-      setLoading(false);
-      return;
-    }
-
-    axios
-      .get(`${ApiBaseUrlLocal}/api/support-groups/support-group/${id}`)
-      .then((res) => {
+    const fetchData = async () => {
+      try {
+        const res = await axios.get(`${ApiBaseUrlLocal}/api/support-groups/support-group/${id}`);
         setGroup(res.data.data);
-      })
-      .catch((err) => {
-        console.error("Error fetching support group", err);
-        setError(
-          err?.response?.data?.message || t("supportGroup.errorMsg")
-        );
-      })
-      .finally(() => setLoading(false));
+      } catch (error: any) {
+        toast.error(error?.response?.data?.message || t("supportGroup.errorMsg"));
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) fetchData();
+    else toast.error(t("supportGroup.missingId"));
   }, [id, t]);
 
-  const toggleApproval = () => {
+  const handleApprovalUpdate = async (status: boolean, alternative: boolean) => {
     if (!group) return;
-
-    setUpdating(true);
-    axios
-      .put(`${ApiBaseUrlLocal}/api/support-groups/approve/${group._id}`, {
-        approvalStatus: !group.approval_status,
-      })
-      .then((res) => {
-        setGroup(res.data.data);
-      })
-      .catch(() => {
-        alert(t("supportGroup.errorMsg"));
-      })
-      .finally(() => setUpdating(false));
+    setApprovalLoading(true);
+    try {
+      const res = await axios.put(`${ApiBaseUrlLocal}/api/support-groups/approve/${group._id}`, {
+        approvalStatus: status,
+        alternative: alternative,
+      });
+      setGroup(res.data.data);
+      toast.success(t("toast.updateSuccess"));
+      router.push("/dashboard/approval");
+    } catch {
+      toast.error(t("supportGroup.errorMsg"));
+    } finally {
+      setApprovalLoading(false);
+    }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">{t("supportGroup.loading")}</p>
-        </div>
+      <div className="flex flex-row w-full h-full min-h-[80svh] justify-center items-center">
+        <Loader2 className="animate-spin mx-2" /> {t("supportGroup.loading")}
       </div>
     );
   }
 
-  if (error) {
+  if (!group) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full mx-4">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">{t("supportGroup.errorTitle")}</h3>
-            <p className="text-red-600 text-sm">{error}</p>
-          </div>
-        </div>
+      <div className="flex justify-center items-center min-h-[60svh]">
+        {t("supportGroup.errorTitle")}
       </div>
     );
   }
-
-  if (!group) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{t("supportGroup.detailsTitle")}</h1>
-              <p className="text-gray-600 mt-1">{t("supportGroup.detailsDescription")}</p>
-            </div>
-            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${group.approval_status
-              ? 'bg-green-100 text-green-800'
-              : 'bg-yellow-100 text-yellow-800'
-              }`}>
-              {group.approval_status ? (
-                <>
-                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  {t("supportGroup.approved")}
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                  {t("supportGroup.pendingApproval")}
-                </>
-              )}
-            </div>
-          </div>
+    <div className="flex flex-col gap-6">
+      <h1 className="text-2xl font-semibold">{t("supportGroup.detailsTitle")}</h1>
+      <p className="text-sm text-muted-foreground">{t("supportGroup.detailsDescription")}</p>
+
+      <div className="w-full border p-10 rounded-2xl flex flex-col gap-4">
+        {/* Status */}
+        <div className="text-sm">
+          {t("supportGroup.status")} :
+          <Badge
+            variant={badgeVariant[group.approval_status ? "approved" : "pending"]}
+            className="capitalize ml-2"
+          >
+            {group.approval_status
+              ? t("supportGroup.approved")
+              : t("supportGroup.pendingApproval")}
+          </Badge>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Basic Information */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">{t("supportGroup.basicInfo")}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("supportGroup.title")}</label>
-                  <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{group.title}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("supportGroup.type")}</label>
-                  <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{group.type}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("supportGroup.status")}</label>
-                  <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{group.status}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("supportGroup.module")}</label>
-                  <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{group.module}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("supportGroup.cost")}</label>
-                  <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-md font-semibold">{group.cost}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("supportGroup.createdAt")}</label>
-                  <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{new Date(group.createdAt).toLocaleString()}</p>
-                </div>
-              </div>
-            </div>
+        {/* Basic Information */}
+        <h2 className="text-xl font-semibold">{t("supportGroup.basicInfo")}</h2>
+        <Separator />
+        <div>
+          <p className="text-sm">{t("supportGroup.title")}</p>
+          <p className="text-lg font-semibold">{group.title}</p>
+        </div>
+        <div>
+          <p className="text-sm">{t("supportGroup.type")}</p>
+          <p className="text-lg font-semibold">{group.type}</p>
+        </div>
+        <div>
+          <p className="text-sm">{t("supportGroup.module")}</p>
+          <p className="text-lg font-semibold">{group.module}</p>
+        </div>
+        <div>
+          <p className="text-sm">{t("supportGroup.cost")}</p>
+          <p className="text-lg font-semibold">{group.cost} SAR</p>
+        </div>
+        <div>
+          <p className="text-sm">{t("supportGroup.createdAt")}</p>
+          <p className="text-lg font-semibold">
+            {new Date(group.createdAt).toLocaleDateString()}
+          </p>
+        </div>
 
-            {/* Doctor Information */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">{t("supportGroup.doctorInfo")}</h2>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t("supportGroup.email")}</label>
-                <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{group.doctor.email}</p>
-              </div>
-            </div>
+        {/* Doctor Information */}
+        <h2 className="text-xl font-semibold pt-4">{t("supportGroup.doctorInfo")}</h2>
+        <Separator />
+        <p className="text-sm">{t("supportGroup.email")}</p>
+        <p className="text-lg font-semibold">{group.doctor?.email}</p>
 
-            {/* Detailed Information */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">{t("supportGroup.detailedInfo")}</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{t("supportGroup.goals")}</label>
-                  <div className="bg-gray-50 px-4 py-3 rounded-md">
-                    <p className="text-gray-900 whitespace-pre-wrap">{group.goals}</p>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{t("supportGroup.components")}</label>
-                  <div className="bg-gray-50 px-4 py-3 rounded-md">
-                    <p className="text-gray-900 whitespace-pre-wrap">{group.components}</p>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{t("supportGroup.faq")}</label>
-                  <div className="bg-gray-50 px-4 py-3 rounded-md">
-                    <p className="text-gray-900 whitespace-pre-wrap">{group.faq}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Detailed Information */}
+        <h2 className="text-xl font-semibold pt-4">{t("supportGroup.detailedInfo")}</h2>
+        <Separator />
+        <p className="text-sm">{t("supportGroup.goals")}</p>
+        <p className="text-sm">{group.goals}</p>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Group Image */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">{t("supportGroup.groupImage")}</h2>
-              <div className="aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
-                <img
-                  src={group.imageUrl || "/placeholder.svg"}
-                  alt="Support Group"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
+        <p className="text-sm pt-3">{t("supportGroup.components")}</p>
+        <p className="text-sm">{group.components}</p>
 
-            {/* Actions */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">{t("supportGroup.actions")}</h2>
-              <div className="space-y-3">
-                <button
-                  onClick={toggleApproval}
-                  disabled={group.approval_status || updating}
-                  className={`w-full flex items-center justify-center px-4 py-3 rounded-md text-sm font-medium transition-colors ${group.approval_status
-                    ? 'bg-green-100 text-green-600 border border-green-300 cursor-not-allowed'
-                    : updating
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
-                    }`}
-                >
-                  {group.approval_status ? (
-                    <>
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      {t("supportGroup.approved")}
-                    </>
-                  ) : updating ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      {t("supportGroup.updating")}
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      {t("supportGroup.approveGroup")}
-                    </>
-                  )}
-                </button>
-              </div>
+        <p className="text-sm pt-3">{t("supportGroup.faq")}</p>
+        <div className="text-sm leading-relaxed">
+          {group.faq.split("\n").map((item, i) => (
+            <div key={i} className="flex items-start mb-2">
+              <span className="inline-block w-2 h-2 bg-gray-400 rounded-full mr-3 mt-2"></span>
+              {item}
             </div>
-          </div>
+          ))}
+        </div>
+
+        {/* Group Image */}
+        {group.imageUrl && (
+          <>
+            <p className="text-sm pt-3">{t("supportGroup.groupImage")}</p>
+            <img
+              src={group.imageUrl}
+              alt="Support Group"
+              className="max-w-md rounded-xl mt-2"
+            />
+          </>
+        )}
+
+        {/* Actions */}
+        <div className="flex flex-row flex-wrap justify-end gap-4 pt-4">
+          {!group.approval_status && (
+            <Button
+              variant="default"
+              onClick={() => handleApprovalUpdate(true, false)}
+              disabled={approvalLoading}
+            >
+              {approvalLoading
+                ? t("supportGroup.updating")
+                : t("supportGroup.approveGroup")}
+            </Button>
+          )}
+
+          <Button variant="secondary" onClick={() => handleApprovalUpdate(false, true)} disabled={loading}>
+            Alteration Request
+          </Button>
+
+          <Button
+            variant="secondary"
+            onClick={() => handleApprovalUpdate(false, false)}
+            disabled={approvalLoading}
+          >
+            {t("actions.reject")}
+          </Button>
+
         </div>
       </div>
     </div>

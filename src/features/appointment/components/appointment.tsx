@@ -39,10 +39,7 @@ import ExportButton from "@/features/home/components/ExportButton";
 import { useEffect, useRef, useState } from "react";
 import { AppointmentType } from "@/features/appointment/types/appointment.type";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
-import {
-  cancelAppointment,
-  fetchAppointmentsRecords,
-} from "@/features/appointment/util/appointment.util";
+import { fetchAppointmentsRecords } from "@/features/appointment/util/appointment.util";
 import { format } from "date-fns";
 import { toTitleCase } from "@/features/home/utils/string.utils";
 import { useSearchParams } from "next/navigation";
@@ -55,7 +52,7 @@ export default function AppointmentPage() {
   const searchParams = useSearchParams();
   const contentRef = useRef<HTMLDivElement>(null);
   const badgeVariant: Record<
-    "confirmed" | "cancelled" | "upcoming" | "ongoing",
+    "confirmed" | "cancelled" | "upcoming" | "ongoing" | "urgent" | "pending",
     | "default"
     | "secondary"
     | "destructive"
@@ -67,7 +64,9 @@ export default function AppointmentPage() {
     confirmed: "success",
     cancelled: "danger",
     upcoming: "default",
-    ongoing: "warning",
+    ongoing: "secondary",
+    urgent: "warning",
+    pending: "outline",
   };
 
   // Read page/pageSize from the URL, or fallback to 1 / 9
@@ -87,16 +86,18 @@ export default function AppointmentPage() {
     fetchAppointmentsRecords(currentPage, pageSize)
       .then((res) => {
         setAppointments(res.data!);
-        setTotal(res.page?.total!); // for UnifiedPagination's `total` prop
+        setTotal(res.page?.total!);
       })
       .catch((err) => {
-        console.error("Failed to fetch questions:", err);
+        console.error("Failed to fetch appointments:", err);
       })
       .finally(() => {
         setLoading(false);
       });
     setSearchTerm("");
   }, [currentPage, pageSize]);
+
+  console.log("appointments merger", appointments)
 
   const filteredAppointments = appointments.filter((appointment) => {
     const name = appointment.userId?.name?.toLowerCase() || "";
@@ -150,72 +151,53 @@ export default function AppointmentPage() {
               <TableHead>{t("appointment_number")}</TableHead>
               <TableHead>{t("patient")}</TableHead>
               <TableHead>{t("booking_date")}</TableHead>
-              <TableHead>{t("program")}</TableHead>
+              {/* <TableHead>{t("program")}</TableHead> */}
               {/* <TableHead>Doctor</TableHead> */}
               <TableHead>{t("time_slot")}</TableHead>
-              <TableHead>{t("date")}</TableHead>
-              {/* <TableHead>Status</TableHead> */}
-              {/* <TableHead className="text-right print:hidden">Actions</TableHead> */}
+              {/* <TableHead>{t("date")}</TableHead> */}
+              <TableHead>{t("status")}</TableHead>
+              <TableHead className="text-right print:hidden">
+                {t("actions")}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAppointments.map((appointment) => (
-              <TableRow key={appointment._id}>
-                <TableCell>{appointment._id}</TableCell>
-                <TableCell>
-                  {appointment.userId?.name}
-                </TableCell>
+            {filteredAppointments.map((appointment) => {
+              const bookingDate = appointment.selectedSlots?.[0]
+                ? new Date(appointment.selectedSlots[0])
+                : null;
 
-
-                {/*  <TableCell>
-                  <Link
-                    href={`/dashboard/specialist/${appointment.doctor}`}
-                    className="underline"
-                  >
-                    {appointment.doctor_name}
-                  </Link>
-                </TableCell> */}
-                <TableCell>
-                  {appointment.createdAt
-                    ? format(
-                      new Date(appointment.createdAt),
-                      "EEE , dd MMM yyyy , hh:mm a"
-                    )
-                    : "Invalid Date"}
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    {/* Display the urgent symbol next to the program if it's urgent */}
-                    {appointment.program.toLowerCase() === "urgent" && (
-                      <AlertTriangle className="h-4 w-4 text-yellow-600  " />
-                    )}
-                    {appointment.program}
-                  </div>
-                </TableCell>
-                <TableCell>{appointment.time}</TableCell>
-                <TableCell>
-                  {appointment.date
-                    ? format(
-                      new Date(appointment.date),
-                      "EEE , dd MMM yyyy , hh:mm a"
-                    )
-                    : "Invalid Date"}
-                </TableCell>
-                <TableCell>
-                  {/* <div className="flex items-center gap-2">
-                    <Badge variant={badgeVariant[appointment.status]}>
-                      {toTitleCase(appointment.status)}
+              return (
+                <TableRow key={appointment._id}>
+                  <TableCell>{appointment._id}</TableCell>
+                  <TableCell>{appointment.patientId?.name || "-"}</TableCell>
+                  <TableCell>
+                    {bookingDate
+                      ? format(bookingDate, "EEE , dd MMM yyyy")
+                      : t("not_available")}
+                  </TableCell>
+                  <TableCell>
+                    {bookingDate
+                      ? format(bookingDate, "hh:mm a")
+                      : t("not_available")}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        badgeVariant[
+                        appointment.status as keyof typeof badgeVariant
+                        ]
+                      }
+                    >
+                      {t(`status_${appointment.status}`)}
                     </Badge>
-                    {appointment.isImmediate && (
-                      <AlertTriangle className="h-4 w-4 text-red-500" />
-                    )}
-                  </div> */}
-                </TableCell>
-                {/* <TableCell className="text-right print:hidden px-1">
-                  <AppointmentMenu appointment={appointment} />
-                </TableCell> */}
-              </TableRow>
-            ))}
+                  </TableCell>
+                  <TableCell className="text-right print:hidden px-1">
+                    <AppointmentMenu appointment={appointment} />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
@@ -225,6 +207,7 @@ export default function AppointmentPage() {
 }
 
 function AppointmentMenu({ appointment }: { appointment: AppointmentType }) {
+  const { t } = useTranslation();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -253,7 +236,7 @@ function AppointmentMenu({ appointment }: { appointment: AppointmentType }) {
           <>
             <DropdownMenuItem className="text-red-600">
               <Dialog>
-                <DialogTrigger asChild>
+                {/* <DialogTrigger asChild>
                   <Button
                     variant={"ghost"}
                     onClick={(e) => e.stopPropagation()}
@@ -261,7 +244,7 @@ function AppointmentMenu({ appointment }: { appointment: AppointmentType }) {
                     <X className="mr-2 h-4 w-4" />
                     Cancel Session Appointment
                   </Button>
-                </DialogTrigger>
+                </DialogTrigger> */}
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Are you absolutely sure?</DialogTitle>
@@ -269,9 +252,9 @@ function AppointmentMenu({ appointment }: { appointment: AppointmentType }) {
                       This action cannot be undone.
                     </DialogDescription>
                   </DialogHeader>
-                  <Button onClick={() => cancelAppointment(appointment._id)}>
+                  {/* <Button onClick={() => cancelAppointment(appointment._id)}>
                     Cancel Session Appointment
-                  </Button>
+                  </Button> */}
                 </DialogContent>
               </Dialog>
             </DropdownMenuItem>

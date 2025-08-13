@@ -1,5 +1,6 @@
 export interface AppointmentType {
   userId: any;
+  patientId: any;
   program: string;
   _id: string;
   doctor: string;
@@ -9,6 +10,7 @@ export interface AppointmentType {
   createdAt: string;
   duration: string;
   timeSlot: string;
+  selectedSlots: string;
   status: "confirmed" | "cancelled" | "upcoming" | "ongoing";
   isImmediate: boolean;
   patient_name: string;

@@ -1,50 +1,57 @@
 import axios from "axios";
 import { ApiResponseType } from "@/features/home/types/type";
-import { ApiBaseUrl } from "../../../../const";
-import { toast } from "sonner";
+import { ApiBaseUrlLocal } from "../../../../const";
 
 /**
- * Fetch real appointments data from GET /api/admin/appointments
- * @param page - the current page number
- * @param size - how many records per page
+ * Fetch both doctor bookings and instant bookings,
+ * merge them, and return in the same format as before.
  */
 export async function fetchAppointmentsRecords(
   page: number,
   size: number
 ): Promise<ApiResponseType> {
   try {
-    // Example: GET /api/admin/appointments?page=1&page_size=10
-    const res = await axios.get(`/api/admin/appointments`, {
-      params: {
-        page,
-        pageSize: size,
-      },
-    });
+    // Run both API calls in parallel
+    const [bookingsRes, instantRes] = await Promise.all([
+      axios.get(`${ApiBaseUrlLocal}/api/doctor/admin/bookings`, {
+        params: { page, pageSize: size },
+      }),
+      axios.get(`${ApiBaseUrlLocal}/api/instantbookings/admin/instantbooking`, {
+        params: { page, pageSize: size },
+      }),
+    ]);
 
-    // The response data from your API
-    //  {
-    //    data: [...],
-    //    has_more: true,
-    //    page: 1,
-    //    page_size: 10,
-    //    success: true,
-    //    total: 44
-    //  }
+    const bookingsData = bookingsRes.data?.data || [];
+    const instantData = instantRes.data?.data || [];
 
-    const apiData = res.data;
+    // Normalize instant bookings so they match bookings fields
+    const formattedInstant = instantData.map((item: any) => ({
+      ...item,
+      program: item.program || "urgent",
+      date: item.date || item.appointmentDate,
+      time: item.time || item.appointmentTime,
+    }));
+
+    // Merge both lists
+    const mergedData = [...bookingsData, ...formattedInstant];
+    console.log("mer", mergedData);
+
+    // Combine total counts from both APIs
+    const totalCount =
+      (bookingsRes.data?.total ?? 0) + (instantRes.data?.total ?? 0);
+
     return {
-      success: apiData?.success ?? true,
+      success: true,
       status: 200,
       message: "Appointments fetched successfully",
-      data: apiData?.data || [],
+      data: mergedData,
       page: {
-        total: apiData?.total ?? 0,
-        page: apiData?.page ?? page,
-        size: apiData?.page_size ?? size,
+        total: totalCount,
+        page,
+        size,
       },
     };
   } catch (error: any) {
-    // If needed, transform error before returning/throwing
     console.error("Failed to fetch appointments:", error);
     return {
       success: false,
@@ -58,59 +65,5 @@ export async function fetchAppointmentsRecords(
         size,
       },
     };
-  }
-}
-
-export async function cancelAppointment(
-  appointmentId: string
-): Promise<{ success: boolean; message: string }> {
-  try {
-    const response = await fetch(
-      `${ApiBaseUrl}/api/admin/appointments/${appointmentId}/cancel`,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      toast.error(data.message || "Failed to cancel appointment");
-
-      throw new Error(data.message || "Failed to cancel appointment");
-    }
-    toast.success("Appointment Successfully Canceled");
-
-    return { success: data.success, message: data.message };
-  } catch (error) {
-    toast.error("Error cancelling appointment");
-    return { success: false, message: "Error cancelling appointment" };
-  }
-}
-
-export async function modifyAppointment(
-  appointmentId: string,
-  updates: { appointment_time?: string; doctor_id: string }
-): Promise<{ success: boolean; message: string }> {
-  try {
-    const response = await fetch(
-      `${ApiBaseUrl}/api/admin/appointments/${appointmentId}/modify`,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updates),
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to modify appointment");
-    }
-
-    return { success: data.success, message: data.message };
-  } catch (error) {
-    return { success: false, message: "Error modifying appointment" };
   }
 }
