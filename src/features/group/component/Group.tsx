@@ -70,7 +70,7 @@ export default function GroupPage() {
                   <TableCell>{group.title}</TableCell>
                   <TableCell>{group.type}</TableCell>
                   <TableCell>{group?.module}</TableCell>
-                  <TableCell>₹{group.cost}</TableCell>
+                  <TableCell>{group.cost}</TableCell>
                   <TableCell>
                     {group.createdAt
                       ? format(parseISO(group.createdAt), "dd MMM yyyy HH:mm")

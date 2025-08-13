@@ -12,11 +12,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ApprovalContentItemType } from "@/features/approval/approval.type";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ApiBaseUrlLocal } from "../../../../const";
 import { useTranslation } from "react-i18next";
+import axios from "axios";
 
 export default function ApprovalContentsPage() {
   const searchParams = useSearchParams();
@@ -31,7 +31,7 @@ export default function ApprovalContentsPage() {
   const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 10;
   const [statusFilter, setStatusFilter] = useState(statusParam || "all");
 
-  const [approvals, setApprovals] = useState<ApprovalContentItemType[]>([]);
+  const [approvals, setApprovals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
 
@@ -39,22 +39,40 @@ export default function ApprovalContentsPage() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const queryParams = new URLSearchParams({
+        // 1️⃣ Cultural Content
+        const contentParams = new URLSearchParams({
           page: currentPage.toString(),
           pageSize: pageSize.toString(),
         });
+        if (statusFilter !== "all") contentParams.append("status", statusFilter);
 
-        if (statusFilter !== "all") {
-          queryParams.append("status", statusFilter);
-        }
-
-        const response = await fetch(
-          `${ApiBaseUrlLocal}/api/admin/cultural-content/all?${queryParams.toString()}`
+        const culturalRes = await axios.get(
+          `${ApiBaseUrlLocal}/api/admin/cultural-content/all?${contentParams.toString()}`
         );
-        const data = await response.json();
+        const culturalItems = (culturalRes.data?.data || []).map((item: any) => ({
+          ...item,
+          recordType: "content",
+        }));
 
-        setApprovals(data?.data || []);
-        setTotal(data?.total || data?.data?.length || 0);
+        // 2️⃣ Groups / Programs
+        const groupsRes = await axios.get(`${ApiBaseUrlLocal}/api/support-groups/get-all`);
+        const groupItems = (groupsRes.data?.data || []).map((item: any) => ({
+          ...item,
+          type: item.module === "support" ? "group" : item.module?.toLowerCase(), // group or program
+          status: item.approval_status ? "approved" : "pending",
+          recordType: "group",
+        }));
+        console.log("grop", groupItems);
+
+        // 3️⃣ Merge + sort
+        const merged = [...culturalItems, ...groupItems].sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
+
+        setApprovals(merged);
+        setTotal(merged.length);
       } catch (error) {
         console.error("Error fetching approvals:", error);
       } finally {
@@ -65,39 +83,33 @@ export default function ApprovalContentsPage() {
     fetchData();
   }, [currentPage, pageSize, statusFilter]);
 
-  console.log("approval", approvals);
-
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedStatus = e.target.value;
     setStatusFilter(selectedStatus);
 
-    // Update URL params for deep linking
     const params = new URLSearchParams(window.location.search);
-    params.set("page", "1"); // reset to first page on filter change
-    if (selectedStatus === "all") {
-      params.delete("status");
-    } else {
-      params.set("status", selectedStatus);
-    }
+    params.set("page", "1");
+    if (selectedStatus === "all") params.delete("status");
+    else params.set("status", selectedStatus);
 
     router.push(`?${params.toString()}`);
   };
 
-  const badgeVariant: {
-    [key in string]:
-    | "default"
-    | "success"
-    | "warning"
-    | "danger"
-    | "secondary"
-    | "destructive"
-    | "outline";
-  } = {
+  const badgeVariant: Record<string, any> = {
     pending: "warning",
     approved: "success",
     rejected: "danger",
     completed: "success",
     cancelled: "danger",
+    "-": "outline",
+  };
+
+  const typeMap: Record<string, string> = {
+    group: "Group",
+    program: "Program",
+    video: "Video",
+    audio: "Audio",
+    article: "Article",
   };
 
   return (
@@ -120,7 +132,7 @@ export default function ApprovalContentsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t("content_type")}</TableHead>
+              <TableHead>{t("type")}</TableHead>
               <TableHead>{t("title")}</TableHead>
               <TableHead>{t("specialist")}</TableHead>
               <TableHead>{t("created_at")}</TableHead>
@@ -137,39 +149,40 @@ export default function ApprovalContentsPage() {
                   </TableCell>
                 </TableRow>
               ))
-              : approvals.map((content) => {
-                const url = content.type
-                  ? `/dashboard/approval/${encodeURIComponent(
-                    content.type.toLowerCase()
-                  )}/${content._id}`
-                  : "#";
+              : approvals.map((item) => {
+                let url = "#";
+                if (item.recordType === "content") {
+                  url = `/dashboard/approval/${encodeURIComponent(
+                    item.type?.toLowerCase() || ""
+                  )}/${item._id}`;
+                } else if (item.recordType === "group") {
+                  url = `/dashboard/group/${item._id}`;
+                }
+
                 return (
-                  <TableRow key={content._id}>
+                  <TableRow key={item._id}>
                     <TableCell className="capitalize font-medium">
-                      {content.type || t("unknown")}
+                      {typeMap[item.type?.toLowerCase()] || "Unknown"}
                     </TableCell>
-                    <TableCell>{content.title || t("untitled")}</TableCell>
+                    <TableCell>{item.title || t("untitled")}</TableCell>
                     <TableCell>
-                      {content?.doctorId?.full_name || t("unknown")}
+                      {item?.doctor?.full_name || item?.doctorId?.full_name || "-"}
                     </TableCell>
                     <TableCell>
-                      {content.createdAt
-                        ? format(
-                          parseISO(content?.createdAt),
-                          "dd MMM yyyy HH:mm"
-                        )
+                      {item.createdAt
+                        ? format(parseISO(item.createdAt), "dd MMM yyyy HH:mm")
                         : t("unknown")}
                     </TableCell>
                     <TableCell>
                       <Badge
                         variant={
-                          content.status
-                            ? badgeVariant[content?.status.toLowerCase()]
+                          item.status
+                            ? badgeVariant[item.status.toLowerCase()] || "outline"
                             : "outline"
                         }
                         className="capitalize"
                       >
-                        {t(content.status)}
+                        {t(item.status || "-")}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -184,13 +197,7 @@ export default function ApprovalContentsPage() {
         </Table>
       </div>
 
-      {total > pageSize && (
-        <UnifiedPagination
-          total={total}
-        // currentPage={currentPage}
-        // pageSize={pageSize}
-        />
-      )}
+      {total > pageSize && <UnifiedPagination total={total} />}
     </div>
   );
 }

@@ -155,6 +155,9 @@ export default function ApprovalContentPage({
                 {t("actions.approve")}
               </Button>
             )}
+            <Button variant="secondary" onClick={() => handleApprovalUpdate("pending")} disabled={loading}>
+              Alteration Request
+            </Button>
             {!["cancelled"].includes(content.status) && (
               <Button
                 variant="secondary"
@@ -164,9 +167,7 @@ export default function ApprovalContentPage({
                 {t("actions.reject")}
               </Button>
             )}
-            {/* <Button variant="secondary" onClick={() => handleApprovalUpdate("pending")} disabled={loading}>
-        Alteration Request
-      </Button> */}
+
           </div>
         </div>
       </div>

@@ -7,7 +7,7 @@ export async function fetchQuestions(
 ): Promise<ApiResponseType> {
   try {
     const response = await fetch(
-      `${ApiBaseUrl}/api/group/fetch-group?admin=true&page=${page}&size=${size}`
+      `${ApiBaseUrl}/api/admin/get-all?page=${page}&size=${size}`
     );
 
     if (!response.ok) {
@@ -15,7 +15,7 @@ export async function fetchQuestions(
     }
 
     const data = await response.json();
-console.log(data, 'fetch data')
+    console.log(data, "fetch data");
     return {
       success: true,
       status: response.status,
@@ -91,16 +91,13 @@ export async function editQuestion(
   }>
 ): Promise<ApiResponseType> {
   try {
-    const response = await fetch(
-      `${ApiBaseUrl}/api/admin/edit/${questionId}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updateData),
-      }
-    );
+    const response = await fetch(`${ApiBaseUrl}/api/admin/edit/${questionId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updateData),
+    });
 
     const data = await response.json();
 

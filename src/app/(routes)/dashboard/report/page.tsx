@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ChartConfig } from "@/components/ui/chart";
 import DataPieChartCard from "@/features/home/components/DataPieChartCard";
 import MapComp from "@/features/report/components/MapComp";
@@ -7,10 +7,7 @@ import { SliderPerson } from "@/features/report/components/SliderPerson";
 import { fetchPatientReturnStats } from "@/features/report/util/report.util";
 import { ApiBaseUrl } from "../../../../../const";
 import { useTranslation } from "react-i18next";
-
-
-
-
+import ExportButton from "@/features/home/components/ExportButton";
 const colorMap = {
   Completed: "#32CD32",
   Cancelled: "#9B59B6",
@@ -45,6 +42,7 @@ export default function page() {
   const [userTypeData, setUserTypeData] = useState<
     { title: string; number: number; fill: string }[]
   >([]);
+  const contentRef = useRef(null);
 
 
   useEffect(() => {
@@ -62,7 +60,6 @@ export default function page() {
     }
     loadAppointmentType();
   }, []);
-
 
   useEffect(() => {
     async function loadStats() {
@@ -82,8 +79,6 @@ export default function page() {
 
     loadStats();
   }, []);
-
-
 
   const appointmentChartConfig = {
     number: {
@@ -255,10 +250,21 @@ export default function page() {
       },
     ];
 
-  console.log("appointment stats", appointmentStats);
+  const excelData = {
+    appointmentStats,
+    appointmentTypeData,
+    appointmentChartData,
+    userChartData,
+    doctorSessionData,
+    userTypeData,
+  };
+
 
   return (
-    <div className="flex flex-col gap-4 ">
+    <div className="flex flex-col gap-4" ref={contentRef}>
+      <div className="flex justify-end">
+        <ExportButton contentRef={contentRef} label={t("export")} excelData={excelData} />
+      </div>
       <h2 className="text-lg font-semibold text-neutral-800">	{t("report.appointmentsTitle")}</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
         {appointmentStats.map((item, index) => (
