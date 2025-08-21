@@ -60,6 +60,7 @@ const PaymentPage = () => {
       p.amount?.toString().includes(searchLower)
     );
   });
+  
 
   const grouped = groupPaymentsByDoctor(filteredPayments);
 
