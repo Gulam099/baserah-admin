@@ -79,7 +79,7 @@ const NAV_ITEMS = [
   {
     key: "financial",
     titleKey: "sidebar.financial",
-    url: "/dashboard/payments",
+    url: "/dashboard/finance",
     icon: EmptyWallet,
   },
   {

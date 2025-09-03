@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FinancialRecord } from "@/features/finance/types/finance.type";
 import { fetchFinancialRecords } from "@/features/finance/data/finance.data";
+import { ArrowLeft, ArrowUpDown, ChevronDown, Download } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function FinancialDetailsPage() {
   const [records, setRecords] = useState<FinancialRecord[]>([]);
@@ -20,6 +22,12 @@ export default function FinancialDetailsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const pageSize = 10;
+  const router = useRouter();
+
+  const [selectedFiltering, setSelectedFiltering] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedType, setSelectedType] = useState("");
+  const [selectedSpecialist, setSelectedSpecialist] = useState("");
 
   useEffect(() => {
     const loadRecords = async () => {
@@ -60,8 +68,123 @@ export default function FinancialDetailsPage() {
     );
   };
 
+  const clearAllFilters = () => {
+    setSelectedFiltering("");
+    setSelectedDate("");
+    setSelectedType("");
+    setSelectedSpecialist("");
+  };
+
   return (
     <div className="container mx-auto py-8">
+      <div className="mb-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-gray-600 hover:text-gray-800"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          Back
+        </Button>
+      </div>
+      <div className="flex items-center justify-between mb-6 py-3 border-b border-gray-200">
+        <div className="flex items-center gap-4">
+          {/* Filtering Dropdown */}
+          <div className="relative">
+            <select
+              value={selectedFiltering}
+              onChange={(e) => setSelectedFiltering(e.target.value)}
+              className="appearance-none bg-white border border-gray-300 rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Filtering</option>
+              <option value="recent">Recent</option>
+              <option value="amount">By Amount</option>
+              <option value="date">By Date</option>
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          </div>
+
+          {/* Date Dropdown */}
+          <div className="relative">
+            <select
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="appearance-none bg-white border border-gray-300 rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Date</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="year">This Year</option>
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          </div>
+
+          {/* Type Dropdown */}
+          <div className="relative">
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="appearance-none bg-white border border-gray-300 rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Type</option>
+              <option value="debtor">Debtor</option>
+              <option value="creditor">Creditor</option>
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          </div>
+
+          {/* Specialist's Dropdown */}
+          <div className="relative">
+            <select
+              value={selectedSpecialist}
+              onChange={(e) => setSelectedSpecialist(e.target.value)}
+              className="appearance-none bg-white border border-gray-300 rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Specialist's</option>
+              <option value="john">John Doe</option>
+              <option value="jane">Jane Smith</option>
+              <option value="bob">Bob Johnson</option>
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          </div>
+
+          {/* Clear All Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearAllFilters}
+            className="text-gray-600 hover:text-gray-800"
+          >
+            Clear All
+          </Button>
+        </div>
+
+        {/* Right side buttons */}
+        <div className="flex items-center gap-3">
+          {/* Sort by */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-gray-600 hover:text-gray-800"
+          >
+            <ArrowUpDown className="w-4 h-4 mr-1" />
+            Sort by
+          </Button>
+
+          {/* Export */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-gray-600 hover:text-gray-800"
+          >
+            <Download className="w-4 h-4 mr-1" />
+            Export
+          </Button>
+        </div>
+      </div>
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">Financial Details</h1>
         <Button className="bg-blue-800 hover:bg-blue-900">Add new</Button>
