@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LayoutGrid, List, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Specialist } from "@/features/finance/types/finance.type";
 import { SpecialistCard } from "@/features/finance/components/specialist-card";
+import { SpecialistDetailsModal } from "@/features/finance/components/specialist-payment";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -15,66 +16,192 @@ import {
 import ViewSpecialistDetails from "@/features/finance/components/view-specialist-details-dialog";
 import { TransferDialog } from "@/features/finance/components/transfer-dialog";
 import { AddAmountDialog } from "@/features/finance/components/add-amount-dialog";
+import { ArrowLeft, ArrowUpDown, ChevronDown, Download } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { groupPaymentsByDoctor } from "@/hooks/group-payment";
 
-// Example mock data
-const mockSpecialists: Specialist[] = [
-  {
-    id: "1",
-    name: "Mada Muhammad Al-Muhammad",
-    joinDate: "5-3-2024",
-    discountPercentage: 50,
-    numberOfSessions: 1000,
-    specialistRatio: 50,
-    taxRate: 15,
-    grossIncome: 10484,
-    totalTax: 1002,
-    status: "active",
-    paidStatus: "Paid", // or "Unpaid"
-    month: "January",
-  },
-  {
-    id: "2",
-    name: "Abdullah Al-Abdullah",
-    joinDate: "2-3-2023",
-    discountPercentage: 50,
-    numberOfSessions: 298,
-    specialistRatio: 50,
-    taxRate: 15,
-    grossIncome: 10484,
-    totalTax: 1002,
-    status: "active",
-    paidStatus: "Unpaid",
-    month: "January",
-  },
-  {
-    id: "3",
-    name: "Abdullah Al-Abdullah",
-    joinDate: "7-1-2023",
-    discountPercentage: 50,
-    numberOfSessions: 200,
-    specialistRatio: 50,
-    taxRate: 15,
-    grossIncome: 10484,
-    totalTax: 1002,
-    status: "active",
-    paidStatus: "Paid",
-    month: "January",
-  },
-  // ... more items ...
-];
+type Payment = {
+  userId?: { name?: string };
+  doctorId?: { _id?: string; full_name?: string };
+  status?: string | number;
+  amount?: number | string;
+};
 
 export default function SpecialistsPage() {
   const [viewType, setViewType] = useState<"grid" | "list">("grid");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 8;
+  const router = useRouter();
+
+  const [selectedFiltering, setSelectedFiltering] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedType, setSelectedType] = useState("");
+  const [selectedSpecialist, setSelectedSpecialist] = useState("");
+  const [paymentsData, setPaymentsData] = useState<{
+    payments: Payment[];
+    total: number;
+    currentPage: number;
+    hasNext: boolean;
+  }>({
+    payments: [],
+    total: 0,
+    currentPage: 1,
+    hasNext: false,
+  });
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  const fetchPayments = async (page = 1) => {
+    const limit = 50; // fetch more since grouping
+    const res = await fetch(`/api/payments?page=${page}&limit=${limit}`);
+    const data = await res.json();
+    if (data.success) {
+      setPaymentsData({
+        payments: data.data,
+        total: data.total,
+        currentPage: data.currentPage,
+        hasNext: data.hasNext,
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchPayments(1);
+  }, []);
+
+  // 🔎 Apply frontend filtering before grouping
+  const filteredPayments = paymentsData.payments.filter((p) => {
+    const searchLower = debouncedSearch.toLowerCase();
+    return (
+      p.userId?.name?.toLowerCase().includes(searchLower) ||
+      p.doctorId?.full_name?.toLowerCase().includes(searchLower) ||
+      p.status?.toString().toLowerCase().includes(searchLower) ||
+      p.amount?.toString().includes(searchLower)
+    );
+  });
+
+  const grouped = groupPaymentsByDoctor(filteredPayments);
 
   // Helper: Format "Paid in January" or "Unpaid January"
   function getPaidLabel(s: Specialist) {
     return s.paidStatus === "Paid" ? `Paid in ${s.month}` : `Unpaid ${s.month}`;
   }
+  const clearAllFilters = () => {
+    setSelectedFiltering("");
+    setSelectedDate("");
+    setSelectedType("");
+    setSelectedSpecialist("");
+  };
 
   return (
     <div className="container mx-auto py-8">
+      <div className="mb-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-gray-600 hover:text-gray-800"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          Back
+        </Button>
+      </div>
+      <div className="flex items-center justify-between mb-6 py-3 border-b border-gray-200">
+        <div className="flex items-center gap-4">
+          {/* Filtering Dropdown */}
+          <div className="relative">
+            <select
+              value={selectedFiltering}
+              onChange={(e) => setSelectedFiltering(e.target.value)}
+              className="appearance-none bg-white border border-gray-300 rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Filtering</option>
+              <option value="recent">Recent</option>
+              <option value="amount">By Amount</option>
+              <option value="date">By Date</option>
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          </div>
+
+          {/* Date Dropdown */}
+          <div className="relative">
+            <select
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="appearance-none bg-white border border-gray-300 rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Date</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="year">This Year</option>
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          </div>
+
+          {/* Type Dropdown */}
+          <div className="relative">
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="appearance-none bg-white border border-gray-300 rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Type</option>
+              <option value="debtor">Debtor</option>
+              <option value="creditor">Creditor</option>
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          </div>
+
+          {/* Specialist's Dropdown */}
+          <div className="relative">
+            <select
+              value={selectedSpecialist}
+              onChange={(e) => setSelectedSpecialist(e.target.value)}
+              className="appearance-none bg-white border border-gray-300 rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Specialist's</option>
+              <option value="john">John Doe</option>
+              <option value="jane">Jane Smith</option>
+              <option value="bob">Bob Johnson</option>
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          </div>
+
+          {/* Clear All Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearAllFilters}
+            className="text-gray-600 hover:text-gray-800"
+          >
+            Clear All
+          </Button>
+        </div>
+
+        {/* Right side buttons */}
+        <div className="flex items-center gap-3">
+          {/* Sort by */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-gray-600 hover:text-gray-800"
+          >
+            <ArrowUpDown className="w-4 h-4 mr-1" />
+            Sort by
+          </Button>
+
+          {/* Export */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-gray-600 hover:text-gray-800"
+          >
+            <Download className="w-4 h-4 mr-1" />
+            Export
+          </Button>
+        </div>
+      </div>
+
       {/* Header / Title / View Toggle */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">
@@ -101,10 +228,10 @@ export default function SpecialistsPage() {
       {/* Conditionally render grid or table */}
       {viewType === "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {mockSpecialists.map((specialist) => (
+          {grouped.map((specialist) => (
             <SpecialistCard
-              key={specialist.id}
-              specialist={specialist}
+              key={specialist.doctorId}
+              specialist={specialist.doctor}
               viewType={viewType}
             />
           ))}
@@ -124,21 +251,23 @@ export default function SpecialistsPage() {
               </tr>
             </thead>
             <tbody>
-              {mockSpecialists.map((s) => (
-                <tr key={s.id} className="border-b last:border-none">
-                  <td className="p-4">{s.name}</td>
-                  <td className="p-4">{s.numberOfSessions}</td>
-                  <td className="p-4">{s.grossIncome}</td>
-                  <td className="p-4">{s.discountPercentage}%</td>
+              {grouped.map((s) => (
+                <tr key={s.doctor.id} className="border-b last:border-none">
+                  <td className="p-4">{s.doctor.full_name}</td>
+                  <td className="p-4">{"N/A"}</td>
+                  <td className="p-4">{s.totalAmount}</td>
+                  <td className="p-4">{"N/A"} %</td>
                   {/* For example, "the due" might be s.totalDue if you have that field */}
-                  <td className="p-4">{3600}</td>
+                  <td className="p-4">{"N/A"}</td>
                   <td className="p-4">
                     <Badge
                       variant={
-                        s.paidStatus === "Paid" ? "success" : "destructive"
+                        s.doctor.paidStatus === "Paid"
+                          ? "success"
+                          : "destructive"
                       }
                     >
-                      {getPaidLabel(s)}
+                      {getPaidLabel(s.doctor)}
                     </Badge>
                   </td>
                   <td className="p-4">
@@ -149,21 +278,16 @@ export default function SpecialistsPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <ViewSpecialistDetails
-                            name="Muhammad Al-Abdullah Abdul-Rahman"
-                            joinDate="5-3-2023"
-                            ratio="15%"
-                            discountPercentage="50%"
-                            grossIncome="10484 SAR"
-                            numberOfSessions="10484 SAR"
-                            totalDue="3600"
-                            totalTax="10484 SAR"
-                            totalDiscount="1000 SAR"
-                            specialistRatio="30 SAR"
-                            badgeLabel="Unpaid January"
-                            badgeVariant="destructive" // or "default", "secondary", etc.
-                          />
+                        <DropdownMenuItem asChild>
+                          <SpecialistDetailsModal
+                            doctor={s.doctor}
+                            payments={s.payments}
+                            totalAmount={s.totalAmount}
+                          >
+                            <div className="w-full rounded-md border px-2.5 py-2.5 text-sm hover:bg-gray-100 cursor-pointer">
+                              View Details
+                            </div>
+                          </SpecialistDetailsModal>
                         </DropdownMenuItem>
                         <DropdownMenuItem>
                           <TransferDialog />
