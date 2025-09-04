@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LayoutGrid, List, MoreVertical } from "lucide-react";
+import { LayoutGrid, List, MoreVertical, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Specialist } from "@/features/finance/types/finance.type";
 import { SpecialistCard } from "@/features/finance/components/specialist-card";
@@ -19,6 +19,8 @@ import { AddAmountDialog } from "@/features/finance/components/add-amount-dialog
 import { ArrowLeft, ArrowUpDown, ChevronDown, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { groupPaymentsByDoctor } from "@/hooks/group-payment";
+// Import your existing page loading component
+import PageLoading from "@/components/page-loading";
 
 type Payment = {
   userId?: { name?: string };
@@ -32,6 +34,11 @@ export default function SpecialistsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 8;
   const router = useRouter();
+
+  // Loading states
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const [selectedFiltering, setSelectedFiltering] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
@@ -50,23 +57,53 @@ export default function SpecialistsPage() {
   });
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  const fetchPayments = async (page = 1) => {
-    const limit = 50; // fetch more since grouping
-    const res = await fetch(`/api/payments?page=${page}&limit=${limit}`);
-    const data = await res.json();
-    if (data.success) {
-      setPaymentsData({
-        payments: data.data,
-        total: data.total,
-        currentPage: data.currentPage,
-        hasNext: data.hasNext,
-      });
+  const fetchPayments = async (page = 1, isLoadMore = false) => {
+    try {
+      if (isLoadMore) {
+        setIsLoadingMore(true);
+      } else if (page === 1) {
+        setIsInitialLoading(true);
+      }
+
+      const limit = 50; // fetch more since grouping
+      const res = await fetch(`/api/payments?page=${page}&limit=${limit}`);
+      const data = await res.json();
+      
+      if (data.success) {
+        setPaymentsData({
+          payments: data.data,
+          total: data.total,
+          currentPage: data.currentPage,
+          hasNext: data.hasNext,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch payments:', error);
+      // You might want to show an error toast here
+    } finally {
+      setIsInitialLoading(false);
+      setIsLoadingMore(false);
     }
   };
 
   useEffect(() => {
     fetchPayments(1);
   }, []);
+
+  // Handle export with loading state
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      // Simulate export API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Replace with actual export logic
+      console.log('Exporting data...');
+    } catch (error) {
+      console.error('Export failed:', error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // 🔎 Apply frontend filtering before grouping
   const filteredPayments = paymentsData.payments.filter((p) => {
@@ -85,12 +122,64 @@ export default function SpecialistsPage() {
   function getPaidLabel(s: Specialist) {
     return s.paidStatus === "Paid" ? `Paid in ${s.month}` : `Unpaid ${s.month}`;
   }
+
   const clearAllFilters = () => {
     setSelectedFiltering("");
     setSelectedDate("");
     setSelectedType("");
     setSelectedSpecialist("");
   };
+
+  // Show page loading component for initial load
+  if (isInitialLoading) {
+    return <PageLoading />;
+  }
+
+  // Loading skeleton for grid view
+  const GridSkeleton = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="border rounded-lg p-6 animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+          <div className="h-3 bg-gray-200 rounded w-1/2 mb-2"></div>
+          <div className="h-3 bg-gray-200 rounded w-2/3 mb-4"></div>
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+        </div>
+      ))}
+    </div>
+  );
+
+  // Loading skeleton for table view
+  const TableSkeleton = () => (
+    <div className="overflow-x-auto rounded-md border">
+      <table className="min-w-full text-sm">
+        <thead className="bg-muted">
+          <tr className="text-left">
+            <th className="p-4 font-semibold">Name of the specialist</th>
+            <th className="p-4 font-semibold">Number of sessions</th>
+            <th className="p-4 font-semibold">Income</th>
+            <th className="p-4 font-semibold">Discount percentage</th>
+            <th className="p-4 font-semibold">The due</th>
+            <th className="p-4 font-semibold">Condition</th>
+            <th className="p-4 font-semibold">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {[...Array(5)].map((_, i) => (
+            <tr key={i} className="border-b animate-pulse">
+              <td className="p-4"><div className="h-4 bg-gray-200 rounded w-3/4"></div></td>
+              <td className="p-4"><div className="h-4 bg-gray-200 rounded w-1/2"></div></td>
+              <td className="p-4"><div className="h-4 bg-gray-200 rounded w-1/3"></div></td>
+              <td className="p-4"><div className="h-4 bg-gray-200 rounded w-1/4"></div></td>
+              <td className="p-4"><div className="h-4 bg-gray-200 rounded w-1/3"></div></td>
+              <td className="p-4"><div className="h-6 bg-gray-200 rounded w-20"></div></td>
+              <td className="p-4"><div className="h-8 w-8 bg-gray-200 rounded"></div></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 
   return (
     <div className="container mx-auto py-8">
@@ -105,6 +194,7 @@ export default function SpecialistsPage() {
           Back
         </Button>
       </div>
+      
       <div className="flex items-center justify-between mb-6 py-3 border-b border-gray-200">
         <div className="flex items-center gap-4">
           {/* Filtering Dropdown */}
@@ -113,6 +203,7 @@ export default function SpecialistsPage() {
               value={selectedFiltering}
               onChange={(e) => setSelectedFiltering(e.target.value)}
               className="appearance-none bg-white border border-gray-300 rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              disabled={isLoadingMore}
             >
               <option value="">Filtering</option>
               <option value="recent">Recent</option>
@@ -128,6 +219,7 @@ export default function SpecialistsPage() {
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
               className="appearance-none bg-white border border-gray-300 rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              disabled={isLoadingMore}
             >
               <option value="">Date</option>
               <option value="today">Today</option>
@@ -144,6 +236,7 @@ export default function SpecialistsPage() {
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
               className="appearance-none bg-white border border-gray-300 rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              disabled={isLoadingMore}
             >
               <option value="">Type</option>
               <option value="debtor">Debtor</option>
@@ -158,6 +251,7 @@ export default function SpecialistsPage() {
               value={selectedSpecialist}
               onChange={(e) => setSelectedSpecialist(e.target.value)}
               className="appearance-none bg-white border border-gray-300 rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              disabled={isLoadingMore}
             >
               <option value="">Specialist's</option>
               <option value="john">John Doe</option>
@@ -173,6 +267,7 @@ export default function SpecialistsPage() {
             size="sm"
             onClick={clearAllFilters}
             className="text-gray-600 hover:text-gray-800"
+            disabled={isLoadingMore}
           >
             Clear All
           </Button>
@@ -185,6 +280,7 @@ export default function SpecialistsPage() {
             variant="ghost"
             size="sm"
             className="text-gray-600 hover:text-gray-800"
+            disabled={isLoadingMore}
           >
             <ArrowUpDown className="w-4 h-4 mr-1" />
             Sort by
@@ -195,8 +291,14 @@ export default function SpecialistsPage() {
             variant="ghost"
             size="sm"
             className="text-gray-600 hover:text-gray-800"
+            onClick={handleExport}
+            disabled={isExporting || isLoadingMore}
           >
-            <Download className="w-4 h-4 mr-1" />
+            {isExporting ? (
+              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4 mr-1" />
+            )}
             Export
           </Button>
         </div>
@@ -212,6 +314,7 @@ export default function SpecialistsPage() {
             variant={viewType === "grid" ? "default" : "outline"}
             size="icon"
             onClick={() => setViewType("grid")}
+            disabled={isLoadingMore}
           >
             <LayoutGrid className="h-4 w-4" />
           </Button>
@@ -219,99 +322,131 @@ export default function SpecialistsPage() {
             variant={viewType === "list" ? "default" : "outline"}
             size="icon"
             onClick={() => setViewType("list")}
+            disabled={isLoadingMore}
           >
             <List className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* Conditionally render grid or table */}
-      {viewType === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {grouped.map((specialist) => (
-            <SpecialistCard
-              key={specialist.doctorId}
-              specialist={specialist.doctor}
-              viewType={viewType}
-            />
-          ))}
+      {/* Loading indicator for filter changes */}
+      {isLoadingMore && (
+        <div className="flex justify-center items-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin mr-2" />
+          <span className="text-sm text-gray-600">Loading...</span>
         </div>
+      )}
+
+      {/* Show skeleton while loading more, otherwise show actual content */}
+      {isLoadingMore ? (
+        viewType === "grid" ? <GridSkeleton /> : <TableSkeleton />
       ) : (
-        <div className="overflow-x-auto rounded-md border">
-          <table className="min-w-full text-sm">
-            <thead className="bg-muted">
-              <tr className="text-left">
-                <th className="p-4 font-semibold">Name of the specialist</th>
-                <th className="p-4 font-semibold">Number of sessions</th>
-                <th className="p-4 font-semibold">Income</th>
-                <th className="p-4 font-semibold">Discount percentage</th>
-                <th className="p-4 font-semibold">The due</th>
-                <th className="p-4 font-semibold">Condition</th>
-                <th className="p-4 font-semibold">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {grouped.map((s) => (
-                <tr key={s.doctor.id} className="border-b last:border-none">
-                  <td className="p-4">{s.doctor.full_name}</td>
-                  <td className="p-4">{"N/A"}</td>
-                  <td className="p-4">{s.totalAmount}</td>
-                  <td className="p-4">{"N/A"} %</td>
-                  {/* For example, "the due" might be s.totalDue if you have that field */}
-                  <td className="p-4">{"N/A"}</td>
-                  <td className="p-4">
-                    <Badge
-                      variant={
-                        s.doctor.paidStatus === "Paid"
-                          ? "success"
-                          : "destructive"
-                      }
-                    >
-                      {getPaidLabel(s.doctor)}
-                    </Badge>
-                  </td>
-                  <td className="p-4">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <SpecialistDetailsModal
-                            doctor={s.doctor}
-                            payments={s.payments}
-                            totalAmount={s.totalAmount}
-                          >
-                            <div className="w-full rounded-md border px-2.5 py-2.5 text-sm hover:bg-gray-100 cursor-pointer">
-                              View Details
-                            </div>
-                          </SpecialistDetailsModal>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <TransferDialog />
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <AddAmountDialog />
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
-                </tr>
+        <>
+          {/* Conditionally render grid or table */}
+          {viewType === "grid" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {grouped.map((specialist) => (
+                <SpecialistCard
+                  key={specialist.doctorId}
+                  specialist={specialist.doctor}
+                  viewType={viewType}
+                />
               ))}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-md border">
+              <table className="min-w-full text-sm">
+                <thead className="bg-muted">
+                  <tr className="text-left">
+                    <th className="p-4 font-semibold">Name of the specialist</th>
+                    <th className="p-4 font-semibold">Number of sessions</th>
+                    <th className="p-4 font-semibold">Income</th>
+                    <th className="p-4 font-semibold">Discount percentage</th>
+                    <th className="p-4 font-semibold">The due</th>
+                    <th className="p-4 font-semibold">Condition</th>
+                    <th className="p-4 font-semibold">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {grouped.map((s) => (
+                    <tr key={s.doctor.id} className="border-b last:border-none">
+                      <td className="p-4">{s.doctor.full_name}</td>
+                      <td className="p-4">{"N/A"}</td>
+                      <td className="p-4">{s.totalAmount}</td>
+                      <td className="p-4">{"N/A"} %</td>
+                      <td className="p-4">{"N/A"}</td>
+                      <td className="p-4">
+                        <Badge
+                          variant={
+                            s.doctor.paidStatus === "Paid"
+                              ? "success"
+                              : "destructive"
+                          }
+                        >
+                          {getPaidLabel(s.doctor)}
+                        </Badge>
+                      </td>
+                      <td className="p-4">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <SpecialistDetailsModal
+                                doctor={s.doctor}
+                                payments={s.payments}
+                                totalAmount={s.totalAmount}
+                              >
+                                <div className="w-full rounded-md border px-2.5 py-2.5 text-sm hover:bg-gray-100 cursor-pointer">
+                                  View Details
+                                </div>
+                              </SpecialistDetailsModal>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <TransferDialog />
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <AddAmountDialog />
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Empty state */}
+          {!isLoadingMore && grouped.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="text-gray-400 text-lg mb-2">No specialists found</div>
+              <div className="text-gray-500 text-sm">
+                Try adjusting your filters or search criteria
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Simple pagination at bottom */}
       <div className="mt-8 flex justify-center gap-2">
         <Button
           variant="outline"
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          disabled={currentPage === 1}
+          onClick={() => {
+            const newPage = Math.max(1, currentPage - 1);
+            setCurrentPage(newPage);
+            fetchPayments(newPage, true);
+          }}
+          disabled={currentPage === 1 || isLoadingMore}
         >
+          {isLoadingMore && currentPage > 1 ? (
+            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+          ) : null}
           Previous
         </Button>
 
@@ -319,17 +454,32 @@ export default function SpecialistsPage() {
           <Button
             key={page}
             variant={currentPage === page ? "default" : "outline"}
-            onClick={() => setCurrentPage(page)}
+            onClick={() => {
+              setCurrentPage(page);
+              fetchPayments(page, true);
+            }}
+            disabled={isLoadingMore}
           >
-            {page}
+            {isLoadingMore && currentPage === page ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              page
+            )}
           </Button>
         ))}
 
         <Button
           variant="outline"
-          onClick={() => setCurrentPage((p) => p + 1)}
-          disabled={currentPage === 3}
+          onClick={() => {
+            const newPage = currentPage + 1;
+            setCurrentPage(newPage);
+            fetchPayments(newPage, true);
+          }}
+          disabled={currentPage === 3 || isLoadingMore}
         >
+          {isLoadingMore && currentPage < 3 ? (
+            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+          ) : null}
           Next
         </Button>
       </div>
