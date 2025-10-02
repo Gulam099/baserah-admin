@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,52 +23,86 @@ import {
 } from "iconsax-react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowUpDown, ChevronDown, Download } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { ApiBaseUrl } from "../../../../../const";
+import PageLoading from "@/components/page-loading";
+
+interface Doctor {
+  _id: string;
+  full_name: string;
+  profile_picture?: string;
+  specialization: string;
+}
+
+interface Specialist {
+  _id: Doctor;
+  grossIncome: number;
+  sessions: number;
+  place: number;
+}
 
 export default function page() {
   const router = useRouter();
-  const [selectedFiltering, setSelectedFiltering] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
-  const [selectedType, setSelectedType] = useState("");
-  const [selectedSpecialist, setSelectedSpecialist] = useState("");
+  const { t } = useTranslation();
+
+  const [creditAmount, setCreditAmount] = useState(0);
+  const [refundAmount, setRefundAmount] = useState(0);
+  const [totalincome, setTotalincome] = useState(0);
+  const [groupincome, setGroupincome] = useState(0);
+  const [programincome, setProgramincome] = useState(0);
+  const [scheduleincome, setScheduleincome] = useState(0);
+  const [instantincome, setInstantincome] = useState(0);
+  const [appointmentincome, setAppointmentincome] = useState(0);
+  const [specialists, setSpecialists] = useState<Specialist[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const chartData = [
     {
-      title: "CustomerReturn",
-      number: 10485,
-      fill: "var(--color-CustomerReturn)",
+      title: t("fromWallet"),
+      number: creditAmount,
+      fill: "hsl(var(--chart-1))",
     },
-    { title: "OneTime", number: 3058, fill: "var(--color-OneTime)" },
+    {
+      title: t("toWallet"),
+      number: refundAmount,
+      fill: "hsl(var(--chart-2))",
+    },
   ];
+
   const chartConfig = {
     number: {
       label: "number",
     },
-    CustomerReturn: {
-      label: "Customer return",
+    "from wallet": {
+      label: "from wallet",
       color: "hsl(var(--chart-1))",
     },
-    OneTime: {
-      label: "One time",
+    "to wallet": {
+      label: "to wallet",
       color: "hsl(var(--chart-2))",
     },
   } satisfies ChartConfig;
 
-  const data = {
-    appointment: [
-      { title: "Ongoing Appointment", number: 2039 },
-      { title: "Transferred Appointment", number: 2049 },
-      { title: "Closed Appointment", number: 5465 },
-      { title: "Upcoming Appointment", number: 2039 },
-    ],
-  };
+  const data = [
+    { title: "Marketing", number: 2039 },
+    { title: "Operation", number: 2049 },
+    { title: "Technical", number: 5465 },
+    { title: "Technical", number: 2039 },
+  ];
 
   const chartData2 = [
-    { title: "January", number: 186 },
-    { title: "February", number: 305 },
-    { title: "March", number: 237 },
-    { title: "April", number: 73 },
-    { title: "May", number: 209 },
-    { title: "June", number: 214 },
+    { title: "January", number: 186, fill: "#C084FC" },
+    { title: "February", number: 305, fill: "#4ADE80" },
+    { title: "March", number: 237, fill: "#F87171" },
+    { title: "April", number: 73, fill: "#3B82F6" },
+    { title: "May", number: 209, fill: "#06B6D4" },
+    { title: "June", number: 214, fill: "#A855F7" },
+    { title: "July", number: 214, fill: "#22C55E" },
+    { title: "August", number: 186, fill: "#EF4444" },
+    { title: "Setember", number: 305, fill: "#10B981" },
+    { title: "October", number: 237, fill: "#1D4ED8" },
+    { title: "Noverber", number: 73, fill: "#D8B4FE" },
+    { title: "December", number: 209, fill: "#0EA5E9" },
   ];
   const chartConfig2 = {
     number: {
@@ -79,53 +113,131 @@ export default function page() {
 
   const GeneralStat = [
     {
-      title: "Net Profit",
+      title: t("netProfit"),
       icon: WalletAdd,
       number: "1500000",
     },
     {
-      title: "Costs",
+      title: t("costs"),
       icon: ReceiptText,
       number: "500000",
     },
     {
-      title: "Total Income",
+      title: t("totalIncome"),
       icon: ChartSquare,
-      number: "2000000",
+      number: totalincome,
     },
   ];
 
-  // topSpecialistData.ts (example file)
-
-  const topSpecialist = [
+  const Financial_Distribution = [
     {
-      name: "Dr. Fahd Al-Qahtani",
-      id: "1048593859",
-      place: 1,
-      grossIncome: 1267,
-      sessions: 14000,
-      dues: 500,
-      image: "https://via.placeholder.com/80",
+      title: t("supportGroups"),
+      icon: WalletAdd,
+      number: groupincome,
     },
     {
-      name: "Dr. Fahd Al-Qahtani",
-      id: "1048593859",
-      place: 2,
-      grossIncome: 1267,
-      sessions: 14000,
-      dues: 500,
-      image: "https://via.placeholder.com/80",
+      title: t("programs"),
+      icon: ReceiptText,
+      number: programincome,
     },
     {
-      name: "Dr. Fahd Al-Qahtani",
-      id: "1048593859",
-      place: 3,
-      grossIncome: 1267,
-      sessions: 14000,
-      dues: 500,
-      image: "https://via.placeholder.com/80",
+      title: t("appointments"),
+      icon: ChartSquare,
+      number: appointmentincome,
     },
   ];
+
+  useEffect(() => {
+    const fetchSpecialists = async () => {
+      try {
+        const res = await fetch(`${ApiBaseUrl}/api/payments/top-specialists`);
+        const data = await res.json();
+        if (data.success) {
+          // Add place numbers (1,2,3)
+          const withPlace = data.data.map((item: any, idx: number) => ({
+            ...item,
+            place: idx + 1,
+          }));
+          setSpecialists(withPlace);
+        }
+      } catch (error) {
+        console.error("Error fetching top specialists:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSpecialists();
+  }, []);
+
+  useEffect(() => {
+    const fetchAmounts = async () => {
+      try {
+        // Fetch total credit amount
+        const creditRes = await fetch(
+          `${ApiBaseUrl}/api/walletTransaction/wallet-total-amount`
+        );
+        const creditData = await creditRes.json();
+        setCreditAmount(creditData.totalCreditAmount || 0);
+
+        // Fetch total refund amount
+        const refundRes = await fetch(
+          `${ApiBaseUrl}/api/refunds/refunds-total-amount`
+        );
+        const refundData = await refundRes.json();
+        setRefundAmount(refundData.totalRefundAmount || 0);
+
+        const totalRes = await fetch(
+          `${ApiBaseUrl}/api/payments/payments-total-amount`
+        );
+        const totalincome = await totalRes.json();
+        setTotalincome(totalincome.totalCreditAmount || 0);
+      } catch (error) {
+        console.error("Error fetching amounts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAmounts();
+  }, []);
+
+  useEffect(() => {
+    const fetchTotalAmount = async () => {
+      try {
+        const groupres = await fetch(
+          `${ApiBaseUrl}/api/groups-booking/groups-total-amount`
+        );
+        const groupsincome = await groupres.json();
+        setGroupincome(groupsincome.totalAmount || 0);
+
+        const programres = await fetch(
+          `${ApiBaseUrl}/api/programs-booking/programs-total-amount`
+        );
+        const programsincome = await programres.json();
+        setProgramincome(programsincome.totalAmount || 0);
+
+        const scheduleres = await fetch(
+          `${ApiBaseUrl}/api/bookings/bookings-total-amount`
+        );
+        const scheduledincome = await scheduleres.json();
+        setScheduleincome(scheduledincome.totalAmount || 0);
+
+        const instantres = await fetch(
+          `${ApiBaseUrl}/api/instantbookings/instants-total-amount`
+        );
+        const instantsincome = await instantres.json();
+        setInstantincome(instantsincome.totalAmount || 0);
+        setAppointmentincome(scheduleincome + instantincome);
+      } catch (error) {
+        console.error("Error fetching paid total amount:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTotalAmount();
+  }, []);
 
   function handleCardClick(link: string) {
     if (link) {
@@ -139,130 +251,29 @@ export default function page() {
     console.log("Button clicked");
   }
 
-  const clearAllFilters = () => {
-    setSelectedFiltering("");
-    setSelectedDate("");
-    setSelectedType("");
-    setSelectedSpecialist("");
-  };
+  if (loading) {
+    return <PageLoading />;
+  }
   return (
     <div className="flex flex-col gap-4 ">
-      {/* Filter Bar */}
-      <div className="flex items-center justify-between mb-6 py-3 border-b border-gray-200">
-        <div className="flex items-center gap-4">
-          {/* Filtering Dropdown */}
-          <div className="relative">
-            <select
-              value={selectedFiltering}
-              onChange={(e) => setSelectedFiltering(e.target.value)}
-              className="appearance-none bg-white border border-gray-300 rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Filtering</option>
-              <option value="recent">Recent</option>
-              <option value="amount">By Amount</option>
-              <option value="date">By Date</option>
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-          </div>
-
-          {/* Date Dropdown */}
-          <div className="relative">
-            <select
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="appearance-none bg-white border border-gray-300 rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Date</option>
-              <option value="today">Today</option>
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="year">This Year</option>
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-          </div>
-
-          {/* Type Dropdown */}
-          <div className="relative">
-            <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="appearance-none bg-white border border-gray-300 rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Type</option>
-              <option value="debtor">Debtor</option>
-              <option value="creditor">Creditor</option>
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-          </div>
-
-          {/* Specialist's Dropdown */}
-          <div className="relative">
-            <select
-              value={selectedSpecialist}
-              onChange={(e) => setSelectedSpecialist(e.target.value)}
-              className="appearance-none bg-white border border-gray-300 rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Specialist's</option>
-              <option value="john">John Doe</option>
-              <option value="jane">Jane Smith</option>
-              <option value="bob">Bob Johnson</option>
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-          </div>
-
-          {/* Clear All Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={clearAllFilters}
-            className="text-gray-600 hover:text-gray-800"
-          >
-            Clear All
-          </Button>
-        </div>
-
-        {/* Right side buttons */}
-        <div className="flex items-center gap-3">
-          {/* Sort by */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-600 hover:text-gray-800"
-          >
-            <ArrowUpDown className="w-4 h-4 mr-1" />
-            Sort by
-          </Button>
-
-          {/* Export */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-600 hover:text-gray-800"
-          >
-            <Download className="w-4 h-4 mr-1" />
-            Export
-          </Button>
-        </div>
-      </div>
-
       <div className="flex flex-wrap gap-4 justify-between ">
         <DataPieChartCard
           chartType="pie"
           chartConfig={chartConfig}
           chartData={chartData}
-          title={"Wallet"}
+          title={t("wallet")}
           className="flex-1"
           link="/dashboard/finance/transaction"
         />
 
         <Card
           className={"flex flex-1 flex-col grow"}
-          onClick={() => handleCardClick("/dashboard/finance/detail")}
+          // onClick={() => handleCardClick("/dashboard/finance/detail")}
         >
           <CardHeader className="items-center pb-0">
             <div className="flex flex-row justify-between items-center w-full">
               <CardTitle className="text-sm font-semibold text-neutral-600">
-                General Statistics
+                {t("generalStatistics")}
               </CardTitle>
               <Button
                 className="aspect-square"
@@ -298,6 +309,8 @@ export default function page() {
           </CardFooter>
         </Card>
       </div>
+
+      {/* Financial Distribution for Reservations */}
       <div className="flex flex-wrap gap-4 justify-between ">
         <Card
           className={"flex flex-1 flex-col grow"}
@@ -306,7 +319,7 @@ export default function page() {
           <CardHeader className="items-center pb-0">
             <div className="flex flex-row justify-between items-center w-full">
               <CardTitle className="text-sm font-semibold text-neutral-600">
-                Financial Distribution for Reservations
+                {t("financialDistributionReservations")}
               </CardTitle>
               <Button
                 className="aspect-square"
@@ -319,7 +332,7 @@ export default function page() {
           </CardHeader>
 
           <CardContent className="flex-1 pb-0 flex flex-row justify-between">
-            {GeneralStat.map((item, index) => {
+            {Financial_Distribution.map((item, index) => {
               return (
                 <div
                   className=" grow flex flex-col justify-center items-center gap-4"
@@ -337,31 +350,30 @@ export default function page() {
             })}
           </CardContent>
 
-          <CardFooter className="flex-col gap-2 text-sm">
-            {/* Footer content if needed, or leave empty */}
-          </CardFooter>
+          <CardFooter className="flex-col gap-2 text-sm"></CardFooter>
         </Card>
-
+        {/* For Cost distribution */}
         <DataPieChartCard
           chartType="barV"
           chartConfig={chartConfig2}
-          chartData={chartData2}
+          chartData={data}
           title={"Cost distribution"}
           className="flex-1"
-          link="/dashboard/finance/detail"
+          // link="/dashboard/finance/detail"
         />
       </div>
 
+      {/* For reservation value */}
       <div>
         <DataPieChartCard
           chartType="bar"
           chartConfig={chartConfig2}
           chartData={chartData2}
-          title={"Ticket Type"}
-          link="/dashboard/finance/detail"
+          title={"Reservation value"}
+          // link="/dashboard/finance/detail"
         />
       </div>
-
+      {/*topEarningsSpecialists */}
       <div>
         <Card
           className={cn("flex flex-1 flex-col grow")}
@@ -371,7 +383,7 @@ export default function page() {
           <CardHeader className="items-center pb-0">
             <div className="flex flex-row justify-between items-center w-full">
               <CardTitle className="text-sm font-semibold text-neutral-600">
-                Top Earnings for Specialists
+                {t("topEarningsSpecialists")}
               </CardTitle>
               <Button
                 className="aspect-square"
@@ -385,18 +397,18 @@ export default function page() {
 
           {/* Content */}
           <CardContent className="flex-1 p-6 flex flex-row justify-center items-center gap-6 overflow-x-auto ">
-            {topSpecialist.map((item, index) => {
+            {specialists.map((item, index) => {
               // Convert numeric place to text
               let placeLabel = "";
               switch (item.place) {
                 case 1:
-                  placeLabel = "First place";
+                  placeLabel = t("firstPlace");
                   break;
                 case 2:
-                  placeLabel = "Second place";
+                  placeLabel = t("secondPlace");
                   break;
                 case 3:
-                  placeLabel = "Third place";
+                  placeLabel = t("thirdPlace");
                   break;
                 default:
                   placeLabel = `${item.place}th place`;
@@ -411,17 +423,19 @@ export default function page() {
                   <div className="flex items-start gap-4 w-full">
                     <Avatar>
                       <AvatarImage
-                        src={item.image}
-                        alt={item.name + "_avatar"}
+                        src={item._id.profile_picture}
+                        alt={item._id.full_name + "_avatar"}
                       />
-                      <AvatarFallback>{item.name.slice(0, 2)}</AvatarFallback>
+                      <AvatarFallback>
+                        {item._id.full_name.slice(0, 2)}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col flex-1">
                       <p className="text-sm font-semibold truncate">
-                        {item.name}
+                        {item._id.full_name}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {item.id}
+                        {item._id?._id}
                       </p>
                     </div>
                     <div className="text-primary-400 text-xs font-semibold flex flex-col gap-2 rounded-sm p-1 whitespace-nowrap justify-center items-center">
@@ -433,9 +447,9 @@ export default function page() {
                   {/* Middle row: Stats */}
                   <div className="flex flex-row justify-between w-full h-full items-center">
                     {[
-                      { title: "Gross income", number: item.grossIncome },
-                      { title: "Number of sessions", number: item.sessions },
-                      { title: "Dues", number: item.dues },
+                      { title: t("grossIncome"), number: item.grossIncome },
+                      { title: t("numberOfSessions"), number: item.sessions },
+                      // { title: t("dues"), number: item.dues },
                     ].map((ele, j) => (
                       <div
                         className="flex flex-col items-center justify-center w-1/3 gap-2"
@@ -455,7 +469,7 @@ export default function page() {
 
           <CardFooter className="flex justify-end px-6 py-4">
             <Button variant="default" className="text-sm font-medium">
-              Data Details
+              {t("dataDetails")}
             </Button>
           </CardFooter>
         </Card>

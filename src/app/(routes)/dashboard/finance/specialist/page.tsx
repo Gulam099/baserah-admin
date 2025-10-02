@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { groupPaymentsByDoctor } from "@/hooks/group-payment";
 // Import your existing page loading component
 import PageLoading from "@/components/page-loading";
+import { t } from "i18next";
 
 type Payment = {
   userId?: { name?: string };
@@ -29,10 +30,22 @@ type Payment = {
   amount?: number | string;
 };
 
+interface DateFilter {
+  type: "specific" | "range";
+  quickType?: "today" | "week" | "month" | "year";
+  specificDate?: string;
+  startDate?: string;
+  endDate?: string;
+}
+interface FilterState {
+  date: DateFilter | null;
+  sourceType: string;
+  specialist: string;
+  sorting: string;
+}
 export default function SpecialistsPage() {
   const [viewType, setViewType] = useState<"grid" | "list">("grid");
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 8;
   const router = useRouter();
 
   // Loading states
@@ -40,6 +53,12 @@ export default function SpecialistsPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
+  const [filters, setFilters] = useState<FilterState>({
+    date: null,
+    sourceType: "",
+    specialist: "",
+    sorting: "",
+  });
   const [selectedFiltering, setSelectedFiltering] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedType, setSelectedType] = useState("");
@@ -68,7 +87,7 @@ export default function SpecialistsPage() {
       const limit = 50; // fetch more since grouping
       const res = await fetch(`/api/payments?page=${page}&limit=${limit}`);
       const data = await res.json();
-      
+
       if (data.success) {
         setPaymentsData({
           payments: data.data,
@@ -78,7 +97,7 @@ export default function SpecialistsPage() {
         });
       }
     } catch (error) {
-      console.error('Failed to fetch payments:', error);
+      console.error("Failed to fetch payments:", error);
       // You might want to show an error toast here
     } finally {
       setIsInitialLoading(false);
@@ -95,11 +114,11 @@ export default function SpecialistsPage() {
     setIsExporting(true);
     try {
       // Simulate export API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       // Replace with actual export logic
-      console.log('Exporting data...');
+      console.log("Exporting data...");
     } catch (error) {
-      console.error('Export failed:', error);
+      console.error("Export failed:", error);
     } finally {
       setIsExporting(false);
     }
@@ -116,18 +135,25 @@ export default function SpecialistsPage() {
     );
   });
 
-  const grouped = groupPaymentsByDoctor(filteredPayments);
+  const groupedSpecialists = groupPaymentsByDoctor(filteredPayments);
 
-  // Helper: Format "Paid in January" or "Unpaid January"
-  function getPaidLabel(s: Specialist) {
-    return s.paidStatus === "Paid" ? `Paid in ${s.month}` : `Unpaid ${s.month}`;
-  }
+  // Apply specialist filter
+  const filteredSpecialists = filters.specialist
+    ? groupedSpecialists.filter(
+        (specialist) => specialist.doctor?.full_name === filters.specialist
+      )
+    : groupedSpecialists;
+
+  // Get unique specialists for dropdown
+  const uniqueSpecialists = Array.from(
+    new Set(groupedSpecialists.map((r) => r.doctor?.full_name).filter(Boolean))
+  );
 
   const clearAllFilters = () => {
     setSelectedFiltering("");
     setSelectedDate("");
     setSelectedType("");
-    setSelectedSpecialist("");
+    setFilters((prev) => ({ ...prev, specialist: "" }));
   };
 
   // Show page loading component for initial load
@@ -155,25 +181,39 @@ export default function SpecialistsPage() {
       <table className="min-w-full text-sm">
         <thead className="bg-muted">
           <tr className="text-left">
-            <th className="p-4 font-semibold">Name of the specialist</th>
-            <th className="p-4 font-semibold">Number of sessions</th>
-            <th className="p-4 font-semibold">Income</th>
-            <th className="p-4 font-semibold">Discount percentage</th>
-            <th className="p-4 font-semibold">The due</th>
-            <th className="p-4 font-semibold">Condition</th>
-            <th className="p-4 font-semibold">Action</th>
+            <th className="p-4 font-semibold">{t("nameOfSpecialist")}</th>
+            <th className="p-4 font-semibold">{t("numberOfSessions")}</th>
+            <th className="p-4 font-semibold">{t("income")}</th>
+            <th className="p-4 font-semibold">{t("discountPercentage")}</th>
+            <th className="p-4 font-semibold">{t("theDue")}</th>
+            <th className="p-4 font-semibold">{t("condition")}</th>
+            <th className="p-4 font-semibold">{t("action")}</th>
           </tr>
         </thead>
         <tbody>
           {[...Array(5)].map((_, i) => (
             <tr key={i} className="border-b animate-pulse">
-              <td className="p-4"><div className="h-4 bg-gray-200 rounded w-3/4"></div></td>
-              <td className="p-4"><div className="h-4 bg-gray-200 rounded w-1/2"></div></td>
-              <td className="p-4"><div className="h-4 bg-gray-200 rounded w-1/3"></div></td>
-              <td className="p-4"><div className="h-4 bg-gray-200 rounded w-1/4"></div></td>
-              <td className="p-4"><div className="h-4 bg-gray-200 rounded w-1/3"></div></td>
-              <td className="p-4"><div className="h-6 bg-gray-200 rounded w-20"></div></td>
-              <td className="p-4"><div className="h-8 w-8 bg-gray-200 rounded"></div></td>
+              <td className="p-4">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              </td>
+              <td className="p-4">
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              </td>
+              <td className="p-4">
+                <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+              </td>
+              <td className="p-4">
+                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+              </td>
+              <td className="p-4">
+                <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+              </td>
+              <td className="p-4">
+                <div className="h-6 bg-gray-200 rounded w-20"></div>
+              </td>
+              <td className="p-4">
+                <div className="h-8 w-8 bg-gray-200 rounded"></div>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -191,10 +231,10 @@ export default function SpecialistsPage() {
           onClick={() => router.back()}
         >
           <ArrowLeft className="w-4 h-4 mr-1" />
-          Back
+          {t("back")}
         </Button>
       </div>
-      
+
       <div className="flex items-center justify-between mb-6 py-3 border-b border-gray-200">
         <div className="flex items-center gap-4">
           {/* Filtering Dropdown */}
@@ -205,16 +245,16 @@ export default function SpecialistsPage() {
               className="appearance-none bg-white border border-gray-300 rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               disabled={isLoadingMore}
             >
-              <option value="">Filtering</option>
-              <option value="recent">Recent</option>
+              <option value="">{t("filtering")}</option>
+              {/* <option value="recent">Recent</option>
               <option value="amount">By Amount</option>
-              <option value="date">By Date</option>
+              <option value="date">By Date</option> */}
             </select>
             <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
 
           {/* Date Dropdown */}
-          <div className="relative">
+          {/* <div className="relative">
             <select
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
@@ -228,10 +268,10 @@ export default function SpecialistsPage() {
               <option value="year">This Year</option>
             </select>
             <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-          </div>
+          </div> */}
 
           {/* Type Dropdown */}
-          <div className="relative">
+          {/* <div className="relative">
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
@@ -243,20 +283,30 @@ export default function SpecialistsPage() {
               <option value="creditor">Creditor</option>
             </select>
             <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-          </div>
+          </div> */}
 
           {/* Specialist's Dropdown */}
           <div className="relative">
             <select
-              value={selectedSpecialist}
-              onChange={(e) => setSelectedSpecialist(e.target.value)}
-              className="appearance-none bg-white border border-gray-300 rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              disabled={isLoadingMore}
+              value={filters.specialist}
+              onChange={(e) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  specialist: e.target.value,
+                }))
+              }
+              className={`appearance-none bg-white border rounded px-3 py-2 pr-8 text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                filters.specialist
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-300"
+              }`}
             >
-              <option value="">Specialist's</option>
-              <option value="john">John Doe</option>
-              <option value="jane">Jane Smith</option>
-              <option value="bob">Bob Johnson</option>
+              <option value="">{t("specialist")}</option>
+              {uniqueSpecialists.map((specialist) => (
+                <option key={specialist} value={specialist}>
+                  {specialist}
+                </option>
+              ))}
             </select>
             <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
@@ -269,7 +319,7 @@ export default function SpecialistsPage() {
             className="text-gray-600 hover:text-gray-800"
             disabled={isLoadingMore}
           >
-            Clear All
+            {t("clearAll")}
           </Button>
         </div>
 
@@ -283,7 +333,7 @@ export default function SpecialistsPage() {
             disabled={isLoadingMore}
           >
             <ArrowUpDown className="w-4 h-4 mr-1" />
-            Sort by
+            {t("sortBy")}
           </Button>
 
           {/* Export */}
@@ -299,7 +349,7 @@ export default function SpecialistsPage() {
             ) : (
               <Download className="w-4 h-4 mr-1" />
             )}
-            Export
+            {t("export")}
           </Button>
         </div>
       </div>
@@ -307,7 +357,7 @@ export default function SpecialistsPage() {
       {/* Header / Title / View Toggle */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">
-          Specialists Percentage And Consultation Costs
+          {t("specialistsPercentageAndConsultationCosts")}
         </h1>
         <div className="flex items-center gap-2">
           <Button
@@ -333,22 +383,26 @@ export default function SpecialistsPage() {
       {isLoadingMore && (
         <div className="flex justify-center items-center py-8">
           <Loader2 className="w-6 h-6 animate-spin mr-2" />
-          <span className="text-sm text-gray-600">Loading...</span>
+          <span className="text-sm text-gray-600">{t("loading")}</span>
         </div>
       )}
 
       {/* Show skeleton while loading more, otherwise show actual content */}
       {isLoadingMore ? (
-        viewType === "grid" ? <GridSkeleton /> : <TableSkeleton />
+        viewType === "grid" ? (
+          <GridSkeleton />
+        ) : (
+          <TableSkeleton />
+        )
       ) : (
         <>
           {/* Conditionally render grid or table */}
           {viewType === "grid" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {grouped.map((specialist) => (
+              {filteredSpecialists.map((specialist) => (
                 <SpecialistCard
                   key={specialist.doctorId}
-                  specialist={specialist.doctor}
+                  specialist={specialist}
                   viewType={viewType}
                 />
               ))}
@@ -358,25 +412,31 @@ export default function SpecialistsPage() {
               <table className="min-w-full text-sm">
                 <thead className="bg-muted">
                   <tr className="text-left">
-                    <th className="p-4 font-semibold">Name of the specialist</th>
-                    <th className="p-4 font-semibold">Number of sessions</th>
-                    <th className="p-4 font-semibold">Income</th>
-                    <th className="p-4 font-semibold">Discount percentage</th>
-                    <th className="p-4 font-semibold">The due</th>
-                    <th className="p-4 font-semibold">Condition</th>
-                    <th className="p-4 font-semibold">Action</th>
+                    <th className="p-4 font-semibold">
+                      {t("nameOfSpecialist")}
+                    </th>
+                    <th className="p-4 font-semibold">
+                      {t("numberOfSessions")}
+                    </th>
+                    <th className="p-4 font-semibold">{t("income")}</th>
+                    <th className="p-4 font-semibold">
+                      {t("discountPercentage")}
+                    </th>
+                    <th className="p-4 font-semibold">{t("theDue")}</th>
+                    <th className="p-4 font-semibold">{t("condition")}</th>
+                    <th className="p-4 font-semibold">{t("action")}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {grouped.map((s) => (
+                  {filteredSpecialists.map((s) => (
                     <tr key={s.doctor.id} className="border-b last:border-none">
                       <td className="p-4">{s.doctor.full_name}</td>
-                      <td className="p-4">{"N/A"}</td>
+                      <td className="p-4">{s.sessionCount}</td>
                       <td className="p-4">{s.totalAmount}</td>
                       <td className="p-4">{"N/A"} %</td>
                       <td className="p-4">{"N/A"}</td>
                       <td className="p-4">
-                        <Badge
+                        {/* <Badge
                           variant={
                             s.doctor.paidStatus === "Paid"
                               ? "success"
@@ -384,7 +444,8 @@ export default function SpecialistsPage() {
                           }
                         >
                           {getPaidLabel(s.doctor)}
-                        </Badge>
+                        </Badge> */}
+                        {"N/A"}
                       </td>
                       <td className="p-4">
                         <DropdownMenu>
@@ -401,7 +462,7 @@ export default function SpecialistsPage() {
                                 totalAmount={s.totalAmount}
                               >
                                 <div className="w-full rounded-md border px-2.5 py-2.5 text-sm hover:bg-gray-100 cursor-pointer">
-                                  View Details
+                                  {t("viewDetails")}
                                 </div>
                               </SpecialistDetailsModal>
                             </DropdownMenuItem>
@@ -422,11 +483,13 @@ export default function SpecialistsPage() {
           )}
 
           {/* Empty state */}
-          {!isLoadingMore && grouped.length === 0 && (
+          {!isLoadingMore && filteredSpecialists.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12">
-              <div className="text-gray-400 text-lg mb-2">No specialists found</div>
+              <div className="text-gray-400 text-lg mb-2">
+                {t("noSpecialistsFound")}
+              </div>
               <div className="text-gray-500 text-sm">
-                Try adjusting your filters or search criteria
+                {t("tryAdjustingFilters")}
               </div>
             </div>
           )}
@@ -447,7 +510,7 @@ export default function SpecialistsPage() {
           {isLoadingMore && currentPage > 1 ? (
             <Loader2 className="w-4 h-4 mr-1 animate-spin" />
           ) : null}
-          Previous
+          {t("previous")}
         </Button>
 
         {[1, 2, 3].map((page) => (
@@ -480,7 +543,7 @@ export default function SpecialistsPage() {
           {isLoadingMore && currentPage < 3 ? (
             <Loader2 className="w-4 h-4 mr-1 animate-spin" />
           ) : null}
-          Next
+          {t("next")}
         </Button>
       </div>
     </div>

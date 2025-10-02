@@ -51,15 +51,9 @@ export const SpecialistDetailsModal: React.FC<SpecialistDetailsModalProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>{doctor.full_name}</span>
-            <Badge
-              variant={doctor.paidStatus === "Paid" ? "default" : "destructive"}
-            >
-              {getPaidLabel(doctor)}
-            </Badge>
           </DialogTitle>
           <div className="text-sm text-gray-600 space-y-1">
             <p>Total Income: <span className="font-semibold">{totalAmount} SAR</span></p>
-            <p>Total Sessions: <span className="font-semibold">{payments.length}</span></p>
           </div>
         </DialogHeader>
         

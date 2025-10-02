@@ -1,106 +1,97 @@
+import { ApiBaseUrl } from "../../../../const";
 import {
   FinancialRecord,
   PaginatedResponse,
   Transaction,
 } from "../types/finance.type";
 
-const mockTransactions: Transaction[] = [
-  {
-    id: "1",
-    type: "Inward",
-    amount: 2049,
-    date: "5-3-2023",
-    administrator: "customer name",
-    isEmployee: false,
-    walletAmount: 300,
-  },
-  {
-    id: "2",
-    type: "Outward",
-    amount: 298,
-    date: "5-3-2023",
-    administrator: "Employee Name",
-    isEmployee: true,
-    walletAmount: 20,
-  },
-  {
-    id: "3",
-    type: "Outward",
-    amount: 200,
-    date: "5-3-2023",
-    administrator: "customer name",
-    isEmployee: false,
-    walletAmount: 93,
-  },
-  // Add more mock transactions...
-];
-
 export async function fetchTransactions(
   page: number,
   pageSize: number
 ): Promise<PaginatedResponse> {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  try {
+    const res = await fetch(
+      `${ApiBaseUrl}/api/walletTransaction/getall?page=${page}&pageSize=${pageSize}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+      }
+    );
 
-  const start = (page - 1) * pageSize;
-  const end = start + pageSize;
+    if (!res.ok) {
+      throw new Error("Failed to fetch transactions");
+    }
 
-  return {
-    data: mockTransactions.slice(start, end),
-    total: mockTransactions.length,
-    page,
-    pageSize,
-  };
+    const data = await res.json();
+
+    return {
+      data: data.data as Transaction[],
+      total: data.total,
+      page: data.page,
+      pageSize: data.pageSize,
+    };
+  } catch (err) {
+    console.error("Error fetching transactions:", err);
+    return {
+      data: [],
+      total: 0,
+      page,
+      pageSize,
+    };
+  }
 }
-
-const mockFinancialRecords: FinancialRecord[] = [
-  {
-    id: "1",
-    specialist: "Abdullah Al-Abdullah",
-    administrator: "customer name",
-    isEmployee: false,
-    date: "5-3-2023",
-    source: "consultation",
-    amount: 2049,
-    incomeType: "Debtor",
-  },
-  {
-    id: "2",
-    specialist: "Abdullah Al-Abdullah",
-    administrator: "Employee Name",
-    isEmployee: true,
-    date: "5-3-2023",
-    source: "Cyber security",
-    amount: 298,
-    incomeType: "Creditor",
-  },
-  {
-    id: "3",
-    specialist: "Abdullah Al-Abdullah",
-    administrator: "customer name",
-    isEmployee: false,
-    date: "5-3-2023",
-    source: "consultation",
-    amount: 200,
-    incomeType: "Debtor",
-  },
-  // Add more mock records...
-];
 
 export async function fetchFinancialRecords(
   page: number,
   pageSize: number
 ): Promise<PaginatedResponse> {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  try {
+    // Call your backend API
+    const response = await fetch(
+      `${ApiBaseUrl}/api/payments/paidpaymentlist?page=${page}&pageSize=${pageSize}`
+    );
 
-  const start = (page - 1) * pageSize;
-  const end = start + pageSize;
+    if (!response.ok) {
+      throw new Error("Failed to fetch financial records");
+    }
 
-  return {
-    data: mockFinancialRecords.slice(start, end),
-    total: mockFinancialRecords.length,
-    page,
-    pageSize,
-  };
+    const apiResponse = await response.json();
+
+    // Extract the payments array from the response
+    // Based on your network response, the data should be in apiResponse.data
+    const payments = apiResponse.data || apiResponse || [];
+
+    // Map backend payments -> FinancialRecord[]
+    const records: FinancialRecord[] = payments.map((p: any) => ({
+      id: p._id,
+      specialist: p.doctorId?.full_name || "Unknown Doctor",
+      administrator: p.userId?.name || "Unknown User",
+      isEmployee: false, // you can adjust based on your schema
+      date: new Date(p.createdAt).toLocaleDateString(),
+      source: p.description || "Unknown Source",
+      amount: p.amount, // Format the amount with currency symbol
+    }));
+
+    // If your backend already handles pagination, use the total from API response
+    // Otherwise, use the records length for client-side pagination
+    const totalRecords = apiResponse.total || records.length;
+
+    return {
+      data: records,
+      total: totalRecords,
+      page,
+      pageSize,
+    };
+  } catch (error: any) {
+    console.error("Error fetching financial records:", error.message);
+    return {
+      data: [],
+      total: 0,
+      page,
+      pageSize,
+    };
+  }
 }

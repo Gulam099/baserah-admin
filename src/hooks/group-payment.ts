@@ -11,11 +11,15 @@ export function groupPaymentsByDoctor(payments: any[]) {
       0
     );
 
+    const sessionCount = doctorPayments.reduce((sum, payment) => {
+      return sum + Number(payment.sessionCount || 0);
+    }, 0);
     return {
       doctorId,
       doctor: doctorPayments[0]?.doctorId || { full_name: "Unknown Doctor" },
       totalAmount,
       payments: doctorPayments,
+      sessionCount,
     };
   });
 }

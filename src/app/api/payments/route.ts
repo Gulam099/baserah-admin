@@ -61,89 +61,216 @@ export async function GET(req: Request) {
     );
     const skip = (page - 1) * limit;
 
-    console.log("GET PAYMENTS", isAdmin);
+    // ---- Base Filter ----
+    const filter: any = {};
+    if (doctorId) filter.doctorId = new mongoose.Types.ObjectId(doctorId);
+    if (patientId) filter.userId = new mongoose.Types.ObjectId(patientId);
+    if (id) filter._id = new mongoose.Types.ObjectId(id);
 
-    // Define population fields for doctor and patient references
-    const populateFields = [
-      { path: "doctorId", select: "full_name profile_picture specialization" },
-      { path: "userId", select: "name imageUrl cards phoneNumber email" },
-    ];
+    // ---- Enhanced Aggregation for All Booking Types ----
+    const payments = await Payment.aggregate([
+      { $match: filter },
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit },
 
-    // Function to fetch payments with filter and pagination
-    async function fetchPayments(filter = {}) {
-      const [payments, total] = await Promise.all([
-        Payment.find(filter)
-          .populate(populateFields)
-          .skip(skip)
-          .limit(limit)
-          .sort({ createdAt: -1 }),
-        Payment.countDocuments(filter),
-      ]);
-      return { payments, total };
-    }
+      // Convert string IDs to ObjectIds for lookups
+      {
+        $addFields: {
+          bookingObjectId: {
+            $cond: {
+              if: { $ne: ["$bookingId", null] },
+              then: { $toObjectId: "$bookingId" },
+              else: null,
+            },
+          },
+          groupbookingObjectId: {
+            $cond: {
+              if: { $ne: ["$groupbookingId", null] },
+              then: { $toObjectId: "$groupbookingId" },
+              else: null,
+            },
+          },
+          programbookingObjectId: {
+            $cond: {
+              if: { $ne: ["$programbookingId", null] },
+              then: { $toObjectId: "$programbookingId" },
+              else: null,
+            },
+          },
+        },
+      },
 
-    if (isAdmin) {
-      const { payments, total } = await fetchPayments();
+      // Lookup for scheduled bookings
+      {
+        $lookup: {
+          from: "bookings",
+          localField: "bookingObjectId",
+          foreignField: "_id",
+          as: "scheduleBooking",
+        },
+      },
 
-      console.log("Admin payments sample:", payments[0]);
+      // Lookup for instant bookings
+      {
+        $lookup: {
+          from: "instantbookings",
+          localField: "bookingObjectId",
+          foreignField: "_id",
+          as: "instantBooking",
+        },
+      },
 
-      const hasNext = skip + payments.length < total;
-      return NextResponse.json({
-        success: true,
-        message: "Payments fetched successfully.",
-        data: payments,
-        total,
-        currentPage: page,
-        hasNext,
-      });
-    }
+      // Lookup for group bookings (you need to replace "groupbookings" with your actual collection name)
+      {
+        $lookup: {
+          from: "groupbookings", // Replace with your actual group booking collection name
+          localField: "groupbookingObjectId",
+          foreignField: "_id",
+          as: "groupBooking",
+        },
+      },
 
-    if (patientId || doctorId) {
-      const filter: any = {};
-      if (patientId) filter.patientId = patientId;
-      if (doctorId) filter.doctorId = doctorId;
+      // Lookup for program bookings (you need to replace "programbookings" with your actual collection name)
+      {
+        $lookup: {
+          from: "programbookings", // Replace with your actual program booking collection name
+          localField: "programbookingObjectId",
+          foreignField: "_id",
+          as: "programBooking",
+        },
+      },
 
-      const { payments, total } = await fetchPayments(filter);
+      // Create unified bookingData and sessionCount
+      {
+        $addFields: {
+          bookingData: {
+            $switch: {
+              branches: [
+                {
+                  case: { $gt: [{ $size: "$scheduleBooking" }, 0] },
+                  then: {
+                    $mergeObjects: [
+                      { $arrayElemAt: ["$scheduleBooking", 0] },
+                      { bookingType: "Scheduled" },
+                    ],
+                  },
+                },
+                {
+                  case: { $gt: [{ $size: "$instantBooking" }, 0] },
+                  then: {
+                    $mergeObjects: [
+                      { $arrayElemAt: ["$instantBooking", 0] },
+                      { bookingType: "Instant" },
+                    ],
+                  },
+                },
+                {
+                  case: { $gt: [{ $size: "$groupBooking" }, 0] },
+                  then: {
+                    $mergeObjects: [
+                      { $arrayElemAt: ["$groupBooking", 0] },
+                      { bookingType: "Support Group" },
+                    ],
+                  },
+                },
+                {
+                  case: { $gt: [{ $size: "$programBooking" }, 0] },
+                  then: {
+                    $mergeObjects: [
+                      { $arrayElemAt: ["$programBooking", 0] },
+                      { bookingType: "Program" },
+                    ],
+                  },
+                },
+              ],
+              default: null,
+            },
+          },
 
-      console.log("Filtered payments sample:", payments[0]);
+          // Calculate session count based on booking type
+          sessionCount: {
+            $switch: {
+              branches: [
+                {
+                  // For scheduled and instant bookings, get numberOfSessions from the booking
+                  case: {
+                    $or: [
+                      { $gt: [{ $size: "$scheduleBooking" }, 0] },
+                      { $gt: [{ $size: "$instantBooking" }, 0] },
+                    ],
+                  },
+                  then: {
+                    $cond: {
+                      if: { $gt: [{ $size: "$scheduleBooking" }, 0] },
+                      then: {
+                        $arrayElemAt: ["$scheduleBooking.numberOfSessions", 0],
+                      },
+                      else: {
+                        $arrayElemAt: ["$instantBooking.numberOfSessions", 0],
+                      },
+                    },
+                  },
+                },
+                {
+                  // For group bookings, return 1 (or get from group booking if it has session count)
+                  case: { $gt: [{ $size: "$groupBooking" }, 0] },
+                  then: 1, // Or use: { $arrayElemAt: ["$groupBooking.numberOfSessions", 0] } if group bookings have this field
+                },
+                {
+                  // For program bookings, return 1 (or get from program booking if it has session count)
+                  case: { $gt: [{ $size: "$programBooking" }, 0] },
+                  then: 1, // Or use: { $arrayElemAt: ["$programBooking.numberOfSessions", 0] } if program bookings have this field
+                },
+              ],
+              default: 0,
+            },
+          },
+        },
+      },
 
-      const hasNext = skip + payments.length < total;
-      return NextResponse.json({
-        success: true,
-        message: "Filtered payments fetched successfully.",
-        data: payments,
-        total,
-        currentPage: page,
-        hasNext,
-      });
-    }
+      // Doctor info
+      {
+        $lookup: {
+          from: "doctors",
+          localField: "doctorId",
+          foreignField: "_id",
+          as: "doctorId",
+        },
+      },
+      { $unwind: { path: "$doctorId", preserveNullAndEmptyArrays: true } },
 
-    if (id) {
-      const payment = await Payment.findById(id).populate(populateFields);
+      // User info
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userId",
+        },
+      },
+      { $unwind: { path: "$userId", preserveNullAndEmptyArrays: true } },
 
-      if (!payment) {
-        return NextResponse.json(
-          { success: false, message: "Payment not found." },
-          { status: 404 }
-        );
-      }
+      // Clean up temporary fields
+      {
+        $project: {
+          bookingObjectId: 0,
+          groupbookingObjectId: 0,
+          programbookingObjectId: 0,
+          scheduleBooking: 0,
+          instantBooking: 0,
+          groupBooking: 0,
+          programBooking: 0,
+        },
+      },
+    ]);
 
-      console.log("Single payment:", payment);
-
-      return NextResponse.json({
-        success: true,
-        message: "Payment fetched successfully.",
-        data: payment,
-      });
-    }
-
-    // Default: fetch all payments paginated
-    const { payments, total } = await fetchPayments();
-
+    const total = await Payment.countDocuments(filter);
     const hasNext = skip + payments.length < total;
-    return NextResponse.json({
+
+    return NextResponse.json<ApiResponseType>({
       success: true,
-      message: "All payments fetched successfully.",
+      message: "Payments with booking sessions fetched successfully.",
       data: payments,
       total,
       currentPage: page,
@@ -151,8 +278,8 @@ export async function GET(req: Request) {
     });
   } catch (err: any) {
     console.error("GET payments error:", err);
-    return NextResponse.json(
-      { success: false, message: err.message || "Failed to fetch payment." },
+    return NextResponse.json<ApiResponseType>(
+      { success: false, message: err.message || "Failed to fetch payments." },
       { status: 500 }
     );
   }
