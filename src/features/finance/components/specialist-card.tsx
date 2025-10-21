@@ -5,13 +5,14 @@ import { AddAmountDialog } from "./add-amount-dialog";
 import { Specialist } from "../types/finance.type";
 import { TransferDialog } from "./transfer-dialog";
 import ViewSpecialistDetails from "./view-specialist-details-dialog";
+import { t } from "i18next";
 
-interface SpecialistCardProps {
-  specialist: Specialist;
-  viewType: "grid" | "list";
-}
+// interface SpecialistCardProps {
+//   specialist: specialist;
+//   viewType: "grid" | "list";
+// }
 
-export function SpecialistCard({ specialist, viewType }: SpecialistCardProps) {
+export function SpecialistCard({ specialist, viewType }) {
   return (
     <Card
       className={
@@ -23,7 +24,7 @@ export function SpecialistCard({ specialist, viewType }: SpecialistCardProps) {
       <CardContent className={`pt-6 ${viewType === "list" ? "flex-1" : ""}`}>
         <div className="space-y-4">
           <div className="flex justify-between items-start">
-            <h3 className="font-semibold text-lg">{specialist.name}</h3>
+            <h3 className="font-semibold text-lg">{specialist.doctor.full_name}</h3>
             <Badge
               variant={
                 specialist.paidStatus === "Paid" ? "secondary" : "destructive"
@@ -34,32 +35,32 @@ export function SpecialistCard({ specialist, viewType }: SpecialistCardProps) {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">the date of join:</p>
-              <p className="font-medium">{specialist.joinDate}</p>
+              <p className="text-sm text-muted-foreground">{t("theDateOfJoin")}:</p>
+              <p className="font-medium">{specialist.doctor.updatedAt}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">
-                Discount code percentage:
+               {t("discountCodePercentage")}:
               </p>
               <p className="font-medium">{specialist.discountPercentage}%</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">
-                Number of sessions:
+               {t("numberOfSessions")}:
               </p>
-              <p className="font-medium">{specialist.numberOfSessions}</p>
+              <p className="font-medium">{specialist.sessionCount}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Tax rate:</p>
+              <p className="text-sm text-muted-foreground">{t("taxRate")}:</p>
               <p className="font-medium">{specialist.taxRate}%</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Gross income:</p>
-              <p className="font-medium">{specialist.grossIncome} SAR</p>
+              <p className="text-sm text-muted-foreground">{t("grossIncome")}:</p>
+              <p className="font-medium">{specialist.grossIncome} {t("SAR")}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total tax:</p>
-              <p className="font-medium">{specialist.totalTax} SAR</p>
+              <p className="text-sm text-muted-foreground">{t("totalTax")}:</p>
+              <p className="font-medium">{specialist.totalTax}{t("SAR")}</p>
             </div>
           </div>
         </div>

@@ -36,7 +36,6 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 
-
 // Props for the chart card
 interface DataChartCardProps {
   chartType: "pie" | "bar" | "barV" | "number" | "line";
@@ -62,7 +61,6 @@ export default function DataPieChartCard({
   className,
   link,
 }: DataChartCardProps) {
-
   console.log("title ", title);
   console.log("numdata", NumberData);
   // Calculate total from chart data (if needed for the pie label)
@@ -126,18 +124,38 @@ export default function DataPieChartCard({
                   />
                 )}
               </Pie>
-              <ChartLegend content={<ChartLegendContent />} />
+              <ChartLegend
+                content={({ payload }) => (
+                  <div className="flex justify-center gap-6 mt-4">
+                    {payload?.map((entry, index) => {
+                      const dataPoint = chartData.find(
+                        (d) => d.title === entry.value
+                      );
+                      return (
+                        <div key={index} className="flex items-center gap-2">
+                          <div
+                            className="w-3 h-3 rounded-sm"
+                            style={{ backgroundColor: entry.color }}
+                          />
+                          <span className="text-sm whitespace-nowrap">
+                            {entry.value} {dataPoint?.number.toLocaleString()}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              />
             </PieChart>
           </ChartContainer>
         );
-
       case "bar":
         return (
           <div className=" p-4  flex flex-col gap-2">
-            {/* <h3 className="text-base font-semibold text-neutral-800">
-              {title}
-            </h3> */}
-            <ChartContainer config={chartConfig!} className="mx-auto max-h-[250px] w-full">
+            <ChartContainer
+              config={chartConfig!}
+              className="mx-auto max-h-[250px] w-full"
+            >
               <BarChart data={chartData} barCategoryGap={30}>
                 <CartesianGrid vertical={false} />
                 <XAxis
@@ -153,7 +171,7 @@ export default function DataPieChartCard({
                 <Bar
                   dataKey="number"
                   radius={8}
-                  barSize={24}
+                  barSize={16}
                   fillOpacity={1}
                   isAnimationActive={false}
                 >
@@ -163,8 +181,6 @@ export default function DataPieChartCard({
                 </Bar>
               </BarChart>
             </ChartContainer>
-
-
           </div>
         );
 
@@ -179,8 +195,12 @@ export default function DataPieChartCard({
               data={chartData}
               layout="vertical"
               margin={{
-                right: 16,
+                left: 10, // Add left margin for labels
+                right: 60, // Add right margin for values
+                top: 10,
+                bottom: 10,
               }}
+              barCategoryGap="40%" // Add gap between bars to make them appear thinner
             >
               <CartesianGrid horizontal={false} />
               <YAxis
@@ -189,8 +209,10 @@ export default function DataPieChartCard({
                 tickLine={false}
                 tickMargin={10}
                 axisLine={false}
-                tickFormatter={(value) => value.slice(0, 3)}
-                hide
+                tickFormatter={(value) => value} // Show full category names
+                hide={false} // Show the Y-axis labels
+                width={70} // Set width for labels
+                className="text-sm text-gray-600"
               />
               <XAxis dataKey="number" type="number" hide />
               <ChartTooltip
@@ -200,16 +222,25 @@ export default function DataPieChartCard({
               <Bar
                 dataKey="number"
                 layout="vertical"
-                fill="var(--color-number)"
                 radius={4}
+                maxBarSize={20} // Limit the maximum bar thickness
               >
                 <LabelList
                   dataKey="number"
                   position="right"
                   offset={8}
-                  className="fill-foreground"
+                  className="fill-foreground text-sm font-medium"
                   fontSize={12}
                 />
+                {/* Custom fill for each bar based on data */}
+                <Cell key="cell-0" fill="#1e40af" />
+                {/* Dark blue for Marketing */}
+                <Cell key="cell-1" fill="#0ea5e9" />
+                {/* Light blue for Operations */}
+                <Cell key="cell-2" fill="#1e40af" />
+                {/* Dark blue for Technical */}
+                <Cell key="cell-3" fill="#0ea5e9" />
+                {/* Light blue for Technical */}
               </Bar>
             </BarChart>
           </ChartContainer>
@@ -297,7 +328,6 @@ export default function DataPieChartCard({
     event.stopPropagation(); // Stop the event from bubbling up to the card
     console.log("Button clicked");
   }
-
 
   return (
     <Card
