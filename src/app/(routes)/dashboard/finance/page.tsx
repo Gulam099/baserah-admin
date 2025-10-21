@@ -84,10 +84,10 @@ export default function page() {
   } satisfies ChartConfig;
 
   const data = [
-    { title: "Marketing", number: 2039 },
-    { title: "Operation", number: 2049 },
-    { title: "Technical", number: 5465 },
-    { title: "Technical", number: 2039 },
+    { title: "Schedule", number: 2039 },
+    { title: "Instant", number: 2049 },
+    { title: "Group", number: 5465 },
+    { title: "Program", number: 2039 },
   ];
 
   const chartData2 = [
@@ -349,7 +349,6 @@ export default function page() {
               );
             })}
           </CardContent>
-
           <CardFooter className="flex-col gap-2 text-sm"></CardFooter>
         </Card>
         {/* For Cost distribution */}

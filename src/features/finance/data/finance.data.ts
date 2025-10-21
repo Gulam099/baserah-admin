@@ -77,7 +77,7 @@ export async function fetchFinancialRecords(
 
     // If your backend already handles pagination, use the total from API response
     // Otherwise, use the records length for client-side pagination
-    const totalRecords = apiResponse.total || records.length;
+    const totalRecords = apiResponse.pagination?.totalCount || 0;
 
     return {
       data: records,

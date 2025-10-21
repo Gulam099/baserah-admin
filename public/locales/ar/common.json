@@ -594,7 +594,12 @@
   "theDateOfJoin": "تاريخ الانضمام:",
   "discountCodePercentage": "نسبة كود الخصم:",
   "taxRate": "معدل الضريبة:",
-  "totalTax": "إجمالي الضريبة:"
+  "totalTax": "إجمالي الضريبة:",
+  "audio": "صوتي",
+  "article": "مقال",
+  "video": "فيديو",
+  "group": "مجموعة",
+  "refund": "استرجاع"
 
 }
 

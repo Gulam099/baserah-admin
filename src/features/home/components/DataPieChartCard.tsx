@@ -195,7 +195,7 @@ export default function DataPieChartCard({
               data={chartData}
               layout="vertical"
               margin={{
-                left: 80, // Add left margin for labels
+                left: 10, // Add left margin for labels
                 right: 60, // Add right margin for values
                 top: 10,
                 bottom: 10,
@@ -233,13 +233,13 @@ export default function DataPieChartCard({
                   fontSize={12}
                 />
                 {/* Custom fill for each bar based on data */}
-                <Cell key="cell-0" fill="#1e40af" />{" "}
+                <Cell key="cell-0" fill="#1e40af" />
                 {/* Dark blue for Marketing */}
-                <Cell key="cell-1" fill="#0ea5e9" />{" "}
+                <Cell key="cell-1" fill="#0ea5e9" />
                 {/* Light blue for Operations */}
-                <Cell key="cell-2" fill="#1e40af" />{" "}
+                <Cell key="cell-2" fill="#1e40af" />
                 {/* Dark blue for Technical */}
-                <Cell key="cell-3" fill="#0ea5e9" />{" "}
+                <Cell key="cell-3" fill="#0ea5e9" />
                 {/* Light blue for Technical */}
               </Bar>
             </BarChart>

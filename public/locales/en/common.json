@@ -595,7 +595,12 @@
   "theDateOfJoin": "The date of join:",
   "discountCodePercentage": "Discount code percentage:",
   "taxRate": "Tax rate:",
-  "totalTax": "Total tax:"
+  "totalTax": "Total tax:",
+  "audio": "Audio",
+  "article": "Article",
+  "video": "Video",
+  "group": "Group",
+  "refund": "Refund"
 
 
 

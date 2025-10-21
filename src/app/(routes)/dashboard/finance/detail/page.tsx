@@ -29,6 +29,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { t } from "i18next";
+import { ApiBaseUrl } from "../../../../../../const";
 
 interface DateFilter {
   type: "specific" | "range";
@@ -76,10 +77,34 @@ export default function FinancialDetailsPage() {
     const loadRecords = async () => {
       setLoading(true);
       try {
-        const response = await fetchFinancialRecords(currentPage, pageSize);
-        setRecords(response.data);
-        setTotalRecords(response.total);
-        setTotalPages(Math.ceil(response.total / pageSize));
+        const queryParams = new URLSearchParams({
+          page: currentPage.toString(),
+          pageSize: pageSize.toString(),
+        });
+        const response = await fetch(
+          `${ApiBaseUrl}/api/payments/paidpaymentlist?${queryParams.toString()}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch financial records");
+        }
+        const apiResponse = await response.json();
+        const payments = apiResponse.data || [];
+
+        const mappedRecords = payments.map((p) => ({
+          id: p._id,
+          specialist: p.doctorId?.full_name || "Unknown Doctor",
+          administrator: p.userId?.name || "Unknown User",
+          isEmployee: false,
+          date: new Date(p.createdAt).toLocaleDateString(),
+          source: p.description || "Unknown Source",
+          amount: p.amount,
+        }));
+        setRecords(mappedRecords);
+        setTotalRecords(apiResponse.pagination?.totalCount || 0);
+        setTotalPages(
+          Math.ceil((apiResponse.pagination?.totalCount || 0) / pageSize)
+        );
       } catch (error) {
         console.error("Failed to fetch financial records:", error);
       } finally {
@@ -225,29 +250,26 @@ export default function FinancialDetailsPage() {
   const generatePageNumbers = () => {
     const pages = [];
     const maxVisiblePages = 5;
-    const totalPagesToShow = Math.ceil(filteredRecords.length / pageSize);
-    const actualTotalPages = totalPagesToShow || totalPages;
 
-    if (actualTotalPages <= maxVisiblePages) {
-      for (let i = 1; i <= actualTotalPages; i++) {
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
       if (currentPage <= 3) {
         for (let i = 1; i <= 4; i++) pages.push(i);
         pages.push("...");
-        pages.push(actualTotalPages);
-      } else if (currentPage >= actualTotalPages - 2) {
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
         pages.push(1);
         pages.push("...");
-        for (let i = actualTotalPages - 3; i <= actualTotalPages; i++)
-          pages.push(i);
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
       } else {
         pages.push(1);
         pages.push("...");
         for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
         pages.push("...");
-        pages.push(actualTotalPages);
+        pages.push(totalPages);
       }
     }
 
@@ -491,8 +513,8 @@ export default function FinancialDetailsPage() {
                   </TableCell>
                 </TableRow>
               ))
-            ) : paginatedRecords.length > 0 ? (
-              paginatedRecords.map((record, index) => (
+            ) : records.length > 0 ? (
+              records.map((record, index) => (
                 <TableRow
                   key={record.id}
                   className={index % 2 === 0 ? "bg-white" : "bg-slate-50"}
@@ -512,7 +534,7 @@ export default function FinancialDetailsPage() {
             ) : (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-8">
-                 {t("noRecordsFound")}
+                  {t("noRecordsFound")}
                 </TableCell>
               </TableRow>
             )}
@@ -528,7 +550,7 @@ export default function FinancialDetailsPage() {
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1 || loading}
           >
-           {t("previous")}
+            {t("previous")}
           </Button>
 
           <div className="flex items-center gap-1">
@@ -558,12 +580,12 @@ export default function FinancialDetailsPage() {
             }
             disabled={currentPage === displayTotalPages || loading}
           >
-           {t("next")}
+            {t("next")}
           </Button>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">View</span>
+          <span className="text-sm text-muted-foreground">{t("view")}</span>
           <select
             className="h-8 rounded-md border border-input bg-background px-2"
             value={pageSize}
@@ -574,10 +596,8 @@ export default function FinancialDetailsPage() {
           >
             <option value="10">10</option>
             <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
+            <option value="50">30</option>
           </select>
-          <span className="text-sm text-muted-foreground">per page</span>
         </div>
       </div>
     </div>

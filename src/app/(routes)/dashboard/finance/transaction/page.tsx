@@ -29,6 +29,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { t } from "i18next";
+import { ApiBaseUrl } from "../../../../../../const";
 
 interface DateFilter {
   type: "specific" | "range";
@@ -54,7 +55,8 @@ export default function TransactionsPage() {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
+  const [totalRecords, setTotalRecords] = useState(0);
   const router = useRouter();
 
   const [filters, setFilters] = useState<FilterState>({
@@ -77,9 +79,23 @@ export default function TransactionsPage() {
     const loadTransactions = async () => {
       setLoading(true);
       try {
-        const response = await fetchTransactions(currentPage, pageSize);
-        setTransactions(response.data);
-        setTotalPages(Math.ceil(response.total / pageSize));
+        const queryParams = new URLSearchParams({
+          page: currentPage.toString(),
+          pageSize: pageSize.toString(),
+        });
+        const response = await fetch(
+          `${ApiBaseUrl}/api/walletTransaction/getall?${queryParams.toString()}`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch financial records");
+        }
+
+        const apiResponse = await response.json();
+        const transactions = apiResponse.data || [];
+
+        setTransactions(transactions);
+        setTotalRecords(apiResponse.total || 0);
+        setTotalPages(Math.ceil(apiResponse.total / pageSize));
       } catch (error) {
         console.error("Failed to fetch transactions:", error);
       } finally {
@@ -201,15 +217,39 @@ export default function TransactionsPage() {
     }
   };
 
-  const hasActiveFilters =
-    filters.date || filters.transactionType || filters.specialist;
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
+  };
 
-  const paginatedTransactions = filteredTransactions.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  const generatePageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
 
-  const totalFilteredPages = Math.ceil(filteredTransactions.length / pageSize);
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push("...");
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push("...");
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push("...");
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push("...");
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
+  };
 
   return (
     <div className="container mx-auto py-8">
@@ -383,7 +423,7 @@ export default function TransactionsPage() {
             onClick={clearAllFilters}
             className="text-gray-600 hover:text-gray-800"
           >
-             {t("clearAll")}
+            {t("clearAll")}
           </Button>
         </div>
 
@@ -396,7 +436,7 @@ export default function TransactionsPage() {
             className="text-gray-600 hover:text-gray-800"
           >
             <ArrowUpDown className="w-4 h-4 mr-1" />
-             {t("sortBy")}
+            {t("sortBy")}
           </Button>
 
           {/* Export */}
@@ -414,12 +454,12 @@ export default function TransactionsPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50">
-               <TableHead>{t("type")}</TableHead>
-          <TableHead>{t("amount")}</TableHead>
-          <TableHead>{t("date")}</TableHead>
-          <TableHead>{t("administrator")}</TableHead>
-          <TableHead>{t("walletAmount")}</TableHead>
-          <TableHead className="text-right">{t("action")}</TableHead>
+              <TableHead>{t("type")}</TableHead>
+              <TableHead>{t("amount")}</TableHead>
+              <TableHead>{t("date")}</TableHead>
+              <TableHead>{t("administrator")}</TableHead>
+              <TableHead>{t("walletAmount")}</TableHead>
+              <TableHead className="text-right">{t("action")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -473,10 +513,14 @@ export default function TransactionsPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>{t("viewDetails")}</DropdownMenuItem>
-                      <DropdownMenuItem>{t("transferToCard")}</DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600">
-                        {t("addToWallet")}
+                          <DropdownMenuItem>
+                            {t("viewDetails")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            {t("transferToCard")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-red-600">
+                            {t("addToWallet")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -495,21 +539,28 @@ export default function TransactionsPage() {
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1 || loading}
           >
-             {t("previous")}
+            {t("previous")}
           </Button>
+
           <div className="flex items-center gap-1">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <Button
-                key={page}
-                variant={currentPage === page ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCurrentPage(page)}
-                disabled={loading}
-              >
-                {page}
-              </Button>
+            {generatePageNumbers().map((page, index) => (
+              <div key={index}>
+                {page === "..." ? (
+                  <span className="px-3 py-1 text-gray-500">...</span>
+                ) : (
+                  <Button
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(page as number)}
+                    disabled={loading}
+                  >
+                    {page}
+                  </Button>
+                )}
+              </div>
             ))}
           </div>
+
           <Button
             variant="outline"
             size="sm"
@@ -524,16 +575,14 @@ export default function TransactionsPage() {
           <select
             className="h-8 rounded-md border border-input bg-background px-2"
             value={pageSize}
-            onChange={(e) => {
-              const newSize = Number.parseInt(e.target.value);
-              // Handle page size change
-            }}
+            onChange={(e) =>
+              handlePageSizeChange(Number.parseInt(e.target.value))
+            }
+            disabled={loading}
           >
             <option value="10">10</option>
             <option value="20">20</option>
             <option value="30">30</option>
-            <option value="40">40</option>
-            <option value="50">50</option>
           </select>
         </div>
       </div>
