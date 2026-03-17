@@ -9,6 +9,20 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Outline } from "react-pdf";
 import { useTranslation } from "react-i18next";
+import { ExternalLink, FileDown, FileText, Image as ImageIcon } from "lucide-react";
+
+const normalizeUrl = (url: string) => {
+  if (!url) return "";
+  return url;
+};
+
+const getFileType = (url: string) => {
+  const extension = url.split('.').pop()?.toLowerCase();
+  if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(extension || '')) return 'image';
+  if (extension === 'pdf') return 'pdf';
+  if (['doc', 'docx'].includes(extension || '')) return 'word';
+  return 'other';
+};
 
 
 
@@ -147,10 +161,64 @@ export default function Contracts({
                 </div>
               )}
             </div>
-            <iframe
-              src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(contract.status === "signed" ? contract.s3urlSignedContract! : contract.s3urlContract)}`}
-              className="w-full h-[600px] rounded"
-            />
+            {(() => {
+              const url = normalizeUrl(contract.status === "signed" ? contract.s3urlSignedContract! : contract.s3urlContract);
+              const type = getFileType(url);
+
+              if (type === 'pdf') {
+                return (
+                  <div className="space-y-4">
+                    <PdfView pdfUrl={url} />
+                    <div className="flex justify-center">
+                      <Button variant="outline" asChild>
+                        <a href={url} target="_blank" rel="noopener noreferrer">
+                          <FileDown className="mr-2 h-4 w-4" />
+                          {t("contracts.downloadPdf")}
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                );
+              }
+
+              if (type === 'image') {
+                return (
+                  <div className="flex flex-col items-center gap-4">
+                    <img src={url} alt="Contract" className="max-w-full h-auto rounded-lg shadow-md max-h-[600px]" />
+                    <Button variant="outline" asChild>
+                      <a href={url} target="_blank" rel="noopener noreferrer">
+                        <ImageIcon className="mr-2 h-4 w-4" />
+                        {t("contracts.viewImage")}
+                      </a>
+                    </Button>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-muted/30">
+                  <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+                  <p className="text-lg font-medium mb-2">{t("contracts.unsupportedPreview")}</p>
+                  <p className="text-sm text-muted-foreground mb-6 text-center max-w-sm">
+                    {t("contracts.unsupportedDesc")}
+                  </p>
+                  <div className="flex gap-3">
+                    <Button asChild>
+                      <a href={url} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        {t("contracts.openFile")}
+                      </a>
+                    </Button>
+                    <Button variant="outline" asChild>
+                      <a href={url} download>
+                        <FileDown className="mr-2 h-4 w-4" />
+                        {t("contracts.download")}
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         );
       })}
