@@ -8,6 +8,9 @@ import { fetchPatientReturnStats } from "@/features/report/util/report.util";
 import { ApiBaseUrl } from "../../../../../const";
 import { useTranslation } from "react-i18next";
 import ExportButton from "@/features/home/components/ExportButton";
+import PageLoading from "@/components/page-loading";
+
+
 const colorMap = {
   Completed: "#32CD32",
   Cancelled: "#9B59B6",
@@ -22,6 +25,7 @@ export default function page() {
   const [appointmentChartData, setAppointmentChartData] = useState<
     { title: string; number: number; fill: string }[]
   >([]);
+  const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
 
 
@@ -46,11 +50,28 @@ export default function page() {
 
 
   useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      try {
+        await Promise.all([
+          loadAppointmentType(),
+          loadStats(),
+          loadCustomerReturnData(),
+          loadDoctorSessions(),
+          loadUserTypeData(),
+        ]);
+      } catch (error) {
+        console.error("Error fetching report data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     async function loadAppointmentType() {
       const res = await fetch(`${ApiBaseUrl}/api/doctor/appointments-type`);
       const data = await res.json();
       if (data.data) {
-        const mappedData = data.data.map((item) => ({
+        const mappedData = data.data.map((item: any) => ({
           title: item.title,
           number: item.value,
           fill: item.fill,
@@ -58,10 +79,7 @@ export default function page() {
         setAppointmentTypeData(mappedData);
       }
     }
-    loadAppointmentType();
-  }, []);
 
-  useEffect(() => {
     async function loadStats() {
       const res = await fetch(`${ApiBaseUrl}/api/doctor/appointments/stats`);
       const data = await res.json();
@@ -71,14 +89,65 @@ export default function page() {
           title: item.title,
           number: item.number,
           fill: colorMap[item.title.trim() as keyof typeof colorMap] || "#8884d8",
-
         }));
         setAppointmentChartData(chartData);
       }
     }
 
-    loadStats();
+    async function loadCustomerReturnData() {
+      try {
+        const res = await fetch(`${ApiBaseUrl}/api/users/user-return`);
+        const data = await res.json();
+        if (data?.data) {
+          const mapped = data.data.map((item: any) => ({
+            title: item.title,
+            number: item.number,
+            fill: item.fill,
+          }));
+          setUserChartData(mapped as any);
+        }
+      } catch (error) {
+        console.error("Error fetching user return data:", error);
+      }
+    }
+
+    async function loadDoctorSessions() {
+      const res = await fetch(`${ApiBaseUrl}/api/doctors/getdoctorsession`);
+      const data = await res.json();
+      setDoctorSessionData(data.data);
+    }
+
+    async function loadUserTypeData() {
+      try {
+        const res = await fetch(`${ApiBaseUrl}/api/doctor/user-type`);
+        const data = await res.json();
+        if (data.length) {
+          const flattened: any[] = [];
+          const colorPalette = [
+            "#FF6B6B", "#6BCB77", "#4D96FF", "#FFC75F", "#845EC2",
+            "#008F7A", "#FF9671", "#2C73D2", "#D65DB1", "#FF6F91",
+          ];
+          let colorIndex = 0;
+          data.forEach((item: any) => {
+            item.specializations.forEach((spec: any) => {
+              flattened.push({
+                title: spec,
+                number: item.number[spec],
+                fill: colorPalette[colorIndex % colorPalette.length],
+              });
+              colorIndex++;
+            });
+          });
+          setUserTypeData(flattened);
+        }
+      } catch (error) {
+        console.error("Error fetching user type data:", error);
+      }
+    }
+
+    fetchData();
   }, []);
+
 
   const appointmentChartConfig = {
     number: {
@@ -102,153 +171,6 @@ export default function page() {
     },
   } satisfies ChartConfig;
 
-  useEffect(() => {
-    async function loadCustomerReturnData() {
-      try {
-        const res = await fetch(`${ApiBaseUrl}/api/users/user-return`);
-        const data = await res.json();
-        console.log("this is dta", data?.data)
-
-        if (data?.data) {
-          const mapped = data.data.map((item) => ({
-            title: item.title,
-            number: item.number,
-            fill: item.fill,
-          }));
-          setUserChartData(mapped);
-        }
-      } catch (error) {
-        console.error("Error fetching user return data:", error);
-      }
-    }
-
-    loadCustomerReturnData();
-  }, []);
-
-
-
-  useEffect(() => {
-    async function loadDoctorSessions() {
-      const res = await fetch(`${ApiBaseUrl}/api/doctors/getdoctorsession`);
-      const data = await res.json();
-      setDoctorSessionData(data.data); // set to state
-    }
-
-    loadDoctorSessions();
-  }, []);
-
-  useEffect(() => {
-    async function loadUserTypeData() {
-      try {
-        const res = await fetch(`${ApiBaseUrl}/api/doctor/user-type`);
-        const data = await res.json();
-        console.log('sfdfdssdsd', data)
-
-        if (data.length) {
-          const flattened = [];
-
-          const colorPalette = [
-            "#FF6B6B", "#6BCB77", "#4D96FF", "#FFC75F", "#845EC2",
-            "#008F7A", "#FF9671", "#2C73D2", "#D65DB1", "#FF6F91",
-          ];
-
-          let colorIndex = 0;
-
-          data.forEach((item) => {
-            const count = Object.values(item.number)[0]; // e.g. 36
-            item.specializations.forEach((spec) => {
-              console.log('item.number[spec]', item.number[spec])
-
-              flattened.push({
-                title: spec,
-                number: item.number[spec],
-                fill: colorPalette[colorIndex % colorPalette.length],
-              });
-              colorIndex++;
-            });
-          });
-
-          setUserTypeData(flattened);
-        }
-      } catch (error) {
-        console.error("Error fetching user type data:", error);
-      }
-    }
-
-    loadUserTypeData();
-  }, []);
-
-
-  console.log("userTypeData", userTypeData);
-
-
-  const mockSpecialistsData: {
-    name: string;
-    session: number;
-    performance: number;
-    image: string;
-  }[] = [
-      {
-        name: "John Doe",
-        session: 50,
-        performance: 95,
-        image: "https://via.placeholder.com/80",
-      },
-      {
-        name: "Jane Smith",
-        session: 64,
-        performance: 88,
-        image: "https://via.placeholder.com/80",
-      },
-      {
-        name: "Michael Johnson",
-        session: 72,
-        performance: 92,
-        image: "https://via.placeholder.com/80",
-      },
-      {
-        name: "Emily Davis",
-        session: 58,
-        performance: 90,
-        image: "https://via.placeholder.com/80",
-      },
-      {
-        name: "Daniel Brown",
-        session: 80,
-        performance: 97,
-        image: "https://via.placeholder.com/80",
-      },
-      {
-        name: "Olivia Wilson",
-        session: 45,
-        performance: 85,
-        image: "https://via.placeholder.com/80",
-      },
-      {
-        name: "William Taylor",
-        session: 59,
-        performance: 93,
-        image: "https://via.placeholder.com/80",
-      },
-      {
-        name: "Isabella Martinez",
-        session: 67,
-        performance: 91,
-        image: "https://via.placeholder.com/80",
-      },
-      {
-        name: "Liam Anderson",
-        session: 74,
-        performance: 98,
-        image: "https://via.placeholder.com/80",
-      },
-      {
-        name: "Sophia Thomas",
-        session: 51,
-        performance: 89,
-        image: "https://via.placeholder.com/80",
-      },
-    ];
 
   const excelData = {
     appointmentStats,
@@ -259,11 +181,14 @@ export default function page() {
     userTypeData,
   };
 
+  if (loading) {
+    return <PageLoading />;
+  }
 
   return (
     <div className="flex flex-col gap-4" ref={contentRef}>
       <div className="flex justify-end">
-        <ExportButton contentRef={contentRef} label={t("export")} excelData={excelData} />
+        <ExportButton contentRef={contentRef} label={t("export")} excelData={excelData as any} />
       </div>
       <h2 className="text-lg font-semibold text-neutral-800">	{t("report.appointmentsTitle")}</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">

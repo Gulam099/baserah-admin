@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import PageLoading from "@/components/page-loading";
 
 interface DateFilter {
   type: "specific" | "range";
@@ -276,10 +277,10 @@ export default function ApprovalContentsPage() {
       case "range":
         return filters.date.startDate && filters.date.endDate
           ? `${new Date(
-              filters.date.startDate
-            ).toLocaleDateString()} - ${new Date(
-              filters.date.endDate
-            ).toLocaleDateString()}`
+            filters.date.startDate
+          ).toLocaleDateString()} - ${new Date(
+            filters.date.endDate
+          ).toLocaleDateString()}`
           : "Date Range";
       default:
         return t("date");
@@ -297,18 +298,20 @@ export default function ApprovalContentsPage() {
       type: item.type,
     }).toString();
     if (item.recordType === "content") {
-      return `/dashboard/approval/${item.recordType?.toLowerCase()}/${
-        item._id
-      }?${queryParams}`;
+      return `/dashboard/approval/${item.recordType?.toLowerCase()}/${item._id
+        }?${queryParams}`;
     } else if (item.recordType === "group") {
-      return `/dashboard/approval/${item.recordType?.toLowerCase()}/${
-        item._id
-      }?${queryParams}`;
+      return `/dashboard/approval/${item.recordType?.toLowerCase()}/${item._id
+        }?${queryParams}`;
     } else if (item.recordType === "refund") {
       return `/dashboard/approval/${item.recordType}/${item._id}?${queryParams}`;
     }
     return "#";
   };
+
+  if (loading) {
+    return <PageLoading />;
+  }
 
   return (
     <div className="container mx-auto px-2">
@@ -331,9 +334,8 @@ export default function ApprovalContentsPage() {
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className={`justify-between ${
-                  filters.date ? "border-blue-500 bg-blue-50" : ""
-                }`}
+                className={`justify-between ${filters.date ? "border-blue-500 bg-blue-50" : ""
+                  }`}
               >
                 <Calendar className="w-4 h-4 mr-2" />
                 {getDateFilterDisplay()}
@@ -492,59 +494,51 @@ export default function ApprovalContentsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loading
-              ? Array.from({ length: pageSize }).map((_, i) => (
-                  <TableRow key={`skeleton-${i}`}>
-                    <TableCell colSpan={6}>
-                      <div className="h-6 w-full animate-pulse bg-slate-100 rounded" />
-                    </TableCell>
-                  </TableRow>
-                ))
-              : paginatedData.map((item) => {
-                  const url = generateEditUrl(item);
+            {paginatedData.map((item) => {
+              const url = generateEditUrl(item);
 
-                  return (
-                    <TableRow key={item._id}>
-                      <TableCell className="capitalize font-medium">
-                        {typeMap[item.type?.toLowerCase()] ||
-                          item.type ||
-                          "Unknown"}
-                      </TableCell>
-                      <TableCell>{item.title || t("untitled")}</TableCell>
-                      <TableCell>
-                        {item?.doctor?.full_name ||
-                          item?.doctorId?.full_name ||
-                          "-"}
-                      </TableCell>
-                      <TableCell>
-                        {item.createdAt
-                          ? format(
-                              parseISO(item.createdAt),
-                              "dd MMM yyyy HH:mm"
-                            )
-                          : t("unknown")}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            item.status
-                              ? badgeVariant[item.status.toLowerCase()] ||
-                                "outline"
-                              : "outline"
-                          }
-                          className="capitalize"
-                        >
-                          {t(item.status || "-")}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Link href={url} className="text-blue-500 underline">
-                          {t("edit")}
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+              return (
+                <TableRow key={item._id}>
+                  <TableCell className="capitalize font-medium">
+                    {typeMap[item.type?.toLowerCase()] ||
+                      item.type ||
+                      "Unknown"}
+                  </TableCell>
+                  <TableCell>{item.title || t("untitled")}</TableCell>
+                  <TableCell>
+                    {item?.doctor?.full_name ||
+                      item?.doctorId?.full_name ||
+                      "-"}
+                  </TableCell>
+                  <TableCell>
+                    {item.createdAt
+                      ? format(
+                        parseISO(item.createdAt),
+                        "dd MMM yyyy HH:mm"
+                      )
+                      : t("unknown")}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        item.status
+                          ? badgeVariant[item.status.toLowerCase()] ||
+                          "outline"
+                          : "outline"
+                      }
+                      className="capitalize"
+                    >
+                      {t(item.status || "-")}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Link href={url} className="text-blue-500 underline">
+                      {t("edit")}
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>

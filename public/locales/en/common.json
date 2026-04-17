@@ -473,7 +473,7 @@
   "clear_search": "Clear search",
   "export": "Export",
   "emergency_notice": "Emergency appointments are highlighted as urgent.",
-  "appointment_number": "Appointment Number",
+  "appointment_number": "Appt. No.",
   "patient": "Patient",
   "booking_date": "Booking Date",
   "time_slot": "Time Slot",
@@ -499,7 +499,6 @@
   "appointment_modified_success": "Appointment modified successfully",
   "appointment_modified_error": "Failed to modify the appointment. Please try again.",
   "status_completed": "Completed",
-  
   "filtering": "Filtering",
   "recent": "Recent",
   "byAmount": "By Amount",
@@ -600,14 +599,10 @@
   "article": "Article",
   "video": "Video",
   "group": "Group",
-  "refund": "Refund"
-
-
-
-
-
-
-
-
-
+  "refund": "Refund",
+  "noQuestions": "No questions found",
+  "noQuestionsSubtitle": "Click the button above to add your first question",
+  "appointment_date": "Appt. Date",
+  "doctor": "Doctor",
+  "scheduled": "Scheduled"
 }

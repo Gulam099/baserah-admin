@@ -23,6 +23,7 @@ import { CustomerCard } from "@/features/customer/components/CustomerCard";
 import UnifiedPagination from "@/features/home/components/UnifiedPagination";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import PageLoading from "@/components/page-loading";
 
 
 export default function CustomersPage() {
@@ -92,6 +93,10 @@ export default function CustomersPage() {
   //       });
   //   }, [currentPage, pageSize, activeTab]);
 
+  if (loading) {
+    return <PageLoading />
+  }
+
   return (
     <div className="container mx-auto py-5">
       <div className="relative w-full max-w-md pb-5">
@@ -133,16 +138,9 @@ export default function CustomersPage() {
       </div> */}
       <div className="min-h-[70vh]">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {loading
-            ? Array.from({ length: pageSize }).map((_, i) => (
-              <div
-                key={`skeleton-${i}`}
-                className="h-[180px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
-              />
-            ))
-            : filteredCustomers.map((customer) => (
-              <CustomerCard key={customer._id} customer={customer} />
-            ))}
+          {filteredCustomers.map((customer) => (
+            <CustomerCard key={customer._id} customer={customer} />
+          ))}
         </div>
       </div>
       <UnifiedPagination total={total} />
