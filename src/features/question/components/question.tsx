@@ -21,6 +21,7 @@ import InformationFormDialog from "./QuestionDialog";
 import EditQuestionDialog from "./EditQuestionDilaog";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import PageLoading from "@/components/page-loading";
 
 
 const formSchema = z.object({
@@ -97,6 +98,10 @@ export default function QuestionPage() {
     }
   };
 
+  if (loading) {
+    return <PageLoading />
+  }
+
   return (
     <>
       <div className="container mx-auto ">
@@ -107,19 +112,31 @@ export default function QuestionPage() {
           />
         </div>
         <div className="min-h-[70vh]">
-          <div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 grow-0 shrink  "
-            ref={contentRef}
-          >
-            {loading
-              ? Array.from({ length: pageSize }).map((_, i) => (
-                <Card key={`skeleton-${i}`} className="animate-pulse">
-                  <CardHeader className="h-16 bg-gray-200 rounded-t-lg" />
-                  <CardContent className="h-24 bg-gray-100" />
-                  <CardFooter className="h-16 bg-gray-200 rounded-b-lg" />
-                </Card>
-              ))
-              : questions.map((question) => (
+          {questions.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-[60vh] text-gray-400 gap-3">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-16 h-16 text-gray-300"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
+                />
+              </svg>
+              <p className="text-lg font-medium">{t("noQuestions")}</p>
+              <p className="text-sm">{t("noQuestionsSubtitle")}</p>
+            </div>
+          ) : (
+            <div
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 grow-0 shrink  "
+              ref={contentRef}
+            >
+              {questions.map((question) => (
                 <Card key={question._id}>
                   <CardHeader>
                     <Badge
@@ -174,7 +191,8 @@ export default function QuestionPage() {
                   </CardFooter>
                 </Card>
               ))}
-          </div>
+            </div>
+          )}
         </div>
 
         <UnifiedPagination total={total} />

@@ -46,6 +46,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import ChangeSessionDialog from "./ChangeSessionDialog";
 import { useTranslation } from "react-i18next";
+import PageLoading from "@/components/page-loading";
 
 export default function AppointmentPage() {
   const { t } = useTranslation("common");
@@ -100,18 +101,26 @@ export default function AppointmentPage() {
   console.log("appointments merger", appointments)
 
   const filteredAppointments = appointments.filter((appointment) => {
-    const name = appointment.userId?.name?.toLowerCase() || "";
+    const patientName = appointment.userId?.name?.toLowerCase() || "";
     const appointmentId = appointment._id?.toLowerCase() || "";
-    const urgent = (appointment.program || "").toLowerCase();
+    const doctorName = appointment.doctorId?.full_name?.toLowerCase() || "";
     const term = searchTerm.toLowerCase();
 
     return (
-      name.includes(term) ||
+      patientName.includes(term) ||
       appointmentId.includes(term) ||
-      urgent.includes(term)
+      doctorName.includes(term)
     );
   });
 
+  const appointmentsWithType = filteredAppointments.map((appointment) => ({
+    ...appointment,
+    type: appointment.accepted ? "urgent" : "scheduled",
+  }));
+
+  if (loading) {
+    return <PageLoading />;
+  }
 
   return (
     <div className="container mx-auto  rtl:flex-row-reverse">
@@ -150,11 +159,11 @@ export default function AppointmentPage() {
             <TableRow>
               <TableHead>{t("appointment_number")}</TableHead>
               <TableHead>{t("patient")}</TableHead>
+              <TableHead>{t("doctor")}</TableHead>
               <TableHead>{t("booking_date")}</TableHead>
-              {/* <TableHead>{t("program")}</TableHead> */}
-              {/* <TableHead>Doctor</TableHead> */}
+              <TableHead>{t("appointment_date")}</TableHead>
               <TableHead>{t("time_slot")}</TableHead>
-              {/* <TableHead>{t("date")}</TableHead> */}
+              <TableHead>{t("type")}</TableHead>
               <TableHead>{t("status")}</TableHead>
               <TableHead className="text-right print:hidden">
                 {t("actions")}
@@ -169,28 +178,46 @@ export default function AppointmentPage() {
 
               return (
                 <TableRow key={appointment._id}>
-                  <TableCell>{appointment._id}</TableCell>
+                  <TableCell>{appointment._id.slice(0, 10)}</TableCell>
                   <TableCell>{appointment.patientId?.name || "-"}</TableCell>
+                  <TableCell>{appointment.doctorId?.full_name || "-"}</TableCell>
+                  <TableCell>
+                    {appointment.createdAt
+                      ? format(new Date(appointment.createdAt), "EEE,dd MMM yyyy")
+                      : t("-")}
+                  </TableCell>
                   <TableCell>
                     {bookingDate
-                      ? format(bookingDate, "EEE , dd MMM yyyy")
-                      : t("not_available")}
+                      ? format(bookingDate, "EEE,dd MMM yyyy")
+                      : t("-")}
                   </TableCell>
                   <TableCell>
                     {bookingDate
                       ? format(bookingDate, "hh:mm a")
-                      : t("not_available")}
+                      : t("-")}
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant={
-                        badgeVariant[
-                        appointment.status as keyof typeof badgeVariant
-                        ]
-                      }
-                    >
-                      {t(`status_${appointment.status}`)}
+                    <Badge variant={appointment.accepted ? "warning" : "secondary"}>
+                      {appointment.accepted ? t("urgent") : t("scheduled")}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {(() => {
+                      const displayStatus =
+                        appointment.status === "pending" ? "upcoming" : appointment.status;
+
+                      return (
+                        <Badge
+                          variant={
+                            badgeVariant[
+                            displayStatus as keyof typeof badgeVariant
+                            ]
+                          }
+                        >
+                          {t(`status_${displayStatus}`)}
+                        </Badge>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell className="text-right print:hidden px-1">
                     <AppointmentMenu appointment={appointment} />

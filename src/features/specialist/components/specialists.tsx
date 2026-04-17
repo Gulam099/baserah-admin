@@ -9,6 +9,7 @@ import ExportButton from "@/features/home/components/ExportButton";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query"; // ✅ Import TanStack Query
 import { useTranslation } from "react-i18next";
+import PageLoading from "@/components/page-loading";
 
 export default function SpecialistsPage() {
   const { t } = useTranslation();
@@ -50,6 +51,9 @@ export default function SpecialistsPage() {
   });
 
 
+  if (isLoading) {
+    return <PageLoading />
+  }
 
   return (
     <div className="container mx-auto py-8">
@@ -104,19 +108,12 @@ export default function SpecialistsPage() {
           className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
           ref={contentRef}
         >
-          {isLoading
-            ? Array.from({ length: pageSize }).map((_, i) => (
-              <div
-                key={`skeleton-${i}`}
-                className="h-[200px] rounded-lg border border-gray-200 bg-gray-50 p-4 animate-pulse"
-              />
-            ))
-            : filteredSpecialists.map((specialist, idx) => (
-              <SpecialistCard
-                key={specialist.phoneNumber + idx}
-                specialist={specialist}
-              />
-            ))}
+          {filteredSpecialists.map((specialist, idx) => (
+            <SpecialistCard
+              key={specialist.phoneNumber + idx}
+              specialist={specialist}
+            />
+          ))}
         </div>
 
         {error && (

@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ApiBaseUrlLocal } from "../../../../../const";
-import { Delete, SquarePen, Trash2 } from "lucide-react";
+import { SquarePen, Trash2, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-
+import PageLoading from "@/components/page-loading";
 
 type SpecializationType = {
   _id: string;
@@ -16,7 +16,6 @@ type SpecializationType = {
   feeAbove10: number;
 };
 
-
 const specialistLevelsMap = [
   { english: "Assistant Specialist", arabic: "أخصائي مساعد" },
   { english: "Specialist", arabic: "أخصائي" },
@@ -27,7 +26,6 @@ const specialistLevelsMap = [
   { english: "Consultant Doctor", arabic: "طبيب استشاري" },
   { english: "First Consultant Doctor", arabic: "طبيب استشاري أول" },
 ];
-
 
 const SpecializationPage: React.FC = () => {
   const { t } = useTranslation();
@@ -42,14 +40,17 @@ const SpecializationPage: React.FC = () => {
   const [feeAbove10, setFeeAbove10] = useState<number | "">("");
   const [isArabic, setIsArabic] = useState(false);
 
-
-
+  // ✅ Loading states
+  const [isFetching, setIsFetching] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSpecializations();
   }, []);
 
   const fetchSpecializations = async () => {
+    setIsFetching(true);
     try {
       const res = await fetch(`${ApiBaseUrlLocal}/api/specializations/all`);
       const data = await res.json();
@@ -57,6 +58,8 @@ const SpecializationPage: React.FC = () => {
       else toast.error(t("toastt.fetchError"));
     } catch {
       toast.error(t("toastt.fetchError"));
+    } finally {
+      setIsFetching(false);
     }
   };
 
@@ -66,16 +69,15 @@ const SpecializationPage: React.FC = () => {
     setSubSpecializations(updated);
   };
 
-  const addSubSpecialization = () => {
-    setSubSpecializations([...subSpecializations, ""]);
-  };
+  const addSubSpecialization = () => setSubSpecializations([...subSpecializations, ""]);
 
   const removeSubSpecialization = (index: number) => {
-    const updated = subSpecializations.filter((_, i) => i !== index);
-    setSubSpecializations(updated);
+    setSubSpecializations(subSpecializations.filter((_, i) => i !== index));
   };
+
   const handleSubmit = async () => {
-    const langType = isArabic === true ? "ar" : "en";
+    setIsSubmitting(true);
+    const langType = isArabic ? "ar" : "en";
     const payload = {
       name: specialization,
       subSpecializations: subSpecializations
@@ -87,11 +89,9 @@ const SpecializationPage: React.FC = () => {
       feeAbove10: feeAbove10 === "" ? undefined : feeAbove10,
     };
 
-
     const url = editingId
       ? `${ApiBaseUrlLocal}/api/specializations/update/${editingId}`
       : `${ApiBaseUrlLocal}/api/specializations/create`;
-
     const method = editingId ? "PUT" : "POST";
 
     try {
@@ -100,35 +100,32 @@ const SpecializationPage: React.FC = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       const result = await response.json();
 
       if (response.ok) {
         toast.success(editingId ? "Specialization updated" : "Specialization created");
-
         if (editingId) {
-          // Update existing
           setSpecializationList((prev) =>
             prev.map((item) =>
               item._id === editingId ? { _id: editingId, ...payload } : item
             )
           );
         } else {
-          // Add new at top
-          setSpecializationList((prev) => [
-            { _id: result._id, ...payload },
-            ...prev,
-          ]);
+          setSpecializationList((prev) => [{ _id: result._id, ...payload }, ...prev]);
         }
-
         resetForm();
-      } else toast.error(result.message || t("toastt.serverError"));
+      } else {
+        toast.error(result.message || t("toastt.serverError"));
+      }
     } catch {
       toast.error(t("toastt.serverError"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
+    setDeletingId(id);
     try {
       const res = await fetch(`${ApiBaseUrlLocal}/api/specializations/delete/${id}`, {
         method: "DELETE",
@@ -137,9 +134,13 @@ const SpecializationPage: React.FC = () => {
       if (res.ok) {
         toast.success("Deleted successfully");
         setSpecializationList((prev) => prev.filter((item) => item._id !== id));
-      } else toast.error(data.message || t("toastt.deleteFailed"));
+      } else {
+        toast.error(data.message || t("toastt.deleteFailed"));
+      }
     } catch {
       toast.error(t("toastt.serverError"));
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -154,7 +155,6 @@ const SpecializationPage: React.FC = () => {
     setIsArabic(item.type === "ar");
   };
 
-
   const resetForm = () => {
     setSpecialization("");
     setSubSpecializations([""]);
@@ -165,32 +165,28 @@ const SpecializationPage: React.FC = () => {
     setFeeAbove10("");
   };
 
-
   const handleLevelToggle = (level: string) => {
     setSelectedLevels((prev) =>
-      prev.includes(level)
-        ? prev.filter((l) => l !== level)
-        : [...prev, level]
+      prev.includes(level) ? prev.filter((l) => l !== level) : [...prev, level]
     );
   };
 
-
   const filteredList = specializationList
-    .slice() // clone array
-    .reverse() // newest first
-    .filter((item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.subSpecializations.some((s) =>
-        s.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+    .slice()
+    .reverse()
+    .filter(
+      (item) =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.subSpecializations.some((s) =>
+          s.name.toLowerCase().includes(searchTerm.toLowerCase())
+        )
     );
 
   return (
-    <div className="p-4 ">
+    <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">{t("titlee.specialization")}</h1>
 
-
-      {/* Top bar: Create and Search */}
+      {/* Top bar */}
       <div className="flex justify-between items-center mb-6">
         <input
           type="text"
@@ -207,7 +203,6 @@ const SpecializationPage: React.FC = () => {
             {t("button.create")}
           </button>
         )}
-
       </div>
 
       {/* Form */}
@@ -238,14 +233,13 @@ const SpecializationPage: React.FC = () => {
                 {subSpecializations.length > 1 && (
                   <button
                     onClick={() => removeSubSpecialization(index)}
-                    className="px-3 py-1 text-sm text-red-500  rounded"
+                    className="px-3 py-1 text-sm text-red-500 rounded"
                   >
                     {t("button.remove")}
                   </button>
                 )}
               </div>
             ))}
-
             <button
               onClick={addSubSpecialization}
               className="mt-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded"
@@ -273,7 +267,6 @@ const SpecializationPage: React.FC = () => {
               <span className="text-sm font-medium">{isArabic ? "Arabic" : "English"}</span>
             </div>
 
-            {/* Applicable Levels */}
             <label className="block mb-2 text-sm font-medium">{t("label.levels")}</label>
             <div className="grid grid-cols-2 gap-2">
               {specialistLevelsMap.map(({ english, arabic }) => {
@@ -297,7 +290,9 @@ const SpecializationPage: React.FC = () => {
             <input
               type="number"
               value={feeBelow10}
-              onChange={(e) => setFeeBelow10(e.target.value === "" ? "" : parseFloat(e.target.value))}
+              onChange={(e) =>
+                setFeeBelow10(e.target.value === "" ? "" : parseFloat(e.target.value))
+              }
               placeholder="e.g., 500"
               className="w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
@@ -308,24 +303,28 @@ const SpecializationPage: React.FC = () => {
             <input
               type="number"
               value={feeAbove10}
-              onChange={(e) => setFeeAbove10(e.target.value === "" ? "" : parseFloat(e.target.value))}
+              onChange={(e) =>
+                setFeeAbove10(e.target.value === "" ? "" : parseFloat(e.target.value))
+              }
               placeholder="e.g., 1000"
               className="w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </div>
 
-
-
           <div className="flex gap-2">
+            {/* ✅ Submit button with spinner */}
             <button
               onClick={handleSubmit}
-              className="py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded"
+              disabled={isSubmitting}
+              className="py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold rounded inline-flex items-center gap-2"
             >
+              {isSubmitting && <Loader2 size={16} className="animate-spin" />}
               {editingId ? t("button.update") : t("button.submit")}
             </button>
             <button
               onClick={resetForm}
-              className="py-2 px-4 bg-gray-400 hover:bg-gray-500 text-white rounded"
+              disabled={isSubmitting}
+              className="py-2 px-4 bg-gray-400 hover:bg-gray-500 disabled:opacity-60 text-white rounded"
             >
               {t("button.cancel")}
             </button>
@@ -335,7 +334,11 @@ const SpecializationPage: React.FC = () => {
 
       {/* List */}
       <h2 className="text-xl font-semibold mb-4">{t("titlee.specializationList")}</h2>
-      {filteredList.length === 0 ? (
+
+      {/* ✅ Fetch loading skeleton */}
+      {isFetching ? (
+        <PageLoading />
+      ) : filteredList.length === 0 ? (
         <p>{t("message.noData")}</p>
       ) : (
         <div className="overflow-x-auto rounded shadow">
@@ -357,7 +360,7 @@ const SpecializationPage: React.FC = () => {
                   <td className="px-4 py-3 border">{index + 1}</td>
                   <td className="px-4 py-3 border font-semibold">{item.name}</td>
                   <td className="px-4 py-3 border">
-                    <ul className=" list-inside space-y-1">
+                    <ul className="list-inside space-y-1">
                       {item.subSpecializations.map((s, i) => (
                         <li key={i}>{s.name}</li>
                       ))}
@@ -365,7 +368,7 @@ const SpecializationPage: React.FC = () => {
                   </td>
                   <td className="px-4 py-3 border">
                     {item.applicableLevels && item.applicableLevels.length > 0 ? (
-                      <ul className=" list-inside space-y-1">
+                      <ul className="list-inside space-y-1">
                         {item.applicableLevels.map((level, idx) => (
                           <li key={idx}>{level}</li>
                         ))}
@@ -379,15 +382,23 @@ const SpecializationPage: React.FC = () => {
                   <td className="px-4 py-3 border text-center space-x-2">
                     <button
                       onClick={() => handleEdit(item)}
-                      className="inline-flex items-center px-2 py-1 text-sm text-blue-600 hover:text-blue-800"
+                      disabled={deletingId === item._id}
+                      className="inline-flex items-center px-2 py-1 text-sm text-blue-600 hover:text-blue-800 disabled:opacity-40"
                     >
                       <SquarePen size={16} />
                     </button>
+
+                    {/* ✅ Delete button with per-row spinner */}
                     <button
-                      onClick={() => handleDelete(item._id)}
-                      className="inline-flex items-center px-2 py-1 text-sm text-red-600 hover:text-red-800"
+                      onClick={() => handleDelete(item?._id)}
+                      disabled={deletingId === item?._id}
+                      className="inline-flex items-center px-2 py-1 text-sm text-red-600 hover:text-red-800 disabled:opacity-40"
                     >
-                      <Trash2 size={16} />
+                      {deletingId === item?._id ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <Trash2 size={16} />
+                      )}
                     </button>
                   </td>
                 </tr>
@@ -396,7 +407,6 @@ const SpecializationPage: React.FC = () => {
           </table>
         </div>
       )}
-
     </div>
   );
 };
