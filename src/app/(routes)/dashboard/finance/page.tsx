@@ -268,7 +268,7 @@ export default function page() {
 
         <Card
           className={"flex flex-1 flex-col grow"}
-          // onClick={() => handleCardClick("/dashboard/finance/detail")}
+        // onClick={() => handleCardClick("/dashboard/finance/detail")}
         >
           <CardHeader className="items-center pb-0">
             <div className="flex flex-row justify-between items-center w-full">
@@ -358,7 +358,7 @@ export default function page() {
           chartData={data}
           title={"Cost distribution"}
           className="flex-1"
-          // link="/dashboard/finance/detail"
+        // link="/dashboard/finance/detail"
         />
       </div>
 
@@ -369,7 +369,7 @@ export default function page() {
           chartConfig={chartConfig2}
           chartData={chartData2}
           title={"Reservation value"}
-          // link="/dashboard/finance/detail"
+        // link="/dashboard/finance/detail"
         />
       </div>
       {/*topEarningsSpecialists */}
@@ -422,16 +422,16 @@ export default function page() {
                   <div className="flex items-start gap-4 w-full">
                     <Avatar>
                       <AvatarImage
-                        src={item._id.profile_picture}
-                        alt={item._id.full_name + "_avatar"}
+                        src={item._id?.profile_picture}
+                        alt={item._id?.full_name + "_avatar"}
                       />
                       <AvatarFallback>
-                        {item._id.full_name.slice(0, 2)}
+                        {item._id?.full_name.slice(0, 2)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col flex-1">
                       <p className="text-sm font-semibold truncate">
-                        {item._id.full_name}
+                        {item._id?.full_name}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
                         {item._id?._id}

@@ -3,7 +3,8 @@ export interface AppointmentType {
   patientId: any;
   program: string;
   _id: string;
-  doctor: string;
+  accepted: boolean;
+  doctorId: any;
   bookingDate: string;
   time: string;
   date: string;

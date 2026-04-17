@@ -498,7 +498,6 @@
   "appointment_modified_success": "تم تعديل الموعد بنجاح",
   "appointment_modified_error": "فشل تعديل الموعد. يرجى المحاولة مرة أخرى.",
   "status_completed": "مكتمل",
-
   "filtering": "تصفية",
   "recent": "الأحدث",
   "byAmount": "حسب المبلغ",
@@ -527,7 +526,6 @@
   "numberOfSessions": "عدد الجلسات",
   "dues": "المستحقات",
   "dataDetails": "تفاصيل البيانات",
-  
   "back": "رجوع",
   "approval": "الموافقة",
   "actions.alterationRequest": "طلب تعديل",
@@ -599,7 +597,10 @@
   "article": "مقال",
   "video": "فيديو",
   "group": "مجموعة",
-  "refund": "استرجاع"
-
+  "refund": "استرجاع",
+  "noQuestions": "لا توجد أسئلة",
+  "noQuestionsSubtitle": "انقر على الزر أعلاه لإضافة سؤالك الأول",
+  "appointment_date": "تاريخ الموعد",
+  "doctor": "الدكتور",
+  "scheduled": "مجدول"
 }
-
