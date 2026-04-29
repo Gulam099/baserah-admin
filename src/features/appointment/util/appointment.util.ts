@@ -11,34 +11,66 @@ export async function fetchAppointmentsRecords(
   size: number
 ): Promise<ApiResponseType> {
   try {
-    // Run both API calls in parallel
-    const [bookingsRes, instantRes] = await Promise.all([
+    // Run all API calls in parallel
+    const [bookingsRes, instantRes, groupsRes, programsRes] = await Promise.all([
       axios.get(`${ApiBaseUrlLocal}/api/doctor/admin/bookings`, {
         params: { page, pageSize: size },
       }),
       axios.get(`${ApiBaseUrlLocal}/api/instantbookings/admin/instantbooking`, {
         params: { page, pageSize: size },
       }),
+      axios.get(`${ApiBaseUrlLocal}/api/groups-booking/fetch-group`, {
+        params: { page, pageSize: size },
+      }),
+      axios.get(`${ApiBaseUrlLocal}/api/programs-booking/fetch-program`, {
+        params: { page, pageSize: size },
+      }),
     ]);
 
     const bookingsData = bookingsRes.data?.data || [];
     const instantData = instantRes.data?.data || [];
+    const groupsData = groupsRes.data?.data || [];
+    const programsData = programsRes.data?.data || [];
 
-    // Normalize instant bookings so they match bookings fields
+    // Normalize instant bookings
     const formattedInstant = instantData.map((item: any) => ({
       ...item,
       program: item.program || "urgent",
       date: item.date || item.appointmentDate,
       time: item.time || item.appointmentTime,
+      type: "urgent",
     }));
 
-    // Merge both lists
-    const mergedData = [...bookingsData, ...formattedInstant];
-    console.log("mer", mergedData);
+    // Normalize group bookings
+    const formattedGroups = groupsData.map((item: any) => ({
+      ...item,
+      type: "group",
+      program: item.title || "Group",
+      // Map other fields if necessary
+    }));
 
-    // Combine total counts from both APIs
+    // Normalize program bookings
+    const formattedPrograms = programsData.map((item: any) => ({
+      ...item,
+      type: "program",
+      program: item.title || "Program",
+      // Map other fields if necessary
+    }));
+
+    // Merge all lists
+    const mergedData = [
+      ...bookingsData.map((b: any) => ({ ...b, type: "scheduled" })),
+      ...formattedInstant,
+      ...formattedGroups,
+      ...formattedPrograms,
+    ];
+
+    // Combine total counts from all APIs
     const totalCount =
-      (bookingsRes.data?.total ?? 0) + (instantRes.data?.total ?? 0);
+      (bookingsRes.data?.total ?? 0) +
+      (instantRes.data?.total ?? 0) +
+      (groupsRes.data?.page?.total ?? 0) +
+      (programsRes.data?.page?.total ?? 0);
 
     return {
       success: true,

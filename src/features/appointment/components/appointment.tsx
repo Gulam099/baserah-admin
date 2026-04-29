@@ -53,7 +53,7 @@ export default function AppointmentPage() {
   const searchParams = useSearchParams();
   const contentRef = useRef<HTMLDivElement>(null);
   const badgeVariant: Record<
-    "confirmed" | "cancelled" | "upcoming" | "ongoing" | "urgent" | "pending",
+    "completed" | "cancelled" | "upcoming" | "ongoing" | "urgent" | "program" | "group",
     | "default"
     | "secondary"
     | "destructive"
@@ -62,12 +62,13 @@ export default function AppointmentPage() {
     | "warning"
     | "danger"
   > = {
-    confirmed: "success",
+    completed: "success",
     cancelled: "danger",
     upcoming: "default",
     ongoing: "secondary",
     urgent: "warning",
-    pending: "outline",
+    program: "secondary",
+    group: "secondary",
   };
 
   // Read page/pageSize from the URL, or fallback to 1 / 9
@@ -109,14 +110,12 @@ export default function AppointmentPage() {
     return (
       patientName.includes(term) ||
       appointmentId.includes(term) ||
-      doctorName.includes(term)
+      doctorName.includes(term) ||
+      appointment.type?.includes(term)
     );
   });
 
-  const appointmentsWithType = filteredAppointments.map((appointment) => ({
-    ...appointment,
-    type: appointment.accepted ? "urgent" : "scheduled",
-  }));
+  const appointmentsWithType = filteredAppointments;
 
   if (loading) {
     return <PageLoading />;
@@ -165,9 +164,9 @@ export default function AppointmentPage() {
               <TableHead>{t("time_slot")}</TableHead>
               <TableHead>{t("type")}</TableHead>
               <TableHead>{t("status")}</TableHead>
-              <TableHead className="text-right print:hidden">
+              {/* <TableHead className="text-right print:hidden">
                 {t("actions")}
-              </TableHead>
+              </TableHead> */}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -178,9 +177,13 @@ export default function AppointmentPage() {
 
               return (
                 <TableRow key={appointment._id}>
-                  <TableCell>{appointment._id.slice(0, 10)}</TableCell>
-                  <TableCell>{appointment.patientId?.name || "-"}</TableCell>
-                  <TableCell>{appointment.doctorId?.full_name || "-"}</TableCell>
+                  <TableCell>{appointment._id}</TableCell>
+                  <TableCell>
+                    {appointment.patientId?.name || appointment.userId?.name || "-"}
+                  </TableCell>
+                  <TableCell>
+                    {appointment.doctor?.full_name || appointment.doctorId?.full_name || "-"}
+                  </TableCell>
                   <TableCell>
                     {appointment.createdAt
                       ? format(new Date(appointment.createdAt), "EEE,dd MMM yyyy")
@@ -197,8 +200,8 @@ export default function AppointmentPage() {
                       : t("-")}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={appointment.accepted ? "warning" : "secondary"}>
-                      {appointment.accepted ? t("urgent") : t("scheduled")}
+                    <Badge variant={badgeVariant[appointment.type as keyof typeof badgeVariant] || "secondary"}>
+                      {t(appointment.type || "scheduled")}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -219,9 +222,9 @@ export default function AppointmentPage() {
                       );
                     })()}
                   </TableCell>
-                  <TableCell className="text-right print:hidden px-1">
+                  {/* <TableCell className="text-right print:hidden px-1">
                     <AppointmentMenu appointment={appointment} />
-                  </TableCell>
+                  </TableCell> */}
                 </TableRow>
               );
             })}
