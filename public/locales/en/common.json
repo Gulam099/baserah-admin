@@ -560,7 +560,7 @@
   "costs": "Costs",
   "totalIncome": "Total Income",
   "supportGroups": "Support Groups",
-  "Program": "Program",
+  "program": "Program",
   "appointments": "Appointments",
   "specific": "Specific",
   "range": "Range",
@@ -604,5 +604,11 @@
   "noQuestionsSubtitle": "Click the button above to add your first question",
   "appointment_date": "Appt. Date",
   "doctor": "Doctor",
-  "scheduled": "Scheduled"
+  "scheduled": "Scheduled",
+  "patients": "Patients",
+  "patient_list": "Patient List",
+  "view_list": "View List",
+  "list_of_patients_for": "List of patients for",
+  "unknown_patient": "Unknown Patient",
+  "no_patients_found": "No patients found"
 }
