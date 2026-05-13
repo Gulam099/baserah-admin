@@ -154,18 +154,16 @@
     "punctuality": "Punctuality",
     "professionalism": "Professionalism"
   },
-  "sidebar": {
-    "appointments": "Appointments",
-    "approval": "Approval",
-    "reports": "Reports",
-    "specialization": "Specialization",
-    "contractsSpecialists": "Contracts and Specialists",
-    "customers": "Customers",
-    "infoBank": "Information Bank",
-    "financial": "Financial",
-    "permissions": "Permissions",
-    "group": "Groups"
-  },
+  "Appointments": "Appointments",
+  "Approval": "Approval",
+  "Reports": "Reports",
+  "Specialization": "Specialization",
+  "Contracts and Specialists": "Contracts and Specialists",
+  "Customers": "Customers",
+  "Information Bank": "Information Bank",
+  "Financial": "Financial",
+  "Permissions": "Permissions",
+  "Groups": "Groups",
   "titlee": {
     "specialization": "Specialization",
     "specializationList": "Specialization List"
@@ -376,12 +374,10 @@
   },
   "completed": "Completed",
   "ongoing": "Ongoing",
-  "home": {
-    "dashboard": "Dashboard",
-    "terms": "Terms of Service",
-    "privacy": "Privacy Policy",
-    "payment": "Payment"
-  },
+  "Dashboard": "Dashboard",
+  "Terms of Service": "Terms of Service",
+  "Privacy Policy": "Privacy Policy",
+  "payment": "Payment",
   "pagination": {
     "page": "Page",
     "pageSize": "Page Size",
@@ -528,7 +524,6 @@
   "dues": "Dues",
   "dataDetails": "Data Details",
   "back": "Back",
-  "approval": "Approval",
   "status.rejected": "Rejected",
   "actions.alterationRequest": "Request Alteration",
   "refundDetails": "Refund Details",
@@ -561,7 +556,6 @@
   "totalIncome": "Total Income",
   "supportGroups": "Support Groups",
   "program": "Program",
-  "appointments": "Appointments",
   "specific": "Specific",
   "range": "Range",
   "selectDate": "Select Date",
@@ -610,5 +604,10 @@
   "view_list": "View List",
   "list_of_patients_for": "List of patients for",
   "unknown_patient": "Unknown Patient",
-  "no_patients_found": "No patients found"
+  "no_patients_found": "No patients found",
+  "confirm_delete_desc": "This action cannot be undone.",
+  "Are you absolutely sure?": "Are you absolutely sure?",
+  "delete": "Delete",
+  "deleted": "Deleted successfully",
+  "deleted_error": "Failed to delete"
 }

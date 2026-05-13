@@ -23,8 +23,11 @@ import {
   Calendar,
   ChevronDown,
   Download,
+  Edit,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   Popover,
   PopoverContent,
@@ -32,6 +35,14 @@ import {
 } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import PageLoading from "@/components/page-loading";
 
 interface DateFilter {
@@ -309,6 +320,32 @@ export default function ApprovalContentsPage() {
     return "#";
   };
 
+  const handleDelete = async (id: string, recordType: string) => {
+    try {
+      let url = "";
+      if (recordType === "content") {
+        url = `${ApiBaseUrlLocal}/api/admin/cultural-content/delete/${id}`;
+      } else if (recordType === "group") {
+        url = `${ApiBaseUrlLocal}/api/support-groups/delete/${id}`;
+      } else if (recordType === "refund") {
+        url = `${ApiBaseUrlLocal}/api/refunds/delete/${id}`;
+      }
+
+      if (url) {
+        const response = await axios.delete(url);
+        if (response.data.success) {
+          toast.success(t("deleted"));
+          setApprovals((prev) => prev.filter((item) => item._id !== id));
+        } else {
+          toast.error(response.data.message || t("deleted_error"));
+        }
+      }
+    } catch (error: any) {
+      console.error("Delete error:", error);
+      toast.error(error.response?.data?.message || t("deleted_error"));
+    }
+  };
+
   if (loading) {
     return <PageLoading />;
   }
@@ -532,9 +569,37 @@ export default function ApprovalContentsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Link href={url} className="text-blue-500 underline">
-                      {t("edit")}
-                    </Link>
+                    <div className="flex items-center gap-3">
+                      <Link href={url} title={t("edit")}>
+                        <Edit className="w-4 h-4 text-blue-500 hover:text-blue-700 transition-colors" />
+                      </Link>
+                      {/* Only show delete if no doctor is associated */}
+                      {(!item.doctor && !item.doctorId && !(item as any).doctor_id) && (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <button
+                              className="text-red-500 hover:text-red-700 transition-colors"
+                              title={t("delete")}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>{t("Are you absolutely sure?")}</DialogTitle>
+                              <DialogDescription>
+                                {t("confirm_delete_desc")}
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="flex justify-end gap-2 mt-4">
+                              <Button variant="destructive" onClick={() => handleDelete(item._id, item.recordType)}>
+                                {t("delete")}
+                              </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               );

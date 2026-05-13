@@ -36,55 +36,55 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 const NAV_ITEMS = [
   {
     key: "appointments",
-    titleKey: "sidebar.appointments",
+    titleKey: "Appointments",
     url: "/dashboard/appointment",
     icon: Briefcase,
   },
   {
     key: "approval",
-    titleKey: "sidebar.approval",
+    titleKey: "Approval",
     url: "/dashboard/approval",
     icon: Gauge,
   },
   {
     key: "reports",
-    titleKey: "sidebar.reports",
+    titleKey: "Reports",
     url: "/dashboard/report",
     icon: Folder,
   },
   {
     key: "specialization",
-    titleKey: "sidebar.specialization",
+    titleKey: "Specialization",
     url: "/dashboard/specialization",
     icon: BookOpen,
   },
   {
     key: "contractsSpecialists",
-    titleKey: "sidebar.contractsSpecialists",
+    titleKey: "Contracts and Specialists",
     url: "/dashboard/specialist",
     icon: Bookmark,
   },
   {
     key: "customers",
-    titleKey: "sidebar.customers",
+    titleKey: "Customers",
     url: "/dashboard/customer",
     icon: Profile2User,
   },
   {
     key: "infoBank",
-    titleKey: "sidebar.infoBank",
+    titleKey: "Information Bank",
     url: "/dashboard/question",
     icon: Setting2,
   },
   {
     key: "financial",
-    titleKey: "sidebar.financial",
+    titleKey: "Financial",
     url: "/dashboard/finance",
     icon: EmptyWallet,
   },
   {
     key: "permissions",
-    titleKey: "sidebar.permissions",
+    titleKey: "Permissions",
     url: "/dashboard/permission",
     icon: Monitor,
   },
@@ -94,13 +94,10 @@ const NAV_ITEMS = [
 export function AppSidebar({ side, ...props }: AppSidebarProps) {
   const { user } = useUser();
   const { t } = useTranslation();
-  console.log("user", user);
 
   if (!user) return null;
 
   const userPermissions = (user.unsafeMetadata?.permissions || []) as string[];
-
-  console.log("userpermissions>>", userPermissions);
 
 
   const filteredNavMain = NAV_ITEMS.filter((item) =>
