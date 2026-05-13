@@ -8,7 +8,10 @@ import {
   Ticket,
   X,
   Calendar,
+  Trash2,
 } from "lucide-react";
+import { toast } from "sonner";
+import { ApiBaseUrlLocal } from "../../../../const";
 import {
   Table,
   TableBody,
@@ -164,9 +167,9 @@ export default function AppointmentPage() {
               <TableHead>{t("time_slot")}</TableHead>
               <TableHead>{t("type")}</TableHead>
               <TableHead>{t("status")}</TableHead>
-              {/* <TableHead className="text-right print:hidden">
+              <TableHead className="text-right print:hidden">
                 {t("actions")}
-              </TableHead> */}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -177,7 +180,7 @@ export default function AppointmentPage() {
 
               return (
                 <TableRow key={appointment._id}>
-                  <TableCell>{appointment._id}</TableCell>
+                  <TableCell>{appointment._id?.slice(8)}</TableCell>
                   <TableCell>
                     {appointment.patientId?.name || appointment.userId?.name || "-"}
                   </TableCell>
@@ -186,12 +189,12 @@ export default function AppointmentPage() {
                   </TableCell>
                   <TableCell>
                     {appointment.createdAt
-                      ? format(new Date(appointment.createdAt), "EEE,dd MMM yyyy")
+                      ? format(new Date(appointment.createdAt), "dd MMM yyyy")
                       : t("-")}
                   </TableCell>
                   <TableCell>
                     {bookingDate
-                      ? format(bookingDate, "EEE,dd MMM yyyy")
+                      ? format(bookingDate, "dd MMM yyyy")
                       : t("-")}
                   </TableCell>
                   <TableCell>
@@ -222,9 +225,9 @@ export default function AppointmentPage() {
                       );
                     })()}
                   </TableCell>
-                  {/* <TableCell className="text-right print:hidden px-1">
+                  <TableCell className="text-right print:hidden px-1">
                     <AppointmentMenu appointment={appointment} />
-                  </TableCell> */}
+                  </TableCell>
                 </TableRow>
               );
             })}
@@ -238,6 +241,38 @@ export default function AppointmentPage() {
 
 function AppointmentMenu({ appointment }: { appointment: AppointmentType }) {
   const { t } = useTranslation();
+
+  const deleteAppointment = async (id: string, type: string) => {
+    try {
+      let url = "";
+      if (type === "scheduled") {
+        url = `${ApiBaseUrlLocal}/api/bookings/delete/${id}`;
+      } else if (type === "urgent") {
+        url = `${ApiBaseUrlLocal}/api/instantbookings/delete/${id}`;
+      } else if (type === "group") {
+        url = `${ApiBaseUrlLocal}/api/groups-booking/delete/${id}`;
+      } else if (type === "program") {
+        url = `${ApiBaseUrlLocal}/api/programs-booking/delete/${id}`;
+      } else {
+        url = `${ApiBaseUrlLocal}/api/admin/appointments/${id}`;
+      }
+
+      const res = await fetch(url, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        toast.success(t("deleted"));
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        toast.error(t("deleted_error"));
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(t("deleted_error"));
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -250,47 +285,37 @@ function AppointmentMenu({ appointment }: { appointment: AppointmentType }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {/* <DropdownMenuItem>
-                        <FileText className="mr-2 h-4 w-4" />
-                        Medical Record
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <MessageSquare className="mr-2 h-4 w-4" />
-                        Customer Conversation
-                      </DropdownMenuItem> */}
-        {/* <DropdownMenuItem>
-          <Ticket className="mr-2 h-4 w-4" />
-          Open ticket
-        </DropdownMenuItem> */}
         {appointment.status !== "cancelled" && (
           <>
-            <DropdownMenuItem className="text-red-600">
-              <Dialog>
-                {/* <DialogTrigger asChild>
-                  <Button
-                    variant={"ghost"}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <X className="mr-2 h-4 w-4" />
-                    Cancel Session Appointment
+            <Dialog>
+              <DropdownMenuItem
+                onSelect={(e) => e.preventDefault()}
+                asChild
+                className="text-red-600 focus:bg-red-50 focus:text-red-700"
+              >
+                <DialogTrigger
+                  className="w-full flex justify-center cursor-pointer py-1.5"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </DialogTrigger>
+              </DropdownMenuItem>
+              <DialogContent onClick={(e) => e.stopPropagation()}>
+                <DialogHeader>
+                  <DialogTitle>{t("Are you absolutely sure?")}</DialogTitle>
+                  <DialogDescription>
+                    {t("confirm_delete_desc")}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex justify-end mt-4">
+                  <Button variant="destructive" onClick={() => deleteAppointment(appointment._id, appointment.type || "scheduled")}>
+                    {t("delete")}
                   </Button>
-                </DialogTrigger> */}
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Are you absolutely sure?</DialogTitle>
-                    <DialogDescription>
-                      This action cannot be undone.
-                    </DialogDescription>
-                  </DialogHeader>
-                  {/* <Button onClick={() => cancelAppointment(appointment._id)}>
-                    Cancel Session Appointment
-                  </Button> */}
-                </DialogContent>
-              </Dialog>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
+                </div>
+              </DialogContent>
+            </Dialog>
+            {/* <DropdownMenuItem>
               <ChangeSessionDialog appointment={appointment} />
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
           </>
         )}
       </DropdownMenuContent>

@@ -165,18 +165,16 @@
     "punctuality": "الالتزام بالمواعيد",
     "professionalism": "الاحترافية"
   },
-  "sidebar": {
-    "appointments": "المواعيد",
-    "approval": "الموافقة",
-    "reports": "التقارير",
-    "specialization": "التخصص",
-    "contractsSpecialists": "العقود والمتخصصون",
-    "customers": "العملاء",
-    "infoBank": "بنك المعلومات",
-    "financial": "المالية",
-    "permissions": "الصلاحيات",
-    "group": "المجموعات"
-  },
+  "appointments": "المواعيد",
+  "approval": "الموافقة",
+  "reports": "التقارير",
+  "specialization": "التخصص",
+  "contractsSpecialists": "العقود والمتخصصون",
+  "customerss": "العملاء",
+  "infoBank": "بنك المعلومات",
+  "financial": "المالية",
+  "permissionss": "الصلاحيات",
+  "groups": "المجموعات",
   "titlee": {
     "specialization": "التخصص",
     "specializationList": "قائمة التخصصات"
@@ -386,12 +384,10 @@
     "number": "العدد"
   },
   "averageRating": "متوسط التقييم",
-  "home": {
-    "dashboard": "لوحة التحكم",
-    "terms": "شروط الخدمة",
-    "privacy": "سياسة الخصوصية",
-    "payment": "الدفع"
-  },
+  "dashboard": "لوحة التحكم",
+  "terms": "شروط الخدمة",
+  "privacy": "سياسة الخصوصية",
+  "payment": "الدفع",
   "pagination": {
     "page": "الصفحة",
     "pageSize": "عدد الصفحات",
@@ -527,7 +523,6 @@
   "dues": "المستحقات",
   "dataDetails": "تفاصيل البيانات",
   "back": "رجوع",
-  "approval": "الموافقة",
   "actions.alterationRequest": "طلب تعديل",
   "refundDetails": "تفاصيل الاسترداد",
   "user name": "اسم المستخدم",
@@ -560,7 +555,6 @@
   "totalIncome": "إجمالي الدخل",
   "supportGroups": "مجموعات الدعم",
   "Program": "البرامج",
-  "appointments": "المواعيد",
   "specific": "تاريخ محدد",
   "range": "نطاق",
   "selectDate": "اختر التاريخ",
@@ -602,5 +596,10 @@
   "noQuestionsSubtitle": "انقر على الزر أعلاه لإضافة سؤالك الأول",
   "appointment_date": "تاريخ الموعد",
   "doctor": "الدكتور",
-  "scheduled": "مجدول"
+  "scheduled": "مجدول",
+  "confirm_delete_desc": "هذا الإجراء لا يمكن التراجع عنه.",
+  "Are you absolutely sure?": "هل أنت متأكد تماما؟",
+  "delete": "حذف",
+  "deleted": "تم الحذف بنجاح",
+  "deleted_error": "فشل الحذف"
 }

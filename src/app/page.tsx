@@ -15,19 +15,19 @@ export default function Home() {
 
         <div className="flex justify-center items-center w-full  gap-4">
           <Button asChild>
-            <Link href="/dashboard">{t("home.dashboard")}</Link>
+            <Link href="/dashboard">{t("Dashboard")}</Link>
           </Button>
           <Button asChild>
-            <Link href="/terms-of-service">{t("home.terms")}</Link>
+            <Link href="/terms-of-service">{t("Terms of Service")}</Link>
           </Button>
           <Button asChild>
-            <Link href="/privacy-policy">{t("home.privacy")}</Link>
+            <Link href="/privacy-policy">{t("Privacy Policy")}</Link>
           </Button>
           {/* <Button asChild>
             <Link
               href={`/payment`}
             >
-              {t("home.payment")}
+              {t("payment")}
             </Link>
           </Button> */}
         </div>
