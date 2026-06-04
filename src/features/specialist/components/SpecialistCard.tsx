@@ -1,4 +1,4 @@
-import { ChevronRight, MoreVertical } from "lucide-react";
+import { ChevronRight, MoreVertical, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
@@ -87,10 +87,12 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
     }
   };
 
+  console.log(specialist, "specialist")
+
   return (
     <Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <h3 className="font-semibold">{specialist?.firstName ?? t("no_name")}</h3>
+        <h3 className="font-semibold">{specialist?.firstName + " " + specialist?.lastName ?? t("no_name")}</h3>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
@@ -99,7 +101,7 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem
+            {/* <DropdownMenuItem
               onClick={() =>
                 mutation.mutate({
                   clerkId: specialist.id,
@@ -108,7 +110,7 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
               }
             >
               {t("accepted")}
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
 
             <DropdownMenuItem
               onClick={() =>
@@ -168,10 +170,11 @@ export function SpecialistCard({ specialist }: SpecialistCardProps) {
           </div>
           <div className="flex items-center justify-between pt-2">
             <span
-              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${getStatusColor(
+              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${getStatusColor(
                 specialist?.unsafeMetadata?.approval_status
               )}`}
             >
+              {mutation.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
               {t(specialist.unsafeMetadata?.approval_status ?? "no_status")}
             </span>
             <Button variant="ghost" size="sm" className="flex items-center gap-1" asChild>

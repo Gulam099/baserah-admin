@@ -37,7 +37,7 @@
   "actions.reject": " Rejected",
   "search_specialist_placeholder": "Search specialists by name or ID",
   "accepted": "Accepted",
-  "contract_send": "Contract Sent",
+  "contract_send": "Send Contract",
   "auth_contract": "Auth Contract",
   "initial_approved": "Initial Approved",
   "final_approved": "Final Approved",
