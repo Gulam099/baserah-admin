@@ -3,14 +3,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ArrowLeft } from "lucide-react";
 
 import Contracts from "@/features/specialist/components/contracts";
 import CV from "@/features/specialist/components/cv";
@@ -79,6 +79,7 @@ type UploadedCertificate = {
 
 export default function SpecialistPage() {
   const { specialist_Id } = useParams<{ specialist_Id: string }>();
+  const router = useRouter();
   const { t } = useTranslation();
 
   const [specialist, setSpecialist] = useState<SpecialistData | null>(null);
@@ -230,6 +231,9 @@ export default function SpecialistPage() {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
+      <Button variant="outline" onClick={() => router.back()} className="w-fit">
+        <ArrowLeft className="w-4 h-4 mr-2" />
+      </Button>
       <div className="grid md:grid-cols-[5fr,2fr] gap-4 items-start justify-between h-full min-h-[80vh]">
         <div className="flex flex-col gap-8">
           {/* Top row with avatar & name */}
